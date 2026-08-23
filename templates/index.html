@@ -69,22 +69,94 @@
         }
         .play-open-link:hover { filter:brightness(1.05); transform:translateY(-1px); }
     </style>
+    <style>
+        .launch-modal.story-format {
+            position:relative;
+            width:auto;
+            max-width:92vw;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            box-shadow:none;
+        }
+        .launch-modal.story-format > img {
+            display:block;
+            width:auto;
+            height:auto;
+            max-width:92vw;
+            max-height:80vh;
+            object-fit:contain;
+            margin:0 auto;
+            border-radius:12px;
+            box-shadow:0 20px 45px #000a;
+            background:transparent;
+        }
+        .launch-modal.story-format .launch-copy {
+            display:flex;
+            justify-content:center;
+            padding:12px 0 0;
+            background:transparent;
+        }
+        .launch-modal.story-format .launch-copy h2,
+        .launch-modal.story-format .launch-copy p { display:none; }
+        .launch-modal.story-format .launch-link {
+            display:inline-flex;
+            width:min(320px,92vw);
+            justify-content:center;
+            padding:12px 14px;
+            border:1px solid var(--gold);
+            border-radius:8px;
+            background:linear-gradient(180deg,var(--gold-2),var(--gold));
+            color:#2a1d0e;
+            font-weight:800;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            box-shadow:0 8px 20px #0007;
+        }
+        .launch-modal.story-format .launch-close {
+            position:absolute;
+            top:10px;
+            right:10px;
+            width:34px;
+            height:34px;
+            border:1px solid #ffffffa6;
+            border-radius:50%;
+            background:#0c0914c7;
+            color:#fff;
+            z-index:2;
+            cursor:pointer;
+            font-size:22px;
+            line-height:1;
+        }
+        .managed-banner img { display:none !important; }
+        .launch-overlay { backdrop-filter:blur(7px); }
+        .feedback-wrap { margin-top:10px; padding:14px 18px; border-top:1px solid #62527d; }
+        .feedback-title { margin:0 0 12px; color:var(--gold-2); font-family:'Barlow Condensed',sans-serif; font-size:22px; letter-spacing:.3px; text-transform:uppercase; }
+        .feedback-stories { display:flex; gap:11px; overflow:auto; padding-bottom:2px; }
+        .feedback-story { flex:0 0 auto; display:grid; place-items:center; width:56px; height:56px; border:2px solid #f0c96a; border-radius:50%; background:#241a36; cursor:pointer; }
+        .feedback-story img { width:48px; height:48px; border-radius:50%; object-fit:cover; }
+    </style>
 </head>
 <body>
     <header class="top"><div class="top-in"><a class="icon-btn" href="#catalogo" aria-label="Início">⌂</a><a class="icon-btn" href="{{ configuracao.telegram.link if configuracao.telegram.ativo else '#lancamentos' }}" aria-label="Telegram">➤</a><a class="brand" href="#topo"><span class="brand-mark">GJ</span><span>GJFORTUNESINAIS</span></a><div class="timer">GJFORTUNESINAIS - Atualização em <b>05:00</b></div><button class="icon-btn" type="button" aria-label="Mensagens">▣</button><button class="icon-btn vip" type="button" aria-label="VIP">VIP</button></div></header>
-    <main class="main" id="topo">{% if configuracao.banner.ativo %}<a class="managed-banner" href="{{ configuracao.banner.link }}">{% if configuracao.banner.imagem %}<img src="{{ configuracao.banner.imagem }}" alt="">{% endif %}<div><strong>{{ configuracao.banner.titulo }}</strong><span>{{ configuracao.banner.texto }}</span></div></a>{% endif %}<section class="heading" id="lancamentos"><span class="crown">♛</span><div><h1>Plataforma PG Soft</h1><p>Os melhores jogos da PG Soft reunidos em um só lugar</p></div><span class="crown">♛</span></section>
-        <section class="platforms"><div class="platform-showcase">{% for plataforma in configuracao.plataformas %}<a class="platform-card" href="{{ plataforma.link }}" target="_blank" rel="noopener">{% if plataforma.imagem %}<img src="{{ plataforma.imagem }}" alt="Logo da plataforma" title="Abrir plataforma">{% else %}<span>ABRIR</span>{% endif %}</a>{% endfor %}</div><div class="recent"><div class="recent-label">✧<br>Últimos<br>lançamentos</div><div class="recent-list">{% for jogo in lancamentos[:14] %}<a class="recent-game" href="#jogo-{{ jogo.id }}"><img src="/api/capa/{{ jogo.id }}" alt="{{ jogo.nome }}" loading="lazy"></a>{% endfor %}</div></div></section>
+    <main class="main" id="topo">{% if configuracao.banner.ativo %}<a class="managed-banner" href="{{ configuracao.banner.link }}"><div><strong>{{ configuracao.banner.titulo }}</strong><span>{{ configuracao.banner.texto }}</span></div></a>{% endif %}<section class="heading" id="lancamentos"><span class="crown">♛</span><div><h1>Plataforma PG Soft</h1><p>Os melhores jogos da PG Soft reunidos em um só lugar</p></div><span class="crown">♛</span></section>
+        <section class="platforms"><div class="platform-showcase">{% for plataforma in configuracao.plataformas %}<a class="platform-card" href="{{ plataforma.link }}" target="_blank" rel="noopener">{% if plataforma.imagem %}<img src="{{ plataforma.imagem }}" alt="Logo da plataforma" title="Abrir plataforma">{% else %}<span>ABRIR</span>{% endif %}</a>{% endfor %}</div><div class="feedback-wrap"><h3 class="feedback-title">Feedbacks dos Jogadores</h3><div class="feedback-stories" id="feedbackStories"></div></div></section>
         <nav class="site-nav" aria-label="Navegação do catálogo"><a href="#catalogo">⌂ Home</a><a href="#gestao-banca" id="openBank" onclick="document.getElementById('gestao-banca').hidden=false; return false;">▣ Gestão de banca</a><a href="#indique" id="openReferral" onclick="document.getElementById('indique').hidden=false; return false;">♧ Indique amigos</a><a href="#como-jogar" id="openHow" onclick="document.getElementById('como-jogar').hidden=false; return false;">ⓘ Como jogar</a><a href="{{ configuracao.telegram.link if configuracao.telegram.ativo else '#catalogo' }}">◌ Telegram</a></nav>
         <section class="tools"><div class="update">Última atualização<strong id="clock">--:--</strong></div><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Pesquise o jogo aqui..." autocomplete="off"></label><button class="filter" id="fav" type="button" aria-label="Filtrar favoritos">♡</button><button class="filter" type="button" aria-label="Filtros">☷</button></section>
         <div class="catalog-title" id="catalogo"><h2>Todos os jogos</h2><p id="count">Catálogo PG Soft · faixas indicativas</p></div><section class="grid" id="gridJogos">{% for jogo in dados.pg %}<article class="card" id="jogo-{{ jogo.id }}" data-name="{{ jogo.nome | lower }}"><div class="cover"><img src="/api/capa/{{ jogo.id }}" alt="Capa de {{ jogo.nome }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x560/371044/f3b83f?text={{ jogo.nome | urlencode }}';"><div class="distribution"><span>Distribuição: <strong>{{ 99 - loop.index0 % 8 }}%</strong></span><span class="heart">♡</span></div>{% if jogo.id.startswith('pg-') or jogo.id.startswith('200') %}<span class="new">Novo</span>{% endif %}</div><div class="info"><h3 title="{{ jogo.nome }}">{{ jogo.nome }}</h3><div class="metric"><div class="metric-line"><span>Padrão</span><strong>{{ 35 + (loop.index0 * 7) % 45 }}%</strong></div><div class="track"><div class="fill" style="width:{{ 35 + (loop.index0 * 7) % 45 }}%"></div></div></div><div class="metric"><div class="metric-line"><span>Mínima</span><strong>{{ 12 + (loop.index0 * 5) % 78 }}%</strong></div><div class="track"><div class="fill green" style="width:{{ 12 + (loop.index0 * 5) % 78 }}%"></div></div></div><div class="metric"><div class="metric-line"><span>Máxima</span><strong>{{ 38 + (loop.index0 * 9) % 58 }}%</strong></div><div class="track"><div class="fill red" style="width:{{ 38 + (loop.index0 * 9) % 58 }}%"></div></div></div><div class="wins">Faixa de aposta</div><div class="bets"><div class="bet">MÍNIMA<strong>{{ jogo.get('exibir_min','0,40') }}</strong></div><div class="bet">PADRÃO<strong>{{ jogo.get('exibir_pad','2,00') }}</strong></div><div class="bet">MÁXIMA<strong>{{ jogo.get('exibir_max','100,00') }}</strong></div></div><div class="range"><span>PADRÃO</span><strong>R$ {{ jogo.get('exibir_pad','2,00') }}</strong></div><div class="range"><span>MÁXIMA</span><strong>R$ {{ jogo.get('exibir_max','100,00') }}</strong></div><div class="actions"><button class="play" type="button" data-id="{{ jogo.id }}">Jogar agora</button><button class="demo" type="button" data-id="{{ jogo.id }}">Demo</button></div><div class="analysis" id="analysis-{{ jogo.id }}"><div class="metric-line"><span>Leitura estatística</span><strong id="score-{{ jogo.id }}">--%</strong></div><div class="track"><div class="fill" id="bar-{{ jogo.id }}"></div></div></div></div></article>{% endfor %}<div class="empty" id="empty">Nenhum jogo encontrado.</div></section>
         <footer class="responsible-banner" id="responsabilidade" aria-label="Jogo responsável"><div class="responsible-heading"><div class="responsible-icon">18+</div><div><strong>Jogo responsável</strong><span>Informação de responsabilidade social</span></div></div><div class="responsible-item"><b>Proibido para menores</b>Apostas são permitidas somente para maiores de 18 anos.</div><div class="responsible-item"><b>Jogue com responsabilidade</b>Não use dinheiro de compromissos, contas ou necessidades básicas.</div><div class="responsible-item"><b>Aposta não é investimento</b>Não há garantia de retorno ou de lucro.</div><p class="responsible-note">Os indicadores e as faixas exibidos neste catálogo são demonstrativos e não preveem nem garantem o resultado de nenhuma rodada. Comunicação alinhada aos princípios de jogo responsável.</p></footer>
-        {% if configuracao.popup.ativo %}<div class="launch-overlay" id="launchPopup"><div class="launch-modal"><button class="launch-close" id="closePopup" type="button" aria-label="Fechar">×</button>{% if configuracao.popup.imagem %}<img src="{{ configuracao.popup.imagem }}" alt="">{% endif %}<div class="launch-copy"><h2>{{ configuracao.popup.titulo }}</h2><p>{{ configuracao.popup.texto }}</p><a class="launch-link" href="{{ configuracao.popup.link }}">{{ configuracao.popup.botao }}</a></div></div></div>{% endif %}
+        {% if popup_entrada and popup_entrada.imagem %}<div class="launch-overlay" id="launchPopup"><div class="launch-modal story-format"><button class="launch-close" id="closePopup" type="button" aria-label="Fechar">×</button><img src="{{ popup_entrada.imagem }}" alt="Pop-up da plataforma" loading="eager"><div class="launch-copy"><a class="launch-link" href="{{ popup_entrada.link }}" target="_blank" rel="noopener">{{ popup_entrada.botao or 'Entrar na plataforma' }}</a></div></div></div>{% endif %}
         {% if configuracao.telegram.ativo and configuracao.telegram.link %}<a class="telegram-float" href="{{ configuracao.telegram.link }}" target="_blank" rel="noopener" aria-label="Abrir Telegram">➤</a>{% endif %}
         <div class="how-overlay" id="como-jogar" hidden><div class="how-modal"><button class="how-close" id="closeHow" type="button" aria-label="Fechar" onclick="document.getElementById('como-jogar').hidden=true;">×</button><div class="how-copy"><h2>Como ler os gráficos</h2><p>As barras mostram o nível relativo de cada indicador exibido no card do jogo.</p><div class="legend"><div class="legend-item"><span class="legend-dot green"></span><div><strong>Verde · muito bom</strong>Indicador em faixa alta.</div></div><div class="legend-item"><span class="legend-dot yellow"></span><div><strong>Amarelo · razoável</strong>Indicador em faixa intermediária.</div></div><div class="legend-item"><span class="legend-dot red"></span><div><strong>Vermelho · baixo</strong>Indicador em faixa baixa.</div></div></div><div class="legend-note">A leitura serve para comparar os cards entre si. Jogue com responsabilidade e respeite os limites da sua banca.</div></div></div></div><div class="referral-overlay" id="indique" hidden><div class="referral-modal"><button class="referral-close" type="button" aria-label="Fechar" onclick="document.getElementById('indique').hidden=true;">×</button><div class="referral-copy"><h2>Indique o site</h2><p>Apresente aos seus amigos este catálogo de jogos com sinais e indicadores para acompanhar as informações dos seus jogos favoritos.</p><div class="share-link"><input id="siteLink" type="text" readonly><button class="copy-link" id="copyLink" type="button">Copiar</button></div><div class="share-status" id="shareStatus"></div></div></div></div>
         <div class="play-overlay" id="playChoice" hidden><div class="play-modal"><button class="play-close" id="closePlay" type="button" aria-label="Fechar">×</button><div class="play-copy"><h2 id="playTitle">Jogar agora</h2><p>Escolha uma opção para continuar. As quantidades de giros são sugestões aleatórias e não garantem resultado.</p><div class="play-options"><button class="play-option" id="platformOption" type="button">Ir para uma plataforma cadastrada</button><button class="play-option" id="spinOption" type="button">Gerar quantidade de giros</button></div><div class="play-result" id="playResult"></div></div></div></div>
         <div class="bank-overlay" id="gestao-banca" hidden><div class="bank-modal"><button class="bank-close" id="closeBank" type="button" aria-label="Fechar">×</button><h2>Gestão de banca</h2><p>Planeje uma sessão dentro de um limite definido e acompanhe o orçamento disponível.</p><div class="bank-fields"><label>Banca da sessão (R$)<input id="bankInitial" type="number" min="0" step="0.01" placeholder="100,00"></label><label>Limite de perda (R$)<input id="bankLimit" type="number" min="0" step="0.01" placeholder="20,00"></label><label>Valor por giro (R$)<input id="bankStake" type="number" min="0.01" step="0.01" placeholder="0,40"></label><label>Valor utilizado (R$)<input id="bankUsed" type="number" min="0" step="0.01" placeholder="0,00"></label></div><button class="bank-calculate" id="calculateBank" type="button">Calcular sessão</button><div class="bank-result"><div>Saldo restante<strong id="bankBalance">R$ --</strong></div><div>Giros planejados<strong id="bankSpins">--</strong></div><div>Limite de parada<strong id="bankStop">R$ --</strong></div></div><p class="bank-warning">Use somente um valor que você pode perder. Aposta não é investimento.</p></div></div>{% if configuracao.telegram.ativo and configuracao.telegram.link %}<a class="telegram-float" href="{{ configuracao.telegram.link }}" target="_blank" rel="noopener" aria-label="Abrir Telegram">➤</a>{% endif %}<button class="back-top" id="backTop" type="button" aria-label="Voltar ao topo">↑</button>
     </main>
+    <script id="pageData" type="application/json">{{ {"stories": stories_ativas, "plataformas": configuracao.plataformas} | tojson }}</script>
     <script>
+        const pageDataNode = document.getElementById('pageData');
+        const pageData = pageDataNode ? JSON.parse(pageDataNode.textContent || '{}') : {};
+        const stories24h = Array.isArray(pageData.stories) ? pageData.stories : [];
+        const plataformasCadastradas = Array.isArray(pageData.plataformas) ? pageData.plataformas : [];
         const search = document.getElementById('search'), cards = [...document.querySelectorAll('.card')], empty = document.getElementById('empty'), count = document.getElementById('count'); let favorites = false;
         const INTERVALO_SINAIS = 5 * 60 * 1000;
         function filterCards() { const term = search.value.trim().toLowerCase(); let total = 0; cards.forEach((card, index) => { const visible = card.dataset.name.includes(term) && (!favorites || index % 3 === 0); card.style.display = visible ? '' : 'none'; if (visible) total++; }); empty.style.display = total ? 'none' : 'block'; count.textContent = `${total} jogo${total === 1 ? '' : 's'} no catálogo`; }
@@ -97,7 +169,7 @@
         const popup = document.getElementById('launchPopup'); if (popup) document.getElementById('closePopup').addEventListener('click', () => popup.remove()); const how = document.getElementById('como-jogar'); document.getElementById('openHow').addEventListener('click', event => { event.preventDefault(); how.hidden = false; }); document.getElementById('closeHow').addEventListener('click', () => { how.hidden = true; }); how.addEventListener('click', event => { if (event.target === how) how.hidden = true; }); const referral = document.getElementById('indique'); const siteLink = document.getElementById('siteLink'); const shareStatus = document.getElementById('shareStatus'); if (referral) { siteLink.value = window.location.origin; document.getElementById('openReferral').addEventListener('click', event => { event.preventDefault(); referral.hidden = false; }); referral.addEventListener('click', event => { if (event.target === referral) referral.hidden = true; }); document.getElementById('copyLink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(siteLink.value); shareStatus.textContent = 'Link copiado.'; } catch { siteLink.select(); document.execCommand('copy'); shareStatus.textContent = 'Link copiado.'; } }); }
         const bank = document.getElementById('gestao-banca'); document.getElementById('closeBank').addEventListener('click', () => { bank.hidden = true; }); bank.addEventListener('click', event => { if (event.target === bank) bank.hidden = true; }); document.getElementById('calculateBank').addEventListener('click', () => { const initial = Number(document.getElementById('bankInitial').value) || 0, limit = Number(document.getElementById('bankLimit').value) || 0, stake = Number(document.getElementById('bankStake').value) || 0, used = Number(document.getElementById('bankUsed').value) || 0; const balance = Math.max(initial - used, 0), stop = Math.max(initial - limit, 0), spins = stake > 0 ? Math.floor(Math.max(Math.min(balance, limit || balance), 0) / stake) : 0; document.getElementById('bankBalance').textContent = `R$ ${balance.toFixed(2).replace('.', ',')}`; document.getElementById('bankSpins').textContent = spins; document.getElementById('bankStop').textContent = `R$ ${stop.toFixed(2).replace('.', ',')}`; });
         function clock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }); } clock(); setInterval(clock, 60000); atualizarSinais(); setInterval(atualizarSinais, INTERVALO_SINAIS); filterCards();
-        const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasCadastradas = {{ configuracao.plataformas | tojson }}; const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
+        const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
         function escolherPlataformaAleatoria() {
             if (!plataformasValidas.length) return null;
             const indice = Math.floor(Math.random() * plataformasValidas.length);
@@ -120,6 +192,30 @@
         document.getElementById('closePlay').addEventListener('click', () => { playChoice.hidden = true; }); playChoice.addEventListener('click', event => { if (event.target === playChoice) playChoice.hidden = true; });
         document.getElementById('platformOption').addEventListener('click', () => { exibirPlataformaAleatoria(); });
         document.getElementById('spinOption').addEventListener('click', () => { const turbo = Math.floor(Math.random() * 15) + 6, normal = Math.floor(Math.random() * 25) + 10; playResult.textContent = `Sugestão para ${jogoSelecionado}: ${turbo} giros com turbo e ${normal} giros sem turbo.`; });
+        function iniciarFeedbackStories() {
+            const host = document.getElementById('feedbackStories');
+            if (!host || !Array.isArray(stories24h)) return;
+            host.innerHTML = '';
+            stories24h.slice(0, 20).forEach((story, indice) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'feedback-story';
+                btn.title = story.titulo || `Feedback ${indice + 1}`;
+                btn.innerHTML = `<img src="${story.imagem}" alt="${story.titulo || 'Feedback'}">`;
+                btn.addEventListener('click', () => {
+                    const popup = document.getElementById('launchPopup');
+                    if (!popup) return;
+                    const imagem = popup.querySelector('img');
+                    const link = popup.querySelector('.launch-link');
+                    if (imagem) imagem.src = story.imagem;
+                    if (link) link.href = story.link || '#';
+                    if (link) link.textContent = story.botao || 'Acessar';
+                    popup.hidden = false;
+                });
+                host.appendChild(btn);
+            });
+        }
+        iniciarFeedbackStories();
         document.getElementById('backTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     </script>
 </body>
