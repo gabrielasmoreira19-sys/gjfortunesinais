@@ -78,10 +78,28 @@
         const popup = document.getElementById('launchPopup'); if (popup) document.getElementById('closePopup').addEventListener('click', () => popup.remove()); const how = document.getElementById('como-jogar'); document.getElementById('openHow').addEventListener('click', event => { event.preventDefault(); how.hidden = false; }); document.getElementById('closeHow').addEventListener('click', () => { how.hidden = true; }); how.addEventListener('click', event => { if (event.target === how) how.hidden = true; }); const referral = document.getElementById('indique'); const siteLink = document.getElementById('siteLink'); const shareStatus = document.getElementById('shareStatus'); if (referral) { siteLink.value = window.location.origin; document.getElementById('openReferral').addEventListener('click', event => { event.preventDefault(); referral.hidden = false; }); referral.addEventListener('click', event => { if (event.target === referral) referral.hidden = true; }); document.getElementById('copyLink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(siteLink.value); shareStatus.textContent = 'Link copiado.'; } catch { siteLink.select(); document.execCommand('copy'); shareStatus.textContent = 'Link copiado.'; } }); }
         const bank = document.getElementById('gestao-banca'); document.getElementById('closeBank').addEventListener('click', () => { bank.hidden = true; }); bank.addEventListener('click', event => { if (event.target === bank) bank.hidden = true; }); document.getElementById('calculateBank').addEventListener('click', () => { const initial = Number(document.getElementById('bankInitial').value) || 0, limit = Number(document.getElementById('bankLimit').value) || 0, stake = Number(document.getElementById('bankStake').value) || 0, used = Number(document.getElementById('bankUsed').value) || 0; const balance = Math.max(initial - used, 0), stop = Math.max(initial - limit, 0), spins = stake > 0 ? Math.floor(Math.max(Math.min(balance, limit || balance), 0) / stake) : 0; document.getElementById('bankBalance').textContent = `R$ ${balance.toFixed(2).replace('.', ',')}`; document.getElementById('bankSpins').textContent = spins; document.getElementById('bankStop').textContent = `R$ ${stop.toFixed(2).replace('.', ',')}`; });
         function clock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }); } clock(); setInterval(clock, 60000); atualizarSinais(); setInterval(atualizarSinais, INTERVALO_SINAIS); filterCards();
-        const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasCadastradas = {{ configuracao.plataformas | tojson }}; let jogoSelecionado = '';
-        document.querySelectorAll('.play').forEach(button => button.addEventListener('click', event => { jogoSelecionado = event.currentTarget.dataset.name || 'este jogo'; playTitle.textContent = `Jogar ${jogoSelecionado}`; playResult.textContent = ''; playChoice.hidden = false; }));
+        const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasCadastradas = {{ configuracao.plataformas | tojson }}; const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
+        function escolherPlataformaAleatoria() {
+            if (!plataformasValidas.length) return null;
+            const indice = Math.floor(Math.random() * plataformasValidas.length);
+            return plataformasValidas[indice];
+        }
+        function exibirPlataformaAleatoria() {
+            const plataforma = escolherPlataformaAleatoria();
+            playResult.innerHTML = plataforma
+                ? `Plataforma selecionada: <a href="${plataforma.link}" target="_blank" rel="noopener">abrir plataforma</a>`
+                : 'Nenhuma plataforma foi cadastrada no painel.';
+        }
+        document.querySelectorAll('.play').forEach(button => button.addEventListener('click', event => {
+            const card = event.currentTarget.closest('.card');
+            const nomeJogo = card ? card.querySelector('h3')?.textContent?.trim() : '';
+            jogoSelecionado = nomeJogo || 'este jogo';
+            playTitle.textContent = `Jogar ${jogoSelecionado}`;
+            playChoice.hidden = false;
+            exibirPlataformaAleatoria();
+        }));
         document.getElementById('closePlay').addEventListener('click', () => { playChoice.hidden = true; }); playChoice.addEventListener('click', event => { if (event.target === playChoice) playChoice.hidden = true; });
-        document.getElementById('platformOption').addEventListener('click', () => { const plataforma = plataformasCadastradas.find(item => item.link); playResult.innerHTML = plataforma ? `Plataforma selecionada: <a href="${plataforma.link}" target="_blank" rel="noopener">abrir plataforma</a>` : 'Nenhuma plataforma foi cadastrada no painel.'; });
+        document.getElementById('platformOption').addEventListener('click', () => { exibirPlataformaAleatoria(); });
         document.getElementById('spinOption').addEventListener('click', () => { const turbo = Math.floor(Math.random() * 15) + 6, normal = Math.floor(Math.random() * 25) + 10; playResult.textContent = `Sugestão para ${jogoSelecionado}: ${turbo} giros com turbo e ${normal} giros sem turbo.`; });
         document.getElementById('backTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     </script>
