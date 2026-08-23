@@ -50,6 +50,25 @@
         .bank-close { position:absolute; top:10px; right:10px; display:grid; place-items:center; width:30px; height:30px; border:1px solid #fff8; border-radius:50%; background:#160e20cc; color:#fff; cursor:pointer; font-size:18px; }
         @media(max-width:520px) { .bank-fields { grid-template-columns:1fr; } .bank-result { grid-template-columns:1fr; } }
     </style>
+    <style>
+        .play-result-note { margin:0 0 10px; color:#d8cce6; font-size:12px; }
+        .play-open-link {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            width:100%;
+            padding:12px 14px;
+            border:1px solid var(--gold);
+            border-radius:8px;
+            background:linear-gradient(180deg,var(--gold-2),var(--gold));
+            color:#2a1d0e;
+            font-weight:800;
+            text-transform:uppercase;
+            letter-spacing:.3px;
+            box-shadow:0 8px 18px #0005;
+        }
+        .play-open-link:hover { filter:brightness(1.05); transform:translateY(-1px); }
+    </style>
 </head>
 <body>
     <header class="top"><div class="top-in"><a class="icon-btn" href="#catalogo" aria-label="Início">⌂</a><a class="icon-btn" href="{{ configuracao.telegram.link if configuracao.telegram.ativo else '#lancamentos' }}" aria-label="Telegram">➤</a><a class="brand" href="#topo"><span class="brand-mark">GJ</span><span>GJFORTUNESINAIS</span></a><div class="timer">GJFORTUNESINAIS - Atualização em <b>05:00</b></div><button class="icon-btn" type="button" aria-label="Mensagens">▣</button><button class="icon-btn vip" type="button" aria-label="VIP">VIP</button></div></header>
@@ -87,7 +106,7 @@
         function exibirPlataformaAleatoria() {
             const plataforma = escolherPlataformaAleatoria();
             playResult.innerHTML = plataforma
-                ? `Plataforma selecionada: <a href="${plataforma.link}" target="_blank" rel="noopener">abrir plataforma</a>`
+                ? `<p class="play-result-note">Plataforma sugerida para ${jogoSelecionado}:</p><a class="play-open-link" href="${plataforma.link}" target="_blank" rel="noopener">Abrir Plataforma Agora</a>`
                 : 'Nenhuma plataforma foi cadastrada no painel.';
         }
         document.querySelectorAll('.play').forEach(button => button.addEventListener('click', event => {
