@@ -15,20 +15,6 @@
     <style>
         :root { --bg:#171522; --panel:#33294b; --panel-2:#493967; --pink:#9d7bd2; --pink-2:#c2a6f0; --gold:#d9a441; --gold-2:#f4d47e; --text:#fbf9ff; --muted:#c1b9d0; --green:#6fd1a1; --red:#e87979; }
         * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; color:var(--text); font-family:'DM Sans',sans-serif; background:radial-gradient(circle at 15% -10%,#4b3a66 0,transparent 34%),linear-gradient(120deg,#171522,#211b2e 50%,#111119); } a { color:inherit; text-decoration:none; } button,input { font:inherit; }
-        <style>
-            .story-strip { display:flex; gap:10px; margin-top:12px; overflow:auto; padding-bottom:2px; }
-            .story-chip { flex:0 0 auto; width:56px; text-align:center; cursor:pointer; }
-            .story-avatar { width:56px; height:56px; border-radius:50%; padding:2px; background:linear-gradient(145deg,#f4d47e,#9d7bd2); }
-            .story-avatar img { width:100%; height:100%; border-radius:50%; border:2px solid #201a2e; object-fit:cover; }
-            .story-name { margin-top:4px; color:#d8cee8; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-            .story-overlay { position:fixed; inset:0; z-index:50; display:grid; place-items:center; padding:16px; background:#08060de3; }
-            .story-overlay[hidden] { display:none !important; }
-            .story-modal { position:relative; width:min(420px,100%); border:1px solid #7c66a3; border-radius:12px; background:#181324; overflow:hidden; }
-            .story-close { position:absolute; top:8px; right:8px; z-index:2; width:32px; height:32px; border:1px solid #ffffff80; border-radius:50%; background:#110b18cc; color:#fff; cursor:pointer; }
-            .story-image { width:100%; aspect-ratio:9/16; object-fit:cover; display:block; }
-            .story-cta-wrap { padding:12px; }
-            .story-cta { display:inline-flex; width:100%; justify-content:center; padding:12px 14px; border:1px solid var(--gold); border-radius:8px; background:linear-gradient(180deg,var(--gold-2),var(--gold)); color:#2a1d0e; font-weight:800; text-transform:uppercase; }
-        </style>
         .top { position:sticky; top:0; z-index:10; border-bottom:1px solid #55466f; background:rgba(23,21,34,.96); backdrop-filter:blur(12px); } .top-in { display:flex; align-items:center; gap:12px; width:min(1240px,calc(100% - 30px)); min-height:76px; margin:auto; } .icon-btn { display:grid; place-items:center; width:40px; height:40px; border:1px solid #665987; border-radius:7px; background:#2b2440; color:#fff; cursor:pointer; font-weight:700; } .brand { display:flex; align-items:center; gap:9px; margin-right:auto; font-family:'Barlow Condensed',sans-serif; font-size:29px; font-style:italic; font-weight:800; text-shadow:0 2px #40305f; } .brand-mark { display:grid; place-items:center; width:35px; height:35px; border:2px solid var(--gold); border-radius:8px; color:var(--gold-2); font-family:'DM Sans',sans-serif; font-size:10px; font-style:normal; } .timer { width:min(430px,44vw); padding:13px 20px; border:1px solid #6b5990; border-radius:7px; background:linear-gradient(90deg,#554276,#332a4a); text-align:center; font-size:13px; font-weight:700; } .timer b { color:var(--gold-2); } .vip { border-color:#a67d2d; color:var(--gold-2); }
         .main { width:min(1240px,calc(100% - 30px)); margin:auto; } .heading { display:flex; align-items:center; justify-content:center; gap:14px; padding:25px 0 16px; text-align:center; } .heading h1 { margin:0; font-family:'Barlow Condensed',sans-serif; font-size:25px; text-transform:uppercase; } .heading p { margin:4px 0 0; color:var(--muted); font-size:13px; } .crown { color:var(--gold); font-size:20px; }
         .platforms { overflow:hidden; border:1px solid #665487; border-radius:9px; background:linear-gradient(135deg,#40335b,#29243d); box-shadow:0 14px 38px #0005; } .platform-showcase { display:flex; justify-content:center; gap:28px; padding:18px 16px 14px; overflow:auto; perspective:700px; } .platform-card { position:relative; display:flex; flex:0 0 auto; align-items:center; justify-content:center; min-height:64px; border:0; border-radius:0; background:transparent; box-shadow:none; transform-style:preserve-3d; animation:platformFloat 3.8s ease-in-out infinite; } .platform-card:after { display:none; } .platform-card:nth-child(2) { animation-delay:.7s; } .platform-card:nth-child(3) { animation-delay:1.4s; } .platform-card:nth-child(4) { animation-delay:2.1s; } .platform-card:nth-child(5) { animation-delay:2.8s; } .platform-card:hover { animation-play-state:paused; transform:rotateX(4deg) rotateY(-7deg) translateY(-5px) translateZ(8px); } .platform-card img { display:block; width:auto; height:auto; max-width:150px; max-height:64px; border-radius:7px; object-fit:contain; transform:translateZ(14px); filter:drop-shadow(0 6px 4px #0009); } .platform-card span { color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:700; letter-spacing:.4px; transform:translateZ(14px); } .platform-row { display:flex; justify-content:center; gap:26px; padding:11px 15px; overflow:auto; border-top:1px solid #62527d; } .platform { display:flex; align-items:center; flex:0 0 auto; padding:4px 0; border:0; border-radius:0; background:transparent; color:#e5e0ee; cursor:pointer; font-size:12px; font-weight:700; } .platform:hover { color:var(--gold-2); } .platform.active { color:var(--gold-2); } .platform-icon { display:none; } @keyframes platformFloat { 0%,100% { transform:translateY(0) rotateX(0); } 50% { transform:translateY(-5px) rotateX(2deg); } }
@@ -111,7 +97,7 @@
         const popup = document.getElementById('launchPopup'); if (popup) document.getElementById('closePopup').addEventListener('click', () => popup.remove()); const how = document.getElementById('como-jogar'); document.getElementById('openHow').addEventListener('click', event => { event.preventDefault(); how.hidden = false; }); document.getElementById('closeHow').addEventListener('click', () => { how.hidden = true; }); how.addEventListener('click', event => { if (event.target === how) how.hidden = true; }); const referral = document.getElementById('indique'); const siteLink = document.getElementById('siteLink'); const shareStatus = document.getElementById('shareStatus'); if (referral) { siteLink.value = window.location.origin; document.getElementById('openReferral').addEventListener('click', event => { event.preventDefault(); referral.hidden = false; }); referral.addEventListener('click', event => { if (event.target === referral) referral.hidden = true; }); document.getElementById('copyLink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(siteLink.value); shareStatus.textContent = 'Link copiado.'; } catch { siteLink.select(); document.execCommand('copy'); shareStatus.textContent = 'Link copiado.'; } }); }
         const bank = document.getElementById('gestao-banca'); document.getElementById('closeBank').addEventListener('click', () => { bank.hidden = true; }); bank.addEventListener('click', event => { if (event.target === bank) bank.hidden = true; }); document.getElementById('calculateBank').addEventListener('click', () => { const initial = Number(document.getElementById('bankInitial').value) || 0, limit = Number(document.getElementById('bankLimit').value) || 0, stake = Number(document.getElementById('bankStake').value) || 0, used = Number(document.getElementById('bankUsed').value) || 0; const balance = Math.max(initial - used, 0), stop = Math.max(initial - limit, 0), spins = stake > 0 ? Math.floor(Math.max(Math.min(balance, limit || balance), 0) / stake) : 0; document.getElementById('bankBalance').textContent = `R$ ${balance.toFixed(2).replace('.', ',')}`; document.getElementById('bankSpins').textContent = spins; document.getElementById('bankStop').textContent = `R$ ${stop.toFixed(2).replace('.', ',')}`; });
         function clock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }); } clock(); setInterval(clock, 60000); atualizarSinais(); setInterval(atualizarSinais, INTERVALO_SINAIS); filterCards();
-            const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasCadastradas = {{ configuracao.plataformas | tojson }}; const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); const stories24h = {{ stories_ativas | tojson }}; let jogoSelecionado = '';
+        const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasCadastradas = {{ configuracao.plataformas | tojson }}; const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
         function escolherPlataformaAleatoria() {
             if (!plataformasValidas.length) return null;
             const indice = Math.floor(Math.random() * plataformasValidas.length);
@@ -134,44 +120,6 @@
         document.getElementById('closePlay').addEventListener('click', () => { playChoice.hidden = true; }); playChoice.addEventListener('click', event => { if (event.target === playChoice) playChoice.hidden = true; });
         document.getElementById('platformOption').addEventListener('click', () => { exibirPlataformaAleatoria(); });
         document.getElementById('spinOption').addEventListener('click', () => { const turbo = Math.floor(Math.random() * 15) + 6, normal = Math.floor(Math.random() * 25) + 10; playResult.textContent = `Sugestão para ${jogoSelecionado}: ${turbo} giros com turbo e ${normal} giros sem turbo.`; });
-            function inicializarStories24h() {
-                if (!Array.isArray(stories24h) || !stories24h.length) return;
-                const recent = document.querySelector('.recent');
-                if (!recent) return;
-                const strip = document.createElement('div');
-                strip.className = 'story-strip';
-                stories24h.forEach((story, index) => {
-                    const chip = document.createElement('button');
-                    chip.type = 'button';
-                    chip.className = 'story-chip';
-                    chip.innerHTML = `<span class="story-avatar"><img src="${story.imagem}" alt="${story.titulo || 'Story'}"></span><span class="story-name">${story.titulo || `Story ${index + 1}`}</span>`;
-                    chip.addEventListener('click', () => abrirStory(story));
-                    strip.appendChild(chip);
-                });
-                recent.appendChild(strip);
-
-                const overlay = document.createElement('div');
-                overlay.className = 'story-overlay';
-                overlay.id = 'storyOverlay24h';
-                overlay.hidden = true;
-                overlay.innerHTML = '<div class="story-modal"><button class="story-close" type="button" aria-label="Fechar">×</button><img class="story-image" alt="Story"><div class="story-cta-wrap"></div></div>';
-                document.body.appendChild(overlay);
-
-                const closeStory = () => { overlay.hidden = true; };
-                overlay.querySelector('.story-close').addEventListener('click', closeStory);
-                overlay.addEventListener('click', event => { if (event.target === overlay) closeStory(); });
-            }
-            function abrirStory(story) {
-                const overlay = document.getElementById('storyOverlay24h');
-                if (!overlay) return;
-                const image = overlay.querySelector('.story-image');
-                const wrap = overlay.querySelector('.story-cta-wrap');
-                image.src = story.imagem;
-                image.alt = story.titulo || 'Story';
-                wrap.innerHTML = story.link ? `<a class="story-cta" href="${story.link}" target="_blank" rel="noopener">Abrir Plataforma</a>` : '<span class="story-cta">Sem link cadastrado</span>';
-                overlay.hidden = false;
-            }
-            inicializarStories24h();
         document.getElementById('backTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     </script>
 </body>
