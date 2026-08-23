@@ -62,6 +62,7 @@ FAIXAS_INDICATIVAS = (
 CONFIG_PADRAO = {
 	"banner": {"ativo": True, "titulo": "GJFORTUNESINAIS", "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.", "imagem": "", "link": "#catalogo"},
 	"popup": {"ativo": False, "titulo": "Novidade no catálogo", "texto": "Confira os lançamentos mais recentes.", "imagem": "", "link": "#lancamentos", "botao": "Ver lançamentos"},
+	"popup_2": {"ativo": False, "titulo": "Nova plataforma", "texto": "Confira a segunda oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
 	"telegram": {"ativo": True, "nome": "Telegram", "link": "https://t.me/"},
 	"plataformas": [],
 	"stories": [],
@@ -138,6 +139,16 @@ def filtrar_stories_ativas(stories):
 	return ativas
 
 
+def imagem_config_disponivel(imagem_url):
+	imagem = str(imagem_url or "").strip()
+	if not imagem:
+		return False
+	if imagem.startswith("/admin/uploads/"):
+		nome = imagem.rsplit("/", 1)[-1]
+		return (ADMIN_UPLOADS_DIR / nome).is_file()
+	return True
+
+
 def administrador_logado():
 	return session.get("admin_logado") is True
 
@@ -187,6 +198,14 @@ def salvar_admin():
 		"link": request.form.get("popup_link", "#lancamentos").strip(),
 		"botao": request.form.get("popup_botao", "Ver lançamentos").strip(),
 	}
+	configuracao["popup_2"] = {
+		"ativo": request.form.get("popup2_ativo") == "on",
+		"titulo": request.form.get("popup2_titulo", "").strip(),
+		"texto": request.form.get("popup2_texto", "").strip(),
+		"imagem": salvar_upload("popup2_imagem") or request.form.get("popup2_imagem_url", "").strip() or request.form.get("popup2_imagem_atual", "").strip(),
+		"link": request.form.get("popup2_link", "#lancamentos").strip(),
+		"botao": request.form.get("popup2_botao", "Entrar agora").strip(),
+	}
 	configuracao["telegram"] = {
 		"ativo": request.form.get("telegram_ativo") == "on",
 		"nome": request.form.get("telegram_nome", "Telegram").strip(),
@@ -200,7 +219,7 @@ def salvar_admin():
 			plataformas.append({"link": link, "imagem": imagem})
 	configuracao["plataformas"] = plataformas
 	stories = []
-	for indice in range(8):
+	for indice in range(20):
 		titulo = request.form.get(f"story_titulo_{indice}", "Story").strip() or "Story"
 		link = request.form.get(f"story_link_{indice}", "").strip()
 		imagem = (
@@ -366,6 +385,21 @@ def index():
 	preparar_faixas_indicativas(catalogo)
 	configuracao = carregar_configuracao()
 	stories_ativas = filtrar_stories_ativas(configuracao.get("stories", []))
+	popups_ativos = []
+	for chave in ("popup", "popup_2"):
+		popup = configuracao.get(chave, {})
+		imagem = str(popup.get("imagem", "")).strip()
+		if popup.get("ativo") and imagem:
+			popups_ativos.append(
+				{
+					"titulo": str(popup.get("titulo", "")).strip(),
+					"texto": str(popup.get("texto", "")).strip(),
+					"imagem": imagem,
+					"link": str(popup.get("link", "")).strip() or "#",
+					"botao": str(popup.get("botao", "Entrar agora")).strip() or "Entrar agora",
+				}
+			)
+	popup_entrada = random.choice(popups_ativos) if popups_ativos else None
 	lancamentos = [
 		jogo for jogo in catalogo.get("pg", [])
 		if str(jogo.get("id", "")).startswith("pg-")
@@ -378,6 +412,7 @@ def index():
 		lancamentos=lancamentos,
 		configuracao=configuracao,
 		stories_ativas=stories_ativas,
+		popup_entrada=popup_entrada,
 	)
 
 
