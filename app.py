@@ -61,6 +61,7 @@ FAIXAS_INDICATIVAS = (
 )
 CONFIG_PADRAO = {
 	"banner": {"ativo": True, "titulo": "GJFORTUNESINAIS", "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.", "imagem": "", "link": "#catalogo"},
+	"tema": {"fundo_ativo": False, "fundo_imagem": "", "favicon_emoji": "🎰"},
 	"popup": {"ativo": False, "titulo": "Novidade no catálogo", "texto": "Confira os lançamentos mais recentes.", "imagem": "", "link": "#lancamentos", "botao": "Ver lançamentos"},
 	"popup_2": {"ativo": False, "titulo": "Nova plataforma", "texto": "Confira a segunda oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
 	"popup_3": {"ativo": False, "titulo": "Oferta especial", "texto": "Confira a terceira oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
@@ -107,7 +108,13 @@ def carregar_configuracao():
 			json.dump(CONFIG_PADRAO, arquivo, ensure_ascii=False, indent=4)
 	with CONFIG_PATH.open(encoding="utf-8") as arquivo:
 		configuracao = json.load(arquivo)
-	return {**CONFIG_PADRAO, **configuracao}
+	combinada = {**CONFIG_PADRAO, **configuracao}
+	for chave, valor_padrao in CONFIG_PADRAO.items():
+		if isinstance(valor_padrao, dict):
+			valor_atual = combinada.get(chave, {})
+			if isinstance(valor_atual, dict):
+				combinada[chave] = {**valor_padrao, **valor_atual}
+	return combinada
 
 
 def salvar_configuracao(configuracao):
@@ -190,6 +197,11 @@ def salvar_admin():
 		"texto": request.form.get("banner_texto", "").strip(),
 		"imagem": salvar_upload("banner_imagem") or request.form.get("banner_imagem_url", "").strip() or request.form.get("banner_imagem_atual", "").strip(),
 		"link": request.form.get("banner_link", "#catalogo").strip(),
+	}
+	configuracao["tema"] = {
+		"fundo_ativo": request.form.get("tema_fundo_ativo") == "on",
+		"fundo_imagem": salvar_upload("tema_fundo_imagem") or request.form.get("tema_fundo_imagem_url", "").strip() or request.form.get("tema_fundo_imagem_atual", "").strip(),
+		"favicon_emoji": request.form.get("tema_favicon_emoji", "🎰").strip() or "🎰",
 	}
 	configuracao["popup"] = {
 		"ativo": request.form.get("popup_ativo") == "on",

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GJFORTUNESINAIS | Sinais de jogos</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E{{ configuracao.tema.favicon_emoji|default('🎰')|urlencode }}%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -152,8 +153,49 @@
         .hero-carousel:hover .hero-track { animation-play-state:paused; }
         .platform-dance { margin-top:12px; overflow:hidden; border:1px solid #665487; border-radius:9px; background:linear-gradient(135deg,#3a2f55,#272038); box-shadow:0 12px 30px #0004; }
         .platform-dance .platform-showcase { padding:12px 14px; }
+        .card .info {
+            position:relative;
+            overflow:hidden;
+            background:linear-gradient(180deg,rgba(69,55,99,.32),rgba(40,29,60,.55));
+            backdrop-filter:blur(12px);
+            border-top:1px solid #ffffff2a;
+        }
+        .card .info::before {
+            content:'';
+            position:absolute;
+            inset:0;
+            background-image:var(--slot-cover);
+            background-size:cover;
+            background-position:center;
+            filter:blur(10px) saturate(1.2);
+            transform:scale(1.12);
+            opacity:.32;
+            z-index:0;
+        }
+        .card .info > * { position:relative; z-index:1; }
         @keyframes heroSlide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     </style>
+    {% if configuracao.tema.fundo_ativo and configuracao.tema.fundo_imagem %}
+    <style>
+        body::before {
+            content:'';
+            position:fixed;
+            inset:0;
+            z-index:-2;
+            background:url('{{ configuracao.tema.fundo_imagem }}') center/cover no-repeat;
+            filter:blur(10px) saturate(1.15);
+            transform:scale(1.06);
+            opacity:.4;
+        }
+        body::after {
+            content:'';
+            position:fixed;
+            inset:0;
+            z-index:-1;
+            background:linear-gradient(120deg,rgba(23,21,34,.86),rgba(33,27,46,.92) 50%,rgba(17,17,25,.88));
+        }
+    </style>
+    {% endif %}
 </head>
 <body>
     <header class="top"><div class="top-in"><a class="icon-btn" href="#catalogo" aria-label="Início">⌂</a><a class="icon-btn" href="{{ configuracao.telegram.link if configuracao.telegram.ativo else '#lancamentos' }}" aria-label="Telegram">➤</a><a class="brand" href="#topo"><span class="brand-mark">GJ</span><span>GJFORTUNESINAIS</span></a><div class="timer">GJFORTUNESINAIS - Atualização em <b id="countdownTop">05:00</b></div><button class="icon-btn" type="button" aria-label="Mensagens">▣</button><button class="icon-btn vip" type="button" aria-label="VIP">VIP</button></div></header>
@@ -192,6 +234,19 @@
         const INTERVALO_SINAIS = 5 * 60 * 1000;
         let cicloProcessado = Math.floor(Date.now() / INTERVALO_SINAIS);
         let atualizandoSinais = false;
+        function atualizarFundoTranslucidoCards() {
+            cards.forEach(card => {
+                const capa = card.querySelector('.cover img');
+                if (!capa) return;
+                const aplicar = () => {
+                    const url = capa.currentSrc || capa.src || '';
+                    if (!url) return;
+                    card.style.setProperty('--slot-cover', `url("${url}")`);
+                };
+                if (capa.complete) aplicar();
+                else capa.addEventListener('load', aplicar, { once: true });
+            });
+        }
         function filterCards() { const term = search.value.trim().toLowerCase(); let total = 0; cards.forEach((card, index) => { const visible = card.dataset.name.includes(term) && (!favorites || index % 3 === 0); card.style.display = visible ? '' : 'none'; if (visible) total++; }); empty.style.display = total ? 'none' : 'block'; count.textContent = `${total} jogo${total === 1 ? '' : 's'} no catálogo`; }
         search.addEventListener('input', filterCards); document.getElementById('fav').addEventListener('click', event => { favorites = !favorites; event.currentTarget.style.color = favorites ? 'var(--gold-2)' : ''; filterCards(); });
         function atualizarCor(barra, valor) { barra.classList.remove('status-green', 'status-yellow', 'status-red'); barra.classList.add(valor >= 70 ? 'status-green' : valor >= 40 ? 'status-yellow' : 'status-red'); }
@@ -207,6 +262,7 @@
             });
             ordenados.forEach(card => grid.appendChild(card));
             cards = [...grid.querySelectorAll('.card')];
+            atualizarFundoTranslucidoCards();
         }
         async function atualizarSinais() {
             if (atualizandoSinais) return;
@@ -273,6 +329,7 @@
         atualizarContagemTopo();
         setInterval(clock, 60000);
         setInterval(atualizarContagemTopo, 1000);
+        atualizarFundoTranslucidoCards();
         atualizarSinais();
         filterCards();
         const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';

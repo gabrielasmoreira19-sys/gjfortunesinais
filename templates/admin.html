@@ -257,6 +257,22 @@
                 <label class="check"><input type="checkbox" name="banner_ativo" {% if configuracao.banner.ativo %}checked{% endif %}> Exibir banner</label>
             </section>
 
+            <section class="panel">
+                <h2>Aparência do site</h2>
+                <p class="hint">Aqui você define ícone no navegador e imagem de fundo roxa com efeito desfocado/translúcido.</p>
+                <div class="panel-grid">
+                    <label>Emoji do navegador (favicon)
+                        <input name="tema_favicon_emoji" value="{{ configuracao.tema.favicon_emoji }}" placeholder="🎰">
+                    </label>
+                    <label>Imagem de fundo do site
+                        <input type="file" name="tema_fundo_imagem" accept="image/*">
+                        <input type="hidden" name="tema_fundo_imagem_atual" value="{{ configuracao.tema.fundo_imagem }}">
+                        <input name="tema_fundo_imagem_url" value="{{ configuracao.tema.fundo_imagem }}" placeholder="URL da imagem">
+                    </label>
+                </div>
+                <label class="check"><input type="checkbox" name="tema_fundo_ativo" {% if configuracao.tema.fundo_ativo %}checked{% endif %}> Ativar fundo desfocado/translúcido</label>
+            </section>
+
             <section class="panel" data-popup-order="1">
                 <h2>Pop-up de lançamento</h2>
                 <p class="hint">Dica: prefira usar URL da imagem (https://...) para evitar perder a foto após novo deploy.</p>
@@ -631,12 +647,13 @@
         if (event.target === overlay) fecharEditor();
     });
 
-    function controlarListaProgressiva(selector, addBtnId, minimoVisivel) {
+    function controlarListaProgressiva(selector, addBtnId, minimoVisivel, detectorPreenchido) {
         const rows = [...document.querySelectorAll(selector)];
         const addBtn = document.getElementById(addBtnId);
         if (!rows.length || !addBtn) return;
 
         const preenchidas = rows.filter(row => {
+            if (typeof detectorPreenchido === 'function') return detectorPreenchido(row);
             return [...row.querySelectorAll('input, textarea')].some(input => String(input.value || '').trim());
         }).length;
         let visiveis = Math.max(minimoVisivel, preenchidas || 0);
@@ -663,7 +680,9 @@
         let visiveis = 0;
         extras.forEach((panel, index) => {
             const ativo = panel.querySelector('input[type="checkbox"]')?.checked;
-            const temDados = [...panel.querySelectorAll('input, textarea')].some(input => String(input.value || '').trim());
+            const imagem = panel.querySelector('input[name$="_imagem_url"]')?.value?.trim() || panel.querySelector('input[name$="_imagem_atual"]')?.value?.trim() || '';
+            const link = panel.querySelector('input[name$="_link"]')?.value?.trim() || '';
+            const temDados = Boolean(imagem) || (link && link !== '#lancamentos');
             if (ativo || temDados) visiveis = index + 1;
         });
 
@@ -680,8 +699,16 @@
         render();
     }
 
-    controlarListaProgressiva('[data-story-row="true"]', 'addStoryBtn', 3);
-    controlarListaProgressiva('[data-platform-row="true"]', 'addPlatformBtn', 4);
+    controlarListaProgressiva('[data-story-row="true"]', 'addStoryBtn', 3, row => {
+        const link = row.querySelector('input[name^="story_link_"]')?.value?.trim() || '';
+        const imagem = row.querySelector('input[name^="story_imagem_url_"]')?.value?.trim() || row.querySelector('input[name^="story_imagem_atual_"]')?.value?.trim() || '';
+        return Boolean(link || imagem);
+    });
+    controlarListaProgressiva('[data-platform-row="true"]', 'addPlatformBtn', 4, row => {
+        const link = row.querySelector('input[name^="plataforma_link_"]')?.value?.trim() || '';
+        const imagem = row.querySelector('input[name^="plataforma_imagem_url_"]')?.value?.trim() || row.querySelector('input[name^="plataforma_imagem_atual_"]')?.value?.trim() || '';
+        return Boolean(link || imagem);
+    });
     controlarPopups();
 })();
 </script>
