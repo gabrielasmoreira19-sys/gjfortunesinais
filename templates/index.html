@@ -135,6 +135,14 @@
         .feedback-stories { display:flex; gap:11px; overflow:auto; padding-bottom:2px; }
         .feedback-story { flex:0 0 auto; display:grid; place-items:center; width:56px; height:56px; border:2px solid #f0c96a; border-radius:50%; background:#241a36; cursor:pointer; }
         .feedback-story img { width:48px; height:48px; border-radius:50%; object-fit:cover; }
+        .story-viewer-overlay { position:fixed; inset:0; z-index:48; display:grid; place-items:center; padding:14px; background:#08060de8; }
+        .story-viewer-overlay[hidden] { display:none !important; }
+        .story-viewer-modal { position:relative; width:min(420px,95vw); border:1px solid #f0c96a; border-radius:14px; overflow:hidden; background:#130f1d; box-shadow:0 24px 60px #000a; }
+        .story-viewer-image { display:block; width:100%; max-height:78vh; object-fit:contain; background:#0f0c17; }
+        .story-viewer-toolbar { display:flex; align-items:center; gap:8px; padding:10px; background:#130f1d; }
+        .story-viewer-link { flex:1; display:inline-flex; justify-content:center; align-items:center; padding:11px 12px; border:1px solid var(--gold); border-radius:8px; background:linear-gradient(180deg,var(--gold-2),var(--gold)); color:#2a1d0e; font-weight:800; text-transform:uppercase; letter-spacing:.3px; }
+        .story-viewer-nav { display:inline-grid; place-items:center; width:34px; height:34px; border:1px solid #ffffff40; border-radius:7px; background:#241c35; color:#fff; cursor:pointer; }
+        .story-viewer-close { position:absolute; top:10px; right:10px; width:34px; height:34px; border:1px solid #ffffffaa; border-radius:50%; background:#0c0914c7; color:#fff; cursor:pointer; font-size:22px; line-height:1; z-index:2; }
         .hero-carousel { overflow:hidden; border:1px solid #665487; border-radius:10px; background:linear-gradient(135deg,#40335b,#29243d); box-shadow:0 14px 38px #0005; }
         .hero-track { display:flex; gap:14px; width:max-content; padding:18px 14px; animation:heroSlide 38s linear infinite; }
         .hero-card { flex:0 0 auto; width:min(270px,64vw); height:150px; border:1px solid #ffffff26; border-radius:12px; overflow:hidden; background:#1f1830; box-shadow:0 8px 20px #0005; }
@@ -154,6 +162,17 @@
         <div class="catalog-title" id="catalogo"><h2>Todos os jogos</h2><p id="count">Catálogo PG Soft · faixas indicativas</p></div><section class="grid" id="gridJogos">{% for jogo in dados.pg %}<article class="card" id="jogo-{{ jogo.id }}" data-name="{{ jogo.nome | lower }}"><div class="cover"><img src="/api/capa/{{ jogo.id }}" alt="Capa de {{ jogo.nome }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x560/371044/f3b83f?text={{ jogo.nome | urlencode }}';"><div class="distribution"><span>Distribuição: <strong>{{ 99 - loop.index0 % 8 }}%</strong></span><span class="heart">♡</span></div>{% if jogo.id.startswith('pg-') or jogo.id.startswith('200') %}<span class="new">Novo</span>{% endif %}</div><div class="info"><h3 title="{{ jogo.nome }}">{{ jogo.nome }}</h3><div class="metric"><div class="metric-line"><span>Padrão</span><strong>{{ 35 + (loop.index0 * 7) % 45 }}%</strong></div><div class="track"><div class="fill" style="width:{{ 35 + (loop.index0 * 7) % 45 }}%"></div></div></div><div class="metric"><div class="metric-line"><span>Mínima</span><strong>{{ 12 + (loop.index0 * 5) % 78 }}%</strong></div><div class="track"><div class="fill green" style="width:{{ 12 + (loop.index0 * 5) % 78 }}%"></div></div></div><div class="metric"><div class="metric-line"><span>Máxima</span><strong>{{ 38 + (loop.index0 * 9) % 58 }}%</strong></div><div class="track"><div class="fill red" style="width:{{ 38 + (loop.index0 * 9) % 58 }}%"></div></div></div><div class="wins">Faixa de aposta</div><div class="bets"><div class="bet">MÍNIMA<strong>{{ jogo.get('exibir_min','0,40') }}</strong></div><div class="bet">PADRÃO<strong>{{ jogo.get('exibir_pad','2,00') }}</strong></div><div class="bet">MÁXIMA<strong>{{ jogo.get('exibir_max','100,00') }}</strong></div></div><div class="range"><span>PADRÃO</span><strong>R$ {{ jogo.get('exibir_pad','2,00') }}</strong></div><div class="range"><span>MÁXIMA</span><strong>R$ {{ jogo.get('exibir_max','100,00') }}</strong></div><div class="actions"><button class="play" type="button" data-id="{{ jogo.id }}">Jogar agora</button><button class="demo" type="button" data-id="{{ jogo.id }}">Demo</button></div><div class="analysis" id="analysis-{{ jogo.id }}"><div class="metric-line"><span>Leitura estatística</span><strong id="score-{{ jogo.id }}">--%</strong></div><div class="track"><div class="fill" id="bar-{{ jogo.id }}"></div></div></div></div></article>{% endfor %}<div class="empty" id="empty">Nenhum jogo encontrado.</div></section>
         <footer class="responsible-banner" id="responsabilidade" aria-label="Jogo responsável"><div class="responsible-heading"><div class="responsible-icon">18+</div><div><strong>Jogo responsável</strong><span>Informação de responsabilidade social</span></div></div><div class="responsible-item"><b>Proibido para menores</b>Apostas são permitidas somente para maiores de 18 anos.</div><div class="responsible-item"><b>Jogue com responsabilidade</b>Não use dinheiro de compromissos, contas ou necessidades básicas.</div><div class="responsible-item"><b>Aposta não é investimento</b>Não há garantia de retorno ou de lucro.</div><p class="responsible-note">Os indicadores e as faixas exibidos neste catálogo são demonstrativos e não preveem nem garantem o resultado de nenhuma rodada. Comunicação alinhada aos princípios de jogo responsável.</p></footer>
         {% if popup_entrada and popup_entrada.imagem %}<div class="launch-overlay" id="launchPopup"><div class="launch-modal story-format"><button class="launch-close" id="closePopup" type="button" aria-label="Fechar">×</button><img src="{{ popup_entrada.imagem }}" alt="Pop-up da plataforma" loading="eager"><div class="launch-copy"><a class="launch-link" href="{{ popup_entrada.link }}" target="_blank" rel="noopener">{{ popup_entrada.botao or 'Entrar na plataforma' }}</a></div></div></div>{% endif %}
+        <div class="story-viewer-overlay" id="storyViewer" hidden>
+            <div class="story-viewer-modal">
+                <button class="story-viewer-close" id="storyViewerClose" type="button" aria-label="Fechar story">×</button>
+                <img class="story-viewer-image" id="storyViewerImage" alt="Story">
+                <div class="story-viewer-toolbar">
+                    <button class="story-viewer-nav" id="storyPrev" type="button" aria-label="Story anterior">‹</button>
+                    <a class="story-viewer-link" id="storyViewerLink" href="#" target="_blank" rel="noopener">Abrir link</a>
+                    <button class="story-viewer-nav" id="storyNext" type="button" aria-label="Próximo story">›</button>
+                </div>
+            </div>
+        </div>
         {% if configuracao.telegram.ativo and configuracao.telegram.link %}<a class="telegram-float" href="{{ configuracao.telegram.link }}" target="_blank" rel="noopener" aria-label="Abrir Telegram">➤</a>{% endif %}
         <div class="how-overlay" id="como-jogar" hidden><div class="how-modal"><button class="how-close" id="closeHow" type="button" aria-label="Fechar" onclick="document.getElementById('como-jogar').hidden=true;">×</button><div class="how-copy"><h2>Como ler os gráficos</h2><p>As barras mostram o nível relativo de cada indicador exibido no card do jogo.</p><div class="legend"><div class="legend-item"><span class="legend-dot green"></span><div><strong>Verde · muito bom</strong>Indicador em faixa alta.</div></div><div class="legend-item"><span class="legend-dot yellow"></span><div><strong>Amarelo · razoável</strong>Indicador em faixa intermediária.</div></div><div class="legend-item"><span class="legend-dot red"></span><div><strong>Vermelho · baixo</strong>Indicador em faixa baixa.</div></div></div><div class="legend-note">A leitura serve para comparar os cards entre si. Jogue com responsabilidade e respeite os limites da sua banca.</div></div></div></div><div class="referral-overlay" id="indique" hidden><div class="referral-modal"><button class="referral-close" type="button" aria-label="Fechar" onclick="document.getElementById('indique').hidden=true;">×</button><div class="referral-copy"><h2>Indique o site</h2><p>Apresente aos seus amigos este catálogo de jogos com sinais e indicadores para acompanhar as informações dos seus jogos favoritos.</p><div class="share-link"><input id="siteLink" type="text" readonly><button class="copy-link" id="copyLink" type="button">Copiar</button></div><div class="share-status" id="shareStatus"></div></div></div></div>
         <div class="play-overlay" id="playChoice" hidden><div class="play-modal"><button class="play-close" id="closePlay" type="button" aria-label="Fechar">×</button><div class="play-copy"><h2 id="playTitle">Jogar agora</h2><p>Escolha uma opção para continuar. As quantidades de giros são sugestões aleatórias e não garantem resultado.</p><div class="play-options"><button class="play-option" id="platformOption" type="button">Ir para uma plataforma cadastrada</button><button class="play-option" id="spinOption" type="button">Gerar quantidade de giros</button></div><div class="play-result" id="playResult"></div></div></div></div>
@@ -217,6 +236,51 @@
         document.getElementById('closePlay').addEventListener('click', () => { playChoice.hidden = true; }); playChoice.addEventListener('click', event => { if (event.target === playChoice) playChoice.hidden = true; });
         document.getElementById('platformOption').addEventListener('click', () => { exibirPlataformaAleatoria(); });
         document.getElementById('spinOption').addEventListener('click', () => { const turbo = Math.floor(Math.random() * 15) + 6, normal = Math.floor(Math.random() * 25) + 10; playResult.textContent = `Sugestão para ${jogoSelecionado}: ${turbo} giros com turbo e ${normal} giros sem turbo.`; });
+        const storyViewer = document.getElementById('storyViewer');
+        const storyViewerImage = document.getElementById('storyViewerImage');
+        const storyViewerLink = document.getElementById('storyViewerLink');
+        const storyViewerClose = document.getElementById('storyViewerClose');
+        const storyPrev = document.getElementById('storyPrev');
+        const storyNext = document.getElementById('storyNext');
+        let storyAtual = 0;
+
+        function renderizarStory() {
+            if (!stories24h.length || !storyViewerImage || !storyViewerLink) return;
+            const story = stories24h[storyAtual];
+            storyViewerImage.src = story.imagem || '';
+            storyViewerImage.alt = story.titulo || 'Story';
+            if (story.link) {
+                storyViewerLink.href = story.link;
+                storyViewerLink.style.visibility = 'visible';
+            } else {
+                storyViewerLink.href = '#';
+                storyViewerLink.style.visibility = 'hidden';
+            }
+        }
+
+        function abrirStory(indice) {
+            if (!storyViewer || !stories24h.length) return;
+            storyAtual = Math.max(0, Math.min(indice, stories24h.length - 1));
+            renderizarStory();
+            storyViewer.hidden = false;
+        }
+
+        function fecharStory() {
+            if (storyViewer) storyViewer.hidden = true;
+        }
+
+        function storyAnterior() {
+            if (!stories24h.length) return;
+            storyAtual = (storyAtual - 1 + stories24h.length) % stories24h.length;
+            renderizarStory();
+        }
+
+        function proximoStory() {
+            if (!stories24h.length) return;
+            storyAtual = (storyAtual + 1) % stories24h.length;
+            renderizarStory();
+        }
+
         function iniciarFeedbackStories() {
             const host = document.getElementById('feedbackStories');
             if (!host || !Array.isArray(stories24h)) return;
@@ -227,17 +291,16 @@
                 btn.className = 'feedback-story';
                 btn.title = story.titulo || `Feedback ${indice + 1}`;
                 btn.innerHTML = `<img src="${story.imagem}" alt="${story.titulo || 'Feedback'}">`;
-                btn.addEventListener('click', () => {
-                    const popup = document.getElementById('launchPopup');
-                    if (!popup) return;
-                    const imagem = popup.querySelector('img');
-                    const link = popup.querySelector('.launch-link');
-                    if (imagem) imagem.src = story.imagem;
-                    if (link) link.href = story.link || '#';
-                    if (link) link.textContent = story.botao || 'Acessar';
-                    popup.hidden = false;
-                });
+                btn.addEventListener('click', () => abrirStory(indice));
                 host.appendChild(btn);
+            });
+        }
+        if (storyViewerClose) storyViewerClose.addEventListener('click', fecharStory);
+        if (storyPrev) storyPrev.addEventListener('click', storyAnterior);
+        if (storyNext) storyNext.addEventListener('click', proximoStory);
+        if (storyViewer) {
+            storyViewer.addEventListener('click', event => {
+                if (event.target === storyViewer) fecharStory();
             });
         }
         iniciarFeedbackStories();

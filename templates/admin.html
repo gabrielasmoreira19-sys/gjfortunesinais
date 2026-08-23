@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Painel administrativo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
     <style>
         :root {
             --bg: #171522;
@@ -84,11 +85,82 @@
         .success { margin-bottom: 18px; padding: 12px; border: 1px solid #4f8a66; border-radius: 6px; background: #2a4f3a; color: #d9ffe6; }
         .story-state { color: var(--ok); font-size: 11px; margin-top: 6px; }
         .story-state.off { color: var(--muted); }
+        .story-edit-btn {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            background: #2b2440;
+            color: var(--gold);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .story-editor-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            background: rgba(7, 5, 12, .92);
+        }
+        .story-editor-overlay[hidden] { display: none !important; }
+        .story-editor-modal {
+            width: min(980px, 100%);
+            max-height: 92vh;
+            overflow: auto;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #201a2f;
+            box-shadow: 0 14px 40px #000a;
+        }
+        .story-editor-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) 320px;
+            gap: 14px;
+            align-items: start;
+        }
+        .story-editor-canvas-wrap {
+            min-height: 320px;
+            border: 1px solid #4e4266;
+            border-radius: 8px;
+            background: #141120;
+        }
+        .story-editor-canvas-wrap img {
+            display: block;
+            max-width: 100%;
+        }
+        .story-editor-panel label { margin-bottom: 10px; }
+        .story-editor-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .story-editor-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+        .story-editor-cancel {
+            border: 1px solid #7c6e98;
+            background: #2a233c;
+            color: #efe9f9;
+        }
+        .story-editor-apply {
+            border: 1px solid #f2c860;
+            background: linear-gradient(135deg, #edc25c, #aa7418);
+            color: #251a0b;
+        }
         @media (max-width: 860px) {
             .panel-grid { grid-template-columns: 1fr; }
             .story-row { grid-template-columns: 1fr; }
             .platform-row { grid-template-columns: 1fr; }
             .header-links { flex-direction: column; gap: 6px; }
+            .story-editor-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -212,7 +284,8 @@
                             <input name="story_link_{{ indice }}" value="{{ story.link|default('') }}" placeholder="https://">
                         </label>
                         <label>Imagem
-                            <input type="file" name="story_imagem_{{ indice }}" accept="image/*">
+                            <input class="story-file-input" data-story-index="{{ indice }}" type="file" name="story_imagem_{{ indice }}" accept="image/*">
+                            <button class="story-edit-btn" data-story-index="{{ indice }}" type="button">Editar imagem</button>
                             <input type="hidden" name="story_imagem_atual_{{ indice }}" value="{{ story.imagem|default('') }}">
                             <input name="story_imagem_url_{{ indice }}" value="{{ story.imagem|default('') }}" placeholder="URL da imagem">
                             <input type="hidden" name="story_expira_{{ indice }}" value="{{ story.expira_em|default('') }}">
@@ -247,7 +320,154 @@
 
             <button class="save" type="submit">Salvar alterações</button>
         </form>
+
+        <div class="story-editor-overlay" id="storyEditorOverlay" hidden>
+            <div class="story-editor-modal">
+                <h2>Editor de story</h2>
+                <p class="hint">Recorte no formato story, adicione texto e emoji, depois clique em Aplicar.</p>
+                <div class="story-editor-grid">
+                    <div class="story-editor-canvas-wrap">
+                        <img id="storyEditorImage" alt="Prévia para recorte">
+                    </div>
+                    <div class="story-editor-panel">
+                        <label>Zoom
+                            <input id="storyEditorZoom" type="range" min="0" max="2" step="0.01" value="0">
+                        </label>
+                        <label>Texto sobre a imagem
+                            <input id="storyEditorText" type="text" placeholder="Ex: Aproveite essa plataforma hoje">
+                        </label>
+                        <label>Emoji
+                            <input id="storyEditorEmoji" type="text" placeholder="Ex: 🔥✨">
+                        </label>
+                        <label>Posição do texto
+                            <select id="storyEditorTextPosition">
+                                <option value="bottom">Embaixo</option>
+                                <option value="center">Centro</option>
+                                <option value="top">Em cima</option>
+                            </select>
+                        </label>
+                        <div class="story-editor-actions">
+                            <button class="story-editor-cancel" id="storyEditorCancel" type="button">Cancelar</button>
+                            <button class="story-editor-apply" id="storyEditorApply" type="button">Aplicar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 {% endif %}
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script>
+(() => {
+    const overlay = document.getElementById('storyEditorOverlay');
+    if (!overlay) return;
+
+    const editorImage = document.getElementById('storyEditorImage');
+    const zoomInput = document.getElementById('storyEditorZoom');
+    const textInput = document.getElementById('storyEditorText');
+    const emojiInput = document.getElementById('storyEditorEmoji');
+    const textPositionInput = document.getElementById('storyEditorTextPosition');
+    const cancelBtn = document.getElementById('storyEditorCancel');
+    const applyBtn = document.getElementById('storyEditorApply');
+    let cropper = null;
+    let activeInput = null;
+
+    function fecharEditor() {
+        overlay.hidden = true;
+        zoomInput.value = '0';
+        textInput.value = '';
+        emojiInput.value = '';
+        textPositionInput.value = 'bottom';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        editorImage.removeAttribute('src');
+        activeInput = null;
+    }
+
+    function abrirEditor(fileInput) {
+        const arquivo = fileInput.files && fileInput.files[0];
+        if (!arquivo) {
+            alert('Selecione uma imagem primeiro e depois clique em Editar imagem.');
+            return;
+        }
+        activeInput = fileInput;
+        const leitor = new FileReader();
+        leitor.onload = () => {
+            overlay.hidden = false;
+            editorImage.src = String(leitor.result || '');
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(editorImage, {
+                aspectRatio: 9 / 16,
+                viewMode: 1,
+                dragMode: 'move',
+                background: false,
+                autoCropArea: 1,
+                responsive: true,
+            });
+        };
+        leitor.readAsDataURL(arquivo);
+    }
+
+    function aplicarEdicao() {
+        if (!cropper || !activeInput) return;
+        const base = cropper.getCroppedCanvas({ width: 720, height: 1280, imageSmoothingQuality: 'high' });
+        const ctx = base.getContext('2d');
+        if (!ctx) return;
+
+        const texto = (textInput.value || '').trim();
+        const emoji = (emojiInput.value || '').trim();
+        const textoFinal = [emoji, texto].filter(Boolean).join(' ').trim();
+        if (textoFinal) {
+            const h = base.height;
+            let y = h - 110;
+            if (textPositionInput.value === 'top') y = 90;
+            if (textPositionInput.value === 'center') y = Math.round(h / 2);
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 52px Arial';
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = 'rgba(0,0,0,.55)';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeText(textoFinal, Math.round(base.width / 2), y);
+            ctx.fillText(textoFinal, Math.round(base.width / 2), y);
+        }
+
+        base.toBlob(blob => {
+            if (!blob || !activeInput) return;
+            const arquivoEditado = new File([blob], `story-editado-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const dt = new DataTransfer();
+            dt.items.add(arquivoEditado);
+            activeInput.files = dt.files;
+            const idx = activeInput.dataset.storyIndex;
+            if (idx) {
+                const urlInput = document.querySelector(`input[name="story_imagem_url_${idx}"]`);
+                if (urlInput) urlInput.value = '';
+            }
+            fecharEditor();
+        }, 'image/jpeg', 0.92);
+    }
+
+    document.querySelectorAll('.story-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = btn.dataset.storyIndex;
+            const input = idx ? document.querySelector(`input[name="story_imagem_${idx}"]`) : null;
+            if (input) abrirEditor(input);
+        });
+    });
+
+    zoomInput.addEventListener('input', () => {
+        if (!cropper) return;
+        const valor = Number(zoomInput.value || 0);
+        cropper.zoomTo(1 + valor);
+    });
+
+    cancelBtn.addEventListener('click', fecharEditor);
+    applyBtn.addEventListener('click', aplicarEdicao);
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) fecharEditor();
+    });
+})();
+</script>
 </body>
 </html>
