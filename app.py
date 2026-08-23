@@ -64,6 +64,7 @@ CONFIG_PADRAO = {
 	"popup": {"ativo": False, "titulo": "Novidade no catálogo", "texto": "Confira os lançamentos mais recentes.", "imagem": "", "link": "#lancamentos", "botao": "Ver lançamentos"},
 	"telegram": {"ativo": True, "nome": "Telegram", "link": "https://t.me/"},
 	"plataformas": [],
+	"stories": [],
 }
 
 
@@ -113,6 +114,30 @@ def salvar_configuracao(configuracao):
 		json.dump(configuracao, arquivo, ensure_ascii=False, indent=4)
 
 
+def filtrar_stories_ativas(stories):
+	agora = time.time()
+	ativas = []
+	for story in stories or []:
+		imagem = str(story.get("imagem", "")).strip()
+		if not imagem:
+			continue
+		try:
+			expira_em = float(story.get("expira_em", 0))
+		except (TypeError, ValueError):
+			continue
+		if expira_em <= agora:
+			continue
+		ativas.append(
+			{
+				"titulo": str(story.get("titulo", "Story"))[:60],
+				"imagem": imagem,
+				"link": str(story.get("link", "")).strip(),
+				"expira_em": expira_em,
+			}
+		)
+	return ativas
+
+
 def administrador_logado():
 	return session.get("admin_logado") is True
 
@@ -131,14 +156,15 @@ def salvar_upload(campo):
 
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
+	agora = time.time()
 	if request.method == "POST":
 		if request.form.get("senha") == os.environ.get("ADMIN_PASSWORD", "admin123"):
 			session["admin_logado"] = True
 			return redirect(url_for("admin"))
-		return render_template("admin.html", erro="Senha incorreta.", configuracao=carregar_configuracao())
+		return render_template("admin.html", erro="Senha incorreta.", configuracao=carregar_configuracao(), now=agora)
 	if not administrador_logado():
-		return render_template("admin.html", configuracao=carregar_configuracao())
-	return render_template("admin.html", configuracao=carregar_configuracao(), logado=True)
+		return render_template("admin.html", configuracao=carregar_configuracao(), now=agora)
+	return render_template("admin.html", configuracao=carregar_configuracao(), logado=True, now=agora)
 
 
 @app.post("/admin/salvar")
@@ -173,6 +199,35 @@ def salvar_admin():
 		if imagem or link:
 			plataformas.append({"link": link, "imagem": imagem})
 	configuracao["plataformas"] = plataformas
+	stories = []
+	for indice in range(8):
+		titulo = request.form.get(f"story_titulo_{indice}", "Story").strip() or "Story"
+		link = request.form.get(f"story_link_{indice}", "").strip()
+		imagem = (
+			salvar_upload(f"story_imagem_{indice}")
+			or request.form.get(f"story_imagem_url_{indice}", "").strip()
+			or request.form.get(f"story_imagem_atual_{indice}", "").strip()
+		)
+		if not imagem:
+			continue
+		expira_atual = request.form.get(f"story_expira_{indice}", "").strip()
+		renovar = request.form.get(f"story_renovar_{indice}") == "on"
+		if renovar or not expira_atual:
+			expira_em = time.time() + 24 * 60 * 60
+		else:
+			try:
+				expira_em = float(expira_atual)
+			except ValueError:
+				expira_em = time.time() + 24 * 60 * 60
+		stories.append(
+			{
+				"titulo": titulo,
+				"link": link,
+				"imagem": imagem,
+				"expira_em": expira_em,
+			}
+		)
+	configuracao["stories"] = stories
 	salvar_configuracao(configuracao)
 	return redirect(url_for("admin", salvo=1))
 
@@ -309,13 +364,21 @@ def index():
 	sincronizar_lancamentos_pg()
 	catalogo = carregar_catalogo()
 	preparar_faixas_indicativas(catalogo)
+	configuracao = carregar_configuracao()
+	stories_ativas = filtrar_stories_ativas(configuracao.get("stories", []))
 	lancamentos = [
 		jogo for jogo in catalogo.get("pg", [])
 		if str(jogo.get("id", "")).startswith("pg-")
 		or str(jogo.get("id", "")).startswith("200")
 	]
 	catalogo["pg"] = ordenar_jogos_pg(catalogo.get("pg", []))
-	return render_template("index.html", dados=catalogo, lancamentos=lancamentos, configuracao=carregar_configuracao())
+	return render_template(
+		"index.html",
+		dados=catalogo,
+		lancamentos=lancamentos,
+		configuracao=configuracao,
+		stories_ativas=stories_ativas,
+	)
 
 
 @app.route("/api/capa/<jogo_id>")

@@ -5,23 +5,214 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Painel administrativo</title>
     <style>
-        :root { --bg:#171522; --panel:#29233b; --panel-2:#33294b; --line:#665487; --gold:#d9a441; --text:#fbf9ff; --muted:#c1b9d0; --danger:#f08a8a; }
-        * { box-sizing:border-box; } body { margin:0; min-height:100vh; background:radial-gradient(circle at 15% 0,#4b3a66 0,transparent 34%),#171522; color:var(--text); font:14px Arial,sans-serif; } .wrap { width:min(1040px,calc(100% - 30px)); margin:auto; padding:30px 0 60px; } header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:25px; } h1,h2 { margin:0; } h1 { font-size:25px; } h2 { margin-bottom:17px; font-size:19px; } header p { margin:7px 0 0; color:var(--muted); } .back { color:var(--gold); text-decoration:none; } .login, .panel { border:1px solid var(--line); background:rgba(41,35,59,.94); box-shadow:0 12px 35px #0004; } .login { width:min(420px,100%); margin:12vh auto; padding:28px; } .login h1 { margin-bottom:10px; } .error { margin:15px 0; color:var(--danger); } .panel { margin-bottom:18px; padding:22px; } .panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:17px; } label { display:block; color:#eee8f4; font-size:12px; font-weight:700; } input, textarea { display:block; width:100%; margin-top:7px; padding:11px; border:1px solid #71618e; border-radius:5px; outline:0; background:#1c1928; color:#fff; } textarea { min-height:82px; resize:vertical; } input:focus,textarea:focus { border-color:var(--gold); } .check { display:flex; align-items:center; gap:8px; margin-top:15px; } .check input { width:auto; margin:0; accent-color:var(--gold); } .hint { margin:7px 0 0; color:#a9a0b8; font-size:11px; font-weight:400; } .platform-row { display:grid; grid-template-columns:1fr 1.3fr 1.3fr; gap:10px; padding:13px 0; border-top:1px solid #4e4266; } .platform-row:first-of-type { border-top:0; } .platform-row label { align-self:center; } .save { position:sticky; bottom:15px; display:block; width:100%; padding:14px; border:1px solid #f2c860; border-radius:6px; background:linear-gradient(135deg,#edc25c,#aa7418); color:#251a0b; cursor:pointer; font-weight:800; } .success { margin-bottom:18px; padding:12px; border:1px solid #478d68; background:#193c2b; color:#9af0bc; } @media(max-width:700px) { .panel-grid { grid-template-columns:1fr; } .platform-row { grid-template-columns:1fr; gap:7px; } header { align-items:flex-start; flex-direction:column; } }
+        :root {
+            --bg: #171522;
+            --panel: rgba(41, 35, 59, .94);
+            --line: #665487;
+            --gold: #d9a441;
+            --text: #fbf9ff;
+            --muted: #c1b9d0;
+            --danger: #f08a8a;
+            --ok: #84ddb1;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 15% 0, #4b3a66 0, transparent 34%), var(--bg);
+            color: var(--text);
+            font: 14px Arial, sans-serif;
+        }
+        .wrap { width: min(1040px, calc(100% - 30px)); margin: auto; padding: 30px 0 60px; }
+        .login {
+            width: min(420px, 100%);
+            margin: 12vh auto;
+            padding: 28px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 12px 35px #0004;
+        }
+        .panel {
+            margin-bottom: 18px;
+            padding: 22px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 12px 35px #0004;
+        }
+        header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 25px; }
+        .header-links { display: flex; gap: 14px; }
+        .back { color: var(--gold); text-decoration: none; }
+        h1, h2 { margin: 0; }
+        h1 { font-size: 25px; }
+        h2 { margin-bottom: 17px; font-size: 19px; }
+        p { margin: 7px 0 0; color: var(--muted); }
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
+        label { display: block; color: #eee8f4; font-size: 12px; font-weight: 700; }
+        input, textarea {
+            display: block;
+            width: 100%;
+            margin-top: 7px;
+            padding: 11px;
+            border: 1px solid #71618e;
+            border-radius: 5px;
+            outline: 0;
+            background: #1c1928;
+            color: #fff;
+        }
+        textarea { min-height: 82px; resize: vertical; }
+        input:focus, textarea:focus { border-color: var(--gold); }
+        .check { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
+        .check input { width: auto; margin: 0; accent-color: var(--gold); }
+        .hint { margin: 7px 0 0; color: #a9a0b8; font-size: 11px; font-weight: 400; }
+        .platform-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; padding: 13px 0; border-top: 1px solid #4e4266; }
+        .story-row { display: grid; grid-template-columns: 1fr 1fr 1.3fr auto; gap: 10px; padding: 13px 0; border-top: 1px solid #4e4266; align-items: center; }
+        .platform-row:first-of-type, .story-row:first-of-type { border-top: 0; }
+        .save {
+            position: sticky;
+            bottom: 15px;
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #f2c860;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #edc25c, #aa7418);
+            color: #251a0b;
+            cursor: pointer;
+            font-weight: 800;
+        }
+        .error { margin: 15px 0; color: var(--danger); }
+        .success { margin-bottom: 18px; padding: 12px; border: 1px solid #4f8a66; border-radius: 6px; background: #2a4f3a; color: #d9ffe6; }
+        .story-state { color: var(--ok); font-size: 11px; margin-top: 6px; }
+        .story-state.off { color: var(--muted); }
+        @media (max-width: 860px) {
+            .panel-grid { grid-template-columns: 1fr; }
+            .story-row { grid-template-columns: 1fr; }
+            .platform-row { grid-template-columns: 1fr; }
+            .header-links { flex-direction: column; gap: 6px; }
+        }
     </style>
 </head>
 <body>
-    {% if not logado %}
-    <main class="login"><h1>Painel administrativo</h1><p>Entre para editar o conteúdo do catálogo.</p>{% if erro %}<div class="error">{{ erro }}</div>{% endif %}<form method="post"><label>Senha<input type="password" name="senha" required autofocus></label><button class="save" type="submit">Entrar</button></form></main>
-    {% else %}
-    <main class="wrap"><header><div><h1>Painel administrativo</h1><p>Controle o conteúdo visual exibido no catálogo.</p></div><a class="back" href="{{ url_for('index') }}">Ver site ↗</a><a class="back" href="{{ url_for('admin_logout') }}">Sair</a></header>{% if request.args.get('salvo') %}<div class="success">Alterações salvas com sucesso.</div>{% endif %}
+{% if not logado %}
+    <main class="login">
+        <h1>Painel administrativo</h1>
+        <p>Entre para editar o conteúdo do catálogo.</p>
+        {% if erro %}<div class="error">{{ erro }}</div>{% endif %}
+        <form method="post">
+            <label>Senha
+                <input type="password" name="senha" required autofocus>
+            </label>
+            <button class="save" type="submit">Entrar</button>
+        </form>
+    </main>
+{% else %}
+    <main class="wrap">
+        <header>
+            <div>
+                <h1>Painel administrativo</h1>
+                <p>Controle o conteúdo visual exibido no catálogo.</p>
+            </div>
+            <div class="header-links">
+                <a class="back" href="{{ url_for('index') }}">Ver site ↗</a>
+                <a class="back" href="{{ url_for('admin_logout') }}">Sair</a>
+            </div>
+        </header>
+
+        {% if request.args.get('salvo') %}
+            <div class="success">Alterações salvas com sucesso.</div>
+        {% endif %}
+
         <form method="post" action="{{ url_for('salvar_admin') }}" enctype="multipart/form-data">
-            <section class="panel"><h2>Banner principal</h2><div class="panel-grid"><label>Título<input name="banner_titulo" value="{{ configuracao.banner.titulo }}"></label><label>Link do banner<input name="banner_link" value="{{ configuracao.banner.link }}"></label><label>Texto<textarea name="banner_texto">{{ configuracao.banner.texto }}</textarea></label><label>Imagem do banner<input type="file" name="banner_imagem" accept="image/*"><input type="hidden" name="banner_imagem_atual" value="{{ configuracao.banner.imagem }}"><span class="hint">Você também pode usar uma URL no campo de imagem abaixo, se preferir.</span><input name="banner_imagem_url" value="{{ configuracao.banner.imagem }}" placeholder="URL da imagem"></label></div><label class="check"><input type="checkbox" name="banner_ativo" {% if configuracao.banner.ativo %}checked{% endif %}> Exibir banner</label></section>
-            <section class="panel"><h2>Pop-up de lançamento</h2><div class="panel-grid"><label>Título<input name="popup_titulo" value="{{ configuracao.popup.titulo }}"></label><label>Texto<textarea name="popup_texto">{{ configuracao.popup.texto }}</textarea></label><label>Link do botão<input name="popup_link" value="{{ configuracao.popup.link }}"></label><label>Texto do botão<input name="popup_botao" value="{{ configuracao.popup.botao }}"></label><label>Imagem do pop-up<input type="file" name="popup_imagem" accept="image/*"><input type="hidden" name="popup_imagem_atual" value="{{ configuracao.popup.imagem }}"><span class="hint">A imagem aparece dentro do pop-up.</span></label><label>URL da imagem<input name="popup_imagem_url" value="{{ configuracao.popup.imagem }}" placeholder="https://"></label></div><label class="check"><input type="checkbox" name="popup_ativo" {% if configuracao.popup.ativo %}checked{% endif %}> Abrir pop-up ao entrar no site</label></section>
-            <section class="panel"><h2>Telegram</h2><div class="panel-grid"><label>Nome<input name="telegram_nome" value="{{ configuracao.telegram.nome }}"></label><label>Link do Telegram<input name="telegram_link" value="{{ configuracao.telegram.link }}" placeholder="https://t.me/seu_canal"></label></div><label class="check"><input type="checkbox" name="telegram_ativo" {% if configuracao.telegram.ativo %}checked{% endif %}> Exibir Telegram no site</label></section>
-            <section class="panel"><h2>Plataformas</h2><p class="hint">Cadastre até 25 plataformas usando somente a foto/logo e o link de destino. A logo ficará clicável no site.</p>{% for indice in range(25) %}{% set plataforma = configuracao.plataformas[indice] if indice < configuracao.plataformas|length else {} %}<div class="platform-row"><label>Link da plataforma<input name="plataforma_link_{{ indice }}" value="{{ plataforma.link|default('') }}" placeholder="https://"></label><label>Foto / logo<input type="file" name="plataforma_imagem_{{ indice }}" accept="image/*"><input type="hidden" name="plataforma_imagem_atual_{{ indice }}" value="{{ plataforma.imagem|default('') }}"><input name="plataforma_imagem_url_{{ indice }}" value="{{ plataforma.imagem|default('') }}" placeholder="URL da imagem"></label></div>{% endfor %}</section>
+            <section class="panel">
+                <h2>Banner principal</h2>
+                <div class="panel-grid">
+                    <label>Título<input name="banner_titulo" value="{{ configuracao.banner.titulo }}"></label>
+                    <label>Link do banner<input name="banner_link" value="{{ configuracao.banner.link }}"></label>
+                    <label>Texto<textarea name="banner_texto">{{ configuracao.banner.texto }}</textarea></label>
+                    <label>Imagem do banner
+                        <input type="file" name="banner_imagem" accept="image/*">
+                        <input type="hidden" name="banner_imagem_atual" value="{{ configuracao.banner.imagem }}">
+                        <input name="banner_imagem_url" value="{{ configuracao.banner.imagem }}" placeholder="URL da imagem">
+                    </label>
+                </div>
+                <label class="check"><input type="checkbox" name="banner_ativo" {% if configuracao.banner.ativo %}checked{% endif %}> Exibir banner</label>
+            </section>
+
+            <section class="panel">
+                <h2>Pop-up de lançamento</h2>
+                <div class="panel-grid">
+                    <label>Título<input name="popup_titulo" value="{{ configuracao.popup.titulo }}"></label>
+                    <label>Texto<textarea name="popup_texto">{{ configuracao.popup.texto }}</textarea></label>
+                    <label>Link do botão<input name="popup_link" value="{{ configuracao.popup.link }}"></label>
+                    <label>Texto do botão<input name="popup_botao" value="{{ configuracao.popup.botao }}"></label>
+                    <label>Imagem do pop-up
+                        <input type="file" name="popup_imagem" accept="image/*">
+                        <input type="hidden" name="popup_imagem_atual" value="{{ configuracao.popup.imagem }}">
+                    </label>
+                    <label>URL da imagem<input name="popup_imagem_url" value="{{ configuracao.popup.imagem }}" placeholder="https://"></label>
+                </div>
+                <label class="check"><input type="checkbox" name="popup_ativo" {% if configuracao.popup.ativo %}checked{% endif %}> Abrir pop-up ao entrar no site</label>
+            </section>
+
+            <section class="panel">
+                <h2>Telegram</h2>
+                <div class="panel-grid">
+                    <label>Nome<input name="telegram_nome" value="{{ configuracao.telegram.nome }}"></label>
+                    <label>Link do Telegram<input name="telegram_link" value="{{ configuracao.telegram.link }}" placeholder="https://t.me/seu_canal"></label>
+                </div>
+                <label class="check"><input type="checkbox" name="telegram_ativo" {% if configuracao.telegram.ativo %}checked{% endif %}> Exibir Telegram no site</label>
+            </section>
+
+            <section class="panel">
+                <h2>Stories 24h</h2>
+                <p class="hint">Publique até 8 stories com imagem e botão de link. Marque "Renovar 24h" para iniciar uma nova janela de 24 horas.</p>
+                {% for indice in range(8) %}
+                    {% set story = configuracao.stories[indice] if indice < configuracao.stories|length else {} %}
+                    {% set expira = story.expira_em|default(0)|float %}
+                    <div class="story-row">
+                        <label>Título
+                            <input name="story_titulo_{{ indice }}" value="{{ story.titulo|default('Story') }}">
+                        </label>
+                        <label>Link do botão
+                            <input name="story_link_{{ indice }}" value="{{ story.link|default('') }}" placeholder="https://">
+                        </label>
+                        <label>Imagem
+                            <input type="file" name="story_imagem_{{ indice }}" accept="image/*">
+                            <input type="hidden" name="story_imagem_atual_{{ indice }}" value="{{ story.imagem|default('') }}">
+                            <input name="story_imagem_url_{{ indice }}" value="{{ story.imagem|default('') }}" placeholder="URL da imagem">
+                            <input type="hidden" name="story_expira_{{ indice }}" value="{{ story.expira_em|default('') }}">
+                            {% if expira > 0 %}
+                                <div class="story-state {% if expira <= (now|default(0)|float) %}off{% endif %}">
+                                    {% if expira > (now|default(0)|float) %}Ativo até {{ expira|int }} (timestamp).{% else %}Expirado, renove para mais 24h.{% endif %}
+                                </div>
+                            {% endif %}
+                        </label>
+                        <label class="check"><input type="checkbox" name="story_renovar_{{ indice }}"> Renovar 24h</label>
+                    </div>
+                {% endfor %}
+            </section>
+
+            <section class="panel">
+                <h2>Plataformas</h2>
+                <p class="hint">Cadastre até 25 plataformas usando foto/logo e o link de destino.</p>
+                {% for indice in range(25) %}
+                    {% set plataforma = configuracao.plataformas[indice] if indice < configuracao.plataformas|length else {} %}
+                    <div class="platform-row">
+                        <label>Link da plataforma
+                            <input name="plataforma_link_{{ indice }}" value="{{ plataforma.link|default('') }}" placeholder="https://">
+                        </label>
+                        <label>Foto / logo
+                            <input type="file" name="plataforma_imagem_{{ indice }}" accept="image/*">
+                            <input type="hidden" name="plataforma_imagem_atual_{{ indice }}" value="{{ plataforma.imagem|default('') }}">
+                            <input name="plataforma_imagem_url_{{ indice }}" value="{{ plataforma.imagem|default('') }}" placeholder="URL da imagem">
+                        </label>
+                    </div>
+                {% endfor %}
+            </section>
+
             <button class="save" type="submit">Salvar alterações</button>
         </form>
     </main>
-    {% endif %}
+{% endif %}
 </body>
 </html>
