@@ -63,6 +63,7 @@ CONFIG_PADRAO = {
 	"banner": {"ativo": True, "titulo": "GJFORTUNESINAIS", "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.", "imagem": "", "link": "#catalogo"},
 	"popup": {"ativo": False, "titulo": "Novidade no catálogo", "texto": "Confira os lançamentos mais recentes.", "imagem": "", "link": "#lancamentos", "botao": "Ver lançamentos"},
 	"popup_2": {"ativo": False, "titulo": "Nova plataforma", "texto": "Confira a segunda oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
+	"popup_3": {"ativo": False, "titulo": "Oferta especial", "texto": "Confira a terceira oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
 	"telegram": {"ativo": True, "nome": "Telegram", "link": "https://t.me/"},
 	"plataformas": [],
 	"stories": [],
@@ -205,6 +206,14 @@ def salvar_admin():
 		"imagem": salvar_upload("popup2_imagem") or request.form.get("popup2_imagem_url", "").strip() or request.form.get("popup2_imagem_atual", "").strip(),
 		"link": request.form.get("popup2_link", "#lancamentos").strip(),
 		"botao": request.form.get("popup2_botao", "Entrar agora").strip(),
+	}
+	configuracao["popup_3"] = {
+		"ativo": request.form.get("popup3_ativo") == "on",
+		"titulo": request.form.get("popup3_titulo", "").strip(),
+		"texto": request.form.get("popup3_texto", "").strip(),
+		"imagem": salvar_upload("popup3_imagem") or request.form.get("popup3_imagem_url", "").strip() or request.form.get("popup3_imagem_atual", "").strip(),
+		"link": request.form.get("popup3_link", "#lancamentos").strip(),
+		"botao": request.form.get("popup3_botao", "Entrar agora").strip(),
 	}
 	configuracao["telegram"] = {
 		"ativo": request.form.get("telegram_ativo") == "on",
@@ -386,7 +395,7 @@ def index():
 	configuracao = carregar_configuracao()
 	stories_ativas = filtrar_stories_ativas(configuracao.get("stories", []))
 	popups_ativos = []
-	for chave in ("popup", "popup_2"):
+	for chave in ("popup", "popup_2", "popup_3"):
 		popup = configuracao.get(chave, {})
 		imagem = str(popup.get("imagem", "")).strip()
 		if popup.get("ativo") and imagem:
