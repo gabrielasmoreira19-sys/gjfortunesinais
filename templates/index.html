@@ -184,14 +184,56 @@
         const pageData = pageDataNode ? JSON.parse(pageDataNode.textContent || '{}') : {};
         const stories24h = Array.isArray(pageData.stories) ? pageData.stories : [];
         const plataformasCadastradas = Array.isArray(pageData.plataformas) ? pageData.plataformas : [];
-        const search = document.getElementById('search'), cards = [...document.querySelectorAll('.card')], empty = document.getElementById('empty'), count = document.getElementById('count'); let favorites = false;
+        const search = document.getElementById('search'), empty = document.getElementById('empty'), count = document.getElementById('count'); let cards = [...document.querySelectorAll('.card')]; let favorites = false;
         const INTERVALO_SINAIS = 5 * 60 * 1000;
         function filterCards() { const term = search.value.trim().toLowerCase(); let total = 0; cards.forEach((card, index) => { const visible = card.dataset.name.includes(term) && (!favorites || index % 3 === 0); card.style.display = visible ? '' : 'none'; if (visible) total++; }); empty.style.display = total ? 'none' : 'block'; count.textContent = `${total} jogo${total === 1 ? '' : 's'} no catálogo`; }
         search.addEventListener('input', filterCards); document.getElementById('fav').addEventListener('click', event => { favorites = !favorites; event.currentTarget.style.color = favorites ? 'var(--gold-2)' : ''; filterCards(); });
         function atualizarCor(barra, valor) { barra.classList.remove('status-green', 'status-yellow', 'status-red'); barra.classList.add(valor >= 70 ? 'status-green' : valor >= 40 ? 'status-yellow' : 'status-red'); }
         const DENOMINACOES_VALIDAS = [0.4, 0.5, 0.8, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75, 80, 100, 120, 150, 200, 250, 300, 400, 500];
         function formatarReais(valor) { const denominacao = DENOMINACOES_VALIDAS.reduce((maisProxima, atual) => Math.abs(atual - valor) < Math.abs(maisProxima - valor) ? atual : maisProxima, DENOMINACOES_VALIDAS[0]); return `R$ ${denominacao.toFixed(2).replace('.', ',')}`; }
-        async function atualizarSinais() { await Promise.all(cards.map(async card => { const id = card.id.replace('jogo-', ''); try { const response = await fetch(`/api/sinal/${id}`); if (!response.ok) return; const data = await response.json(); const metricas = [...card.querySelectorAll('.info > .metric')]; const preenchimentos = metricas.map(item => item.querySelector('.fill')); const valores = [data.padrao, data.minima, data.maxima]; metricas.forEach((metrica, index) => { metrica.querySelector('strong').textContent = `${valores[index]}%`; preenchimentos[index].style.width = `${valores[index]}%`; atualizarCor(preenchimentos[index], valores[index]); }); const faixas = [data.apostas.minima, data.apostas.padrao, data.apostas.maxima]; [...card.querySelectorAll('.bets strong')].forEach((item, index) => { item.textContent = faixas[index]; }); const resumos = card.querySelectorAll('.range strong'); if (resumos[0]) resumos[0].textContent = `R$ ${data.apostas.padrao}`; if (resumos[1]) resumos[1].textContent = `R$ ${data.apostas.maxima}`; card.querySelector('.distribution strong').textContent = `${data.maxima}%`; } catch {} })); }
+        function ordenarCardsPorDistribuicao(pontuacoes) {
+            const grid = document.getElementById('gridJogos');
+            if (!grid) return;
+            const ordenados = [...cards].sort((a, b) => {
+                const scoreA = pontuacoes.get(a.id) ?? -1;
+                const scoreB = pontuacoes.get(b.id) ?? -1;
+                return scoreB - scoreA;
+            });
+            ordenados.forEach(card => grid.appendChild(card));
+            cards = [...grid.querySelectorAll('.card')];
+        }
+        async function atualizarSinais() {
+            const pontuacoes = new Map();
+            await Promise.all(cards.map(async card => {
+                const id = card.id.replace('jogo-', '');
+                try {
+                    const response = await fetch(`/api/sinal/${id}`);
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    const maxima = Number(data.maxima) || 0;
+                    const metricas = [...card.querySelectorAll('.info > .metric')];
+                    const preenchimentos = metricas.map(item => item.querySelector('.fill'));
+                    const valores = [data.padrao, data.minima, maxima];
+                    metricas.forEach((metrica, index) => {
+                        metrica.querySelector('strong').textContent = `${valores[index]}%`;
+                        preenchimentos[index].style.width = `${valores[index]}%`;
+                        atualizarCor(preenchimentos[index], valores[index]);
+                    });
+                    const faixas = [data.apostas.minima, data.apostas.padrao, data.apostas.maxima];
+                    [...card.querySelectorAll('.bets strong')].forEach((item, index) => { item.textContent = faixas[index]; });
+                    const resumos = card.querySelectorAll('.range strong');
+                    if (resumos[0]) resumos[0].textContent = `R$ ${data.apostas.padrao}`;
+                    if (resumos[1]) resumos[1].textContent = `R$ ${data.apostas.maxima}`;
+                    card.querySelector('.distribution strong').textContent = `${maxima}%`;
+                    pontuacoes.set(card.id, maxima);
+                } catch {
+                    const atual = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '').replace(',', '.')) || 0;
+                    pontuacoes.set(card.id, atual);
+                }
+            }));
+            ordenarCardsPorDistribuicao(pontuacoes);
+            filterCards();
+        }
         document.querySelectorAll('.actions button').forEach(button => button.addEventListener('click', async () => { const id = button.dataset.id, panel = document.getElementById(`analysis-${id}`); button.textContent = 'Carregando...'; try { const response = await fetch(`/api/sinal/${id}`), data = await response.json(); panel.classList.add('visible'); document.getElementById(`score-${id}`).textContent = `${data.maxima}%`; document.getElementById(`bar-${id}`).style.width = `${data.maxima}%`; button.textContent = 'Análise aberta'; } catch { button.textContent = 'Tentar novamente'; } }));
         const popup = document.getElementById('launchPopup'); if (popup) document.getElementById('closePopup').addEventListener('click', () => popup.remove()); const how = document.getElementById('como-jogar'); document.getElementById('openHow').addEventListener('click', event => { event.preventDefault(); how.hidden = false; }); document.getElementById('closeHow').addEventListener('click', () => { how.hidden = true; }); how.addEventListener('click', event => { if (event.target === how) how.hidden = true; }); const referral = document.getElementById('indique'); const siteLink = document.getElementById('siteLink'); const shareStatus = document.getElementById('shareStatus'); if (referral) { siteLink.value = window.location.origin; document.getElementById('openReferral').addEventListener('click', event => { event.preventDefault(); referral.hidden = false; }); referral.addEventListener('click', event => { if (event.target === referral) referral.hidden = true; }); document.getElementById('copyLink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(siteLink.value); shareStatus.textContent = 'Link copiado.'; } catch { siteLink.select(); document.execCommand('copy'); shareStatus.textContent = 'Link copiado.'; } }); }
         const bank = document.getElementById('gestao-banca'); document.getElementById('closeBank').addEventListener('click', () => { bank.hidden = true; }); bank.addEventListener('click', event => { if (event.target === bank) bank.hidden = true; }); document.getElementById('calculateBank').addEventListener('click', () => { const initial = Number(document.getElementById('bankInitial').value) || 0, limit = Number(document.getElementById('bankLimit').value) || 0, stake = Number(document.getElementById('bankStake').value) || 0, used = Number(document.getElementById('bankUsed').value) || 0; const balance = Math.max(initial - used, 0), stop = Math.max(initial - limit, 0), spins = stake > 0 ? Math.floor(Math.max(Math.min(balance, limit || balance), 0) / stake) : 0; document.getElementById('bankBalance').textContent = `R$ ${balance.toFixed(2).replace('.', ',')}`; document.getElementById('bankSpins').textContent = spins; document.getElementById('bankStop').textContent = `R$ ${stop.toFixed(2).replace('.', ',')}`; });
