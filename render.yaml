@@ -4,7 +4,13 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
+    disk:
+      name: site-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
+      - key: SITE_DATA_DIR
+        value: /var/data
       - key: ADMIN_PASSWORD
         sync: false
       - key: SITE_SECRET_KEY

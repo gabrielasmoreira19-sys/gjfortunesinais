@@ -14,8 +14,9 @@ from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "jogos_pg.json"
-CONFIG_PATH = BASE_DIR / "instance" / "site_config.json"
-ADMIN_UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "admin"
+DATA_DIR = Path(os.environ.get("SITE_DATA_DIR", BASE_DIR / "instance"))
+CONFIG_PATH = DATA_DIR / "site_config.json"
+ADMIN_UPLOADS_DIR = DATA_DIR / "uploads" / "admin"
 UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "slots"
 PG_GAMES_URL = "https://www.pgsoft.com/pt/games/all/"
 PG_SYNC_INTERVAL = 6 * 60 * 60
