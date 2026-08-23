@@ -461,8 +461,8 @@ def sinal(jogo_id):
 	if jogo is None:
 		return jsonify({"erro": "Jogo não encontrado"}), 404
 
-	minima = random.randint(42, 68)
-	padrao = random.randint(max(minima - 8, 45), min(minima + 12, 82))
+	minima = random.randint(42, 84)
+	padrao = random.randint(max(minima - 8, 45), min(minima + 12, 88))
 	maxima = random.randint(max(padrao, 55), 96)
 	escada = gerar_escada_apostas(jogo)
 	minima_aposta = escada[0]
