@@ -139,8 +139,9 @@
         .story-viewer-overlay[hidden] { display:none !important; }
         .story-viewer-modal { position:relative; width:min(420px,95vw); border:1px solid #f0c96a; border-radius:14px; overflow:hidden; background:#130f1d; box-shadow:0 24px 60px #000a; }
         .story-viewer-image { display:block; width:100%; max-height:78vh; object-fit:contain; background:#0f0c17; }
-        .story-viewer-toolbar { display:flex; align-items:center; gap:8px; padding:10px; background:#130f1d; }
-        .story-viewer-link { flex:1; display:inline-flex; justify-content:center; align-items:center; padding:11px 12px; border:1px solid var(--gold); border-radius:8px; background:linear-gradient(180deg,var(--gold-2),var(--gold)); color:#2a1d0e; font-weight:800; text-transform:uppercase; letter-spacing:.3px; }
+        .story-viewer-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; background:#130f1d; }
+        .story-viewer-link { position:absolute; right:18px; bottom:60px; left:18px; z-index:2; display:inline-flex; justify-content:center; align-items:center; min-height:46px; padding:12px 14px; border:1px solid var(--gold); border-radius:8px; background:linear-gradient(180deg,var(--gold-2),var(--gold)); color:#2a1d0e; font-weight:800; text-transform:uppercase; letter-spacing:.3px; box-shadow:0 8px 20px #0008; }
+        .story-viewer-link:hover { filter:brightness(1.06); }
         .story-viewer-nav { display:inline-grid; place-items:center; width:34px; height:34px; border:1px solid #ffffff40; border-radius:7px; background:#241c35; color:#fff; cursor:pointer; }
         .story-viewer-close { position:absolute; top:10px; right:10px; width:34px; height:34px; border:1px solid #ffffffaa; border-radius:50%; background:#0c0914c7; color:#fff; cursor:pointer; font-size:22px; line-height:1; z-index:2; }
         .hero-carousel { overflow:hidden; border:1px solid #665487; border-radius:10px; background:linear-gradient(135deg,#40335b,#29243d); box-shadow:0 14px 38px #0005; }
@@ -227,9 +228,9 @@
             <div class="story-viewer-modal">
                 <button class="story-viewer-close" id="storyViewerClose" type="button" aria-label="Fechar story">×</button>
                 <img class="story-viewer-image" id="storyViewerImage" alt="Story">
+                <a class="story-viewer-link" id="storyViewerLink" href="#" target="_blank" rel="noopener">Abrir plataforma</a>
                 <div class="story-viewer-toolbar">
                     <button class="story-viewer-nav" id="storyPrev" type="button" aria-label="Story anterior">‹</button>
-                    <a class="story-viewer-link" id="storyViewerLink" href="#" target="_blank" rel="noopener">Abrir link</a>
                     <button class="story-viewer-nav" id="storyNext" type="button" aria-label="Próximo story">›</button>
                 </div>
             </div>
