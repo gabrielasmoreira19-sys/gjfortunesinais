@@ -1,0 +1,32 @@
+{
+    "banner": {
+        "ativo": true,
+        "titulo": "GJFORTUNESINAIS",
+        "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.",
+        "imagem": "",
+        "link": "#catalogo"
+    },
+    "popup": {
+        "ativo": false,
+        "titulo": "Novidade no catálogo",
+        "texto": "Confira os lançamentos mais recentes.",
+        "imagem": "",
+        "link": "#lancamentos",
+        "botao": "Ver lançamentos"
+    },
+    "telegram": {
+        "ativo": true,
+        "nome": "Telegram",
+        "link": "https://t.me/+movGF1krMxhkNDFh"
+    },
+    "plataformas": [
+        {
+            "link": "https://www.trabalharpg.com/?id=120611476",
+            "imagem": "/admin/uploads/a0fd8530-fe84-404b-8f51-f1fa3ce24a1d.jfif"
+        },
+        {
+            "link": "https://voltar777.com/?id=309305198",
+            "imagem": "/admin/uploads/photo_6069026017931629717_y.jpg"
+        }
+    ]
+}
