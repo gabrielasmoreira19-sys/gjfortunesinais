@@ -85,6 +85,19 @@
         .success { margin-bottom: 18px; padding: 12px; border: 1px solid #4f8a66; border-radius: 6px; background: #2a4f3a; color: #d9ffe6; }
         .story-state { color: var(--ok); font-size: 11px; margin-top: 6px; }
         .story-state.off { color: var(--muted); }
+        .panel.hidden-item { display: none; }
+        .row-hidden { display: none; }
+        .add-more-wrap { margin-top: 10px; }
+        .add-more-btn {
+            padding: 10px 12px;
+            border: 1px dashed var(--gold);
+            border-radius: 8px;
+            background: #2a233c;
+            color: var(--gold);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
         .story-edit-btn {
             margin-top: 8px;
             padding: 8px 10px;
@@ -244,7 +257,7 @@
                 <label class="check"><input type="checkbox" name="banner_ativo" {% if configuracao.banner.ativo %}checked{% endif %}> Exibir banner</label>
             </section>
 
-            <section class="panel">
+            <section class="panel" data-popup-order="1">
                 <h2>Pop-up de lançamento</h2>
                 <p class="hint">Dica: prefira usar URL da imagem (https://...) para evitar perder a foto após novo deploy.</p>
                 <div class="panel-grid">
@@ -261,7 +274,7 @@
                 <label class="check"><input type="checkbox" name="popup_ativo" {% if configuracao.popup.ativo %}checked{% endif %}> Abrir pop-up ao entrar no site</label>
             </section>
 
-            <section class="panel">
+            <section class="panel hidden-item" data-popup-order="2" data-popup-extra="true">
                 <h2>Pop-up de lançamento 2</h2>
                 <p class="hint">Se os dois pop-ups estiverem ativos, o site sorteia um deles a cada nova entrada.</p>
                 <div class="panel-grid">
@@ -278,7 +291,7 @@
                 <label class="check"><input type="checkbox" name="popup2_ativo" {% if configuracao.popup_2.ativo %}checked{% endif %}> Ativar pop-up 2</label>
             </section>
 
-            <section class="panel">
+            <section class="panel hidden-item" data-popup-order="3" data-popup-extra="true">
                 <h2>Pop-up de lançamento 3</h2>
                 <p class="hint">Se 2 ou 3 pop-ups estiverem ativos, o site sorteia um deles a cada nova entrada.</p>
                 <div class="panel-grid">
@@ -294,6 +307,9 @@
                 </div>
                 <label class="check"><input type="checkbox" name="popup3_ativo" {% if configuracao.popup_3.ativo %}checked{% endif %}> Ativar pop-up 3</label>
             </section>
+            <div class="add-more-wrap">
+                <button class="add-more-btn" id="addPopupBtn" type="button">+ Adicionar mais um pop-up</button>
+            </div>
 
             <section class="panel">
                 <h2>Telegram</h2>
@@ -310,7 +326,7 @@
                 {% for indice in range(20) %}
                     {% set story = configuracao.stories[indice] if indice < configuracao.stories|length else {} %}
                     {% set expira = story.expira_em|default(0)|float %}
-                    <div class="story-row">
+                    <div class="story-row" data-story-row="true">
                         <label>Título
                             <input name="story_titulo_{{ indice }}" value="{{ story.titulo|default('Story') }}">
                         </label>
@@ -332,6 +348,9 @@
                         <label class="check"><input type="checkbox" name="story_renovar_{{ indice }}"> Renovar 24h</label>
                     </div>
                 {% endfor %}
+                <div class="add-more-wrap">
+                    <button class="add-more-btn" id="addStoryBtn" type="button">+ Adicionar mais um story</button>
+                </div>
             </section>
 
             <section class="panel">
@@ -339,7 +358,7 @@
                 <p class="hint">Cadastre até 25 plataformas usando foto/logo e o link de destino.</p>
                 {% for indice in range(25) %}
                     {% set plataforma = configuracao.plataformas[indice] if indice < configuracao.plataformas|length else {} %}
-                    <div class="platform-row">
+                    <div class="platform-row" data-platform-row="true">
                         <label>Link da plataforma
                             <input name="plataforma_link_{{ indice }}" value="{{ plataforma.link|default('') }}" placeholder="https://">
                         </label>
@@ -350,6 +369,9 @@
                         </label>
                     </div>
                 {% endfor %}
+                <div class="add-more-wrap">
+                    <button class="add-more-btn" id="addPlatformBtn" type="button">+ Adicionar mais uma plataforma</button>
+                </div>
             </section>
 
             <button class="save" type="submit">Salvar alterações</button>
@@ -608,6 +630,59 @@
     overlay.addEventListener('click', event => {
         if (event.target === overlay) fecharEditor();
     });
+
+    function controlarListaProgressiva(selector, addBtnId, minimoVisivel) {
+        const rows = [...document.querySelectorAll(selector)];
+        const addBtn = document.getElementById(addBtnId);
+        if (!rows.length || !addBtn) return;
+
+        const preenchidas = rows.filter(row => {
+            return [...row.querySelectorAll('input, textarea')].some(input => String(input.value || '').trim());
+        }).length;
+        let visiveis = Math.max(minimoVisivel, preenchidas || 0);
+        visiveis = Math.min(visiveis + 1, rows.length);
+
+        function render() {
+            rows.forEach((row, index) => row.classList.toggle('row-hidden', index >= visiveis));
+            addBtn.style.display = visiveis >= rows.length ? 'none' : 'inline-block';
+        }
+
+        addBtn.addEventListener('click', () => {
+            visiveis = Math.min(visiveis + 1, rows.length);
+            render();
+        });
+
+        render();
+    }
+
+    function controlarPopups() {
+        const extras = [...document.querySelectorAll('[data-popup-extra="true"]')];
+        const addBtn = document.getElementById('addPopupBtn');
+        if (!addBtn) return;
+
+        let visiveis = 0;
+        extras.forEach((panel, index) => {
+            const ativo = panel.querySelector('input[type="checkbox"]')?.checked;
+            const temDados = [...panel.querySelectorAll('input, textarea')].some(input => String(input.value || '').trim());
+            if (ativo || temDados) visiveis = index + 1;
+        });
+
+        function render() {
+            extras.forEach((panel, index) => panel.classList.toggle('hidden-item', index >= visiveis));
+            addBtn.style.display = visiveis >= extras.length ? 'none' : 'inline-block';
+        }
+
+        addBtn.addEventListener('click', () => {
+            visiveis = Math.min(visiveis + 1, extras.length);
+            render();
+        });
+
+        render();
+    }
+
+    controlarListaProgressiva('[data-story-row="true"]', 'addStoryBtn', 3);
+    controlarListaProgressiva('[data-platform-row="true"]', 'addPlatformBtn', 4);
+    controlarPopups();
 })();
 </script>
 </body>
