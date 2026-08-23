@@ -49,7 +49,7 @@
         p { margin: 7px 0 0; color: var(--muted); }
         .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
         label { display: block; color: #eee8f4; font-size: 12px; font-weight: 700; }
-        input, textarea {
+        input, textarea, select {
             display: block;
             width: 100%;
             margin-top: 7px;
@@ -61,7 +61,7 @@
             color: #fff;
         }
         textarea { min-height: 82px; resize: vertical; }
-        input:focus, textarea:focus { border-color: var(--gold); }
+        input:focus, textarea:focus, select:focus { border-color: var(--gold); }
         .check { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
         .check input { width: auto; margin: 0; accent-color: var(--gold); }
         .hint { margin: 7px 0 0; color: #a9a0b8; font-size: 11px; font-weight: 400; }
@@ -138,6 +138,33 @@
             gap: 10px;
             margin-top: 8px;
         }
+        .story-editor-toolbar {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0 4px;
+        }
+        .story-tool-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #7c6e98;
+            border-radius: 999px;
+            background: #2a233c;
+            color: #efe9f9;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .story-tool-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: #35294f;
+        }
+        .story-link-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            align-items: end;
+        }
         .story-editor-actions button {
             flex: 1;
             padding: 10px;
@@ -161,6 +188,13 @@
             .platform-row { grid-template-columns: 1fr; }
             .header-links { flex-direction: column; gap: 6px; }
             .story-editor-grid { grid-template-columns: 1fr; }
+            .story-editor-modal { padding-bottom: 74px; }
+            .story-editor-toolbar {
+                position: sticky;
+                bottom: 0;
+                padding-top: 10px;
+                background: linear-gradient(180deg, transparent 0%, #201a2f 22%);
+            }
         }
     </style>
 </head>
@@ -346,6 +380,24 @@
                                 <option value="top">Em cima</option>
                             </select>
                         </label>
+                        <div class="story-link-grid">
+                            <label class="check"><input id="storyEditorLinkSticker" type="checkbox" checked> Adesivo de link</label>
+                            <label>Posição do link
+                                <select id="storyEditorLinkPosition">
+                                    <option value="bottom-right">Canto inferior direito</option>
+                                    <option value="bottom-center">Centro inferior</option>
+                                    <option value="center-right">Centro direito</option>
+                                </select>
+                            </label>
+                        </div>
+                        <label>Texto do adesivo de link
+                            <input id="storyEditorLinkLabel" type="text" value="LINK AQUI" placeholder="Ex: ENTRAR AGORA">
+                        </label>
+                        <div class="story-editor-toolbar">
+                            <button class="story-tool-btn active" id="toolCrop" type="button">✂ Recorte</button>
+                            <button class="story-tool-btn" id="toolText" type="button">Aa Texto</button>
+                            <button class="story-tool-btn" id="toolLink" type="button">🔗 Link</button>
+                        </div>
                         <div class="story-editor-actions">
                             <button class="story-editor-cancel" id="storyEditorCancel" type="button">Cancelar</button>
                             <button class="story-editor-apply" id="storyEditorApply" type="button">Aplicar</button>
@@ -367,10 +419,17 @@
     const textInput = document.getElementById('storyEditorText');
     const emojiInput = document.getElementById('storyEditorEmoji');
     const textPositionInput = document.getElementById('storyEditorTextPosition');
+    const linkStickerInput = document.getElementById('storyEditorLinkSticker');
+    const linkPositionInput = document.getElementById('storyEditorLinkPosition');
+    const linkLabelInput = document.getElementById('storyEditorLinkLabel');
+    const toolCrop = document.getElementById('toolCrop');
+    const toolText = document.getElementById('toolText');
+    const toolLink = document.getElementById('toolLink');
     const cancelBtn = document.getElementById('storyEditorCancel');
     const applyBtn = document.getElementById('storyEditorApply');
     let cropper = null;
     let activeInput = null;
+    let activeStoryIndex = null;
 
     function fecharEditor() {
         overlay.hidden = true;
@@ -378,12 +437,16 @@
         textInput.value = '';
         emojiInput.value = '';
         textPositionInput.value = 'bottom';
+        linkStickerInput.checked = true;
+        linkPositionInput.value = 'bottom-right';
+        linkLabelInput.value = 'LINK AQUI';
         if (cropper) {
             cropper.destroy();
             cropper = null;
         }
         editorImage.removeAttribute('src');
         activeInput = null;
+        activeStoryIndex = null;
     }
 
     function abrirEditor(fileInput) {
@@ -393,6 +456,12 @@
             return;
         }
         activeInput = fileInput;
+        activeStoryIndex = fileInput.dataset.storyIndex || null;
+        if (activeStoryIndex !== null) {
+            const linkField = document.querySelector(`input[name="story_link_${activeStoryIndex}"]`);
+            const hasLink = Boolean(linkField && linkField.value.trim());
+            linkStickerInput.checked = hasLink;
+        }
         const leitor = new FileReader();
         leitor.onload = () => {
             overlay.hidden = false;
@@ -416,6 +485,10 @@
         const ctx = base.getContext('2d');
         if (!ctx) return;
 
+        const storyLink = activeStoryIndex !== null
+            ? (document.querySelector(`input[name="story_link_${activeStoryIndex}"]`)?.value || '').trim()
+            : '';
+
         const texto = (textInput.value || '').trim();
         const emoji = (emojiInput.value || '').trim();
         const textoFinal = [emoji, texto].filter(Boolean).join(' ').trim();
@@ -431,6 +504,48 @@
             ctx.fillStyle = '#ffffff';
             ctx.strokeText(textoFinal, Math.round(base.width / 2), y);
             ctx.fillText(textoFinal, Math.round(base.width / 2), y);
+        }
+
+        if (linkStickerInput.checked && storyLink) {
+            const label = (linkLabelInput.value || 'LINK AQUI').trim() || 'LINK AQUI';
+            const textoLink = `🔗 ${label}`;
+            ctx.font = 'bold 44px Arial';
+            const paddingX = 22;
+            const paddingY = 14;
+            const textW = ctx.measureText(textoLink).width;
+            const boxW = Math.round(textW + paddingX * 2);
+            const boxH = 72;
+            const margin = 24;
+            let x = base.width - boxW - margin;
+            let y = base.height - boxH - 140;
+            if (linkPositionInput.value === 'bottom-center') {
+                x = Math.round((base.width - boxW) / 2);
+                y = base.height - boxH - 130;
+            }
+            if (linkPositionInput.value === 'center-right') {
+                x = base.width - boxW - margin;
+                y = Math.round((base.height - boxH) / 2);
+            }
+
+            ctx.fillStyle = '#ffffff';
+            const r = 22;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + boxW - r, y);
+            ctx.quadraticCurveTo(x + boxW, y, x + boxW, y + r);
+            ctx.lineTo(x + boxW, y + boxH - r);
+            ctx.quadraticCurveTo(x + boxW, y + boxH, x + boxW - r, y + boxH);
+            ctx.lineTo(x + r, y + boxH);
+            ctx.quadraticCurveTo(x, y + boxH, x, y + boxH - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#1d1d25';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(textoLink, x + paddingX, y + Math.round(boxH / 2));
         }
 
         base.toBlob(blob => {
@@ -461,6 +576,32 @@
         const valor = Number(zoomInput.value || 0);
         cropper.zoomTo(1 + valor);
     });
+
+    function ativarFerramenta(botaoAtivo) {
+        [toolCrop, toolText, toolLink].forEach(btn => {
+            if (!btn) return;
+            btn.classList.toggle('active', btn === botaoAtivo);
+        });
+    }
+
+    if (toolCrop) {
+        toolCrop.addEventListener('click', () => {
+            ativarFerramenta(toolCrop);
+            if (cropper) cropper.setDragMode('move');
+        });
+    }
+    if (toolText) {
+        toolText.addEventListener('click', () => {
+            ativarFerramenta(toolText);
+            textInput.focus();
+        });
+    }
+    if (toolLink) {
+        toolLink.addEventListener('click', () => {
+            ativarFerramenta(toolLink);
+            linkLabelInput.focus();
+        });
+    }
 
     cancelBtn.addEventListener('click', fecharEditor);
     applyBtn.addEventListener('click', aplicarEdicao);
