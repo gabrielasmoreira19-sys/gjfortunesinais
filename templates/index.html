@@ -200,14 +200,14 @@
             background:url('{{ configuracao.tema.fundo_imagem }}') center/cover no-repeat;
             filter:blur(10px) saturate(1.15);
             transform:scale(1.06);
-            opacity:.4;
+            opacity:.68;
         }
         body::after {
             content:'';
             position:fixed;
             inset:0;
             z-index:-1;
-            background:linear-gradient(120deg,rgba(23,21,34,.86),rgba(33,27,46,.92) 50%,rgba(17,17,25,.88));
+            background:linear-gradient(120deg,rgba(23,21,34,.44),rgba(33,27,46,.56) 50%,rgba(17,17,25,.48));
         }
     </style>
     {% endif %}
@@ -383,6 +383,13 @@
         const storyPrev = document.getElementById('storyPrev');
         const storyNext = document.getElementById('storyNext');
         let storyAtual = 0;
+        let temporizadorStory = null;
+
+        function reiniciarTemporizadorStory() {
+            if (temporizadorStory) window.clearTimeout(temporizadorStory);
+            if (!storyViewer || storyViewer.hidden || stories24h.length < 2) return;
+            temporizadorStory = window.setTimeout(() => { proximoStory(); }, 5000);
+        }
 
         function renderizarStory() {
             if (!stories24h.length || !storyViewerImage || !storyViewerLink) return;
@@ -396,6 +403,7 @@
                 storyViewerLink.href = '#';
                 storyViewerLink.style.visibility = 'hidden';
             }
+            reiniciarTemporizadorStory();
         }
 
         function abrirStory(indice) {
@@ -407,6 +415,8 @@
 
         function fecharStory() {
             if (storyViewer) storyViewer.hidden = true;
+            if (temporizadorStory) window.clearTimeout(temporizadorStory);
+            temporizadorStory = null;
         }
 
         function storyAnterior() {
