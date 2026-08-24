@@ -164,6 +164,8 @@ def salvar_configuracao(configuracao):
 	if supabase_configurado():
 		if salvar_configuracao_supabase(configuracao):
 			return True
+		detalhe = f" Detalhe: {ultimo_erro_supabase}" if ultimo_erro_supabase else ""
+		raise RuntimeError(f"Não foi possível salvar no Supabase. A configuração remota foi preservada.{detalhe}")
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
 		json.dump(configuracao, arquivo, ensure_ascii=False, indent=4)
