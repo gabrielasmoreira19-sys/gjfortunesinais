@@ -8,6 +8,16 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
+try:
+	import cloudinary
+	import cloudinary.uploader
+except ImportError:
+	cloudinary = None
+
+try:
+	import requests
+except ImportError:
+	requests = None
 from flask import Flask, jsonify, redirect, render_template, request, session, send_from_directory, url_for
 from werkzeug.utils import secure_filename
 
@@ -18,6 +28,17 @@ DATA_DIR = Path(os.environ.get("SITE_DATA_DIR", BASE_DIR / "instance"))
 CONFIG_PATH = DATA_DIR / "site_config.json"
 ADMIN_UPLOADS_DIR = DATA_DIR / "uploads" / "admin"
 UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "slots"
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+SUPABASE_CONFIG_TABLE = os.environ.get("SUPABASE_CONFIG_TABLE", "site_config")
+CLOUDINARY_CONFIGURED = cloudinary is not None and all(os.environ.get(chave) for chave in ("CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"))
+if CLOUDINARY_CONFIGURED:
+	cloudinary.config(
+		cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
+		api_key=os.environ["CLOUDINARY_API_KEY"],
+		api_secret=os.environ["CLOUDINARY_API_SECRET"],
+		secure=True,
+	)
 PG_GAMES_URL = "https://www.pgsoft.com/pt/games/all/"
 PG_SYNC_INTERVAL = 6 * 60 * 60
 PG_REMOVED_NAMES = {
@@ -103,12 +124,19 @@ def carregar_catalogo():
 
 
 def carregar_configuracao():
+	configuracao_remota = carregar_configuracao_supabase()
+	if configuracao_remota is not None:
+		return combinar_configuracao(configuracao_remota)
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	if not CONFIG_PATH.is_file():
 		with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
 			json.dump(CONFIG_PADRAO, arquivo, ensure_ascii=False, indent=4)
 	with CONFIG_PATH.open(encoding="utf-8") as arquivo:
 		configuracao = json.load(arquivo)
+	return combinar_configuracao(configuracao)
+
+
+def combinar_configuracao(configuracao):
 	combinada = {**CONFIG_PADRAO, **configuracao}
 	for chave, valor_padrao in CONFIG_PADRAO.items():
 		if isinstance(valor_padrao, dict):
@@ -119,9 +147,57 @@ def carregar_configuracao():
 
 
 def salvar_configuracao(configuracao):
+	if salvar_configuracao_supabase(configuracao):
+		return
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
 		json.dump(configuracao, arquivo, ensure_ascii=False, indent=4)
+
+
+def cabecalhos_supabase():
+	return {
+		"apikey": SUPABASE_SERVICE_KEY,
+		"Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+		"Content-Type": "application/json",
+	}
+
+
+def supabase_configurado():
+	return requests is not None and bool(SUPABASE_URL and SUPABASE_SERVICE_KEY)
+
+
+def carregar_configuracao_supabase():
+	if not supabase_configurado():
+		return None
+	try:
+		resposta = requests.get(
+			f"{SUPABASE_URL}/rest/v1/{SUPABASE_CONFIG_TABLE}",
+			params={"key": "eq.main", "select": "config", "limit": 1},
+			headers=cabecalhos_supabase(),
+			timeout=8,
+		)
+		resposta.raise_for_status()
+		registros = resposta.json()
+		return registros[0].get("config") if registros else None
+	except (requests.RequestException, ValueError, IndexError, AttributeError):
+		return None
+
+
+def salvar_configuracao_supabase(configuracao):
+	if not supabase_configurado():
+		return False
+	try:
+		resposta = requests.post(
+			f"{SUPABASE_URL}/rest/v1/{SUPABASE_CONFIG_TABLE}",
+			params={"on_conflict": "key"},
+			headers={**cabecalhos_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+			json={"key": "main", "config": configuracao},
+			timeout=8,
+		)
+		resposta.raise_for_status()
+		return True
+	except requests.RequestException:
+		return False
 
 
 def filtrar_stories_ativas(stories):
@@ -169,6 +245,18 @@ def salvar_upload(campo):
 	nome = secure_filename(arquivo.filename)
 	if not nome:
 		return ""
+	if CLOUDINARY_CONFIGURED:
+		try:
+			resultado = cloudinary.uploader.upload(
+				arquivo,
+				folder="gjfortunesinais/admin",
+				resource_type="image",
+				use_filename=True,
+				unique_filename=True,
+			)
+			return resultado.get("secure_url", "")
+		except Exception:
+			return ""
 	ADMIN_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 	arquivo.save(ADMIN_UPLOADS_DIR / nome)
 	return url_for("admin_upload", nome=nome)
@@ -461,8 +549,8 @@ def sinal(jogo_id):
 	if jogo is None:
 		return jsonify({"erro": "Jogo não encontrado"}), 404
 
-	minima = random.randint(42, 68)
-	padrao = random.randint(max(minima - 8, 45), min(minima + 12, 82))
+	minima = random.randint(42, 84)
+	padrao = random.randint(max(minima - 8, 45), min(minima + 12, 88))
 	maxima = random.randint(max(padrao, 55), 96)
 	escada = gerar_escada_apostas(jogo)
 	minima_aposta = escada[0]
