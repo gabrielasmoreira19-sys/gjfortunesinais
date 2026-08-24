@@ -88,6 +88,7 @@ CONFIG_PADRAO = {
 	"popup_2": {"ativo": False, "titulo": "Nova plataforma", "texto": "Confira a segunda oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
 	"popup_3": {"ativo": False, "titulo": "Oferta especial", "texto": "Confira a terceira oferta de entrada.", "imagem": "", "link": "#lancamentos", "botao": "Entrar agora"},
 	"telegram": {"ativo": True, "nome": "Telegram", "link": "https://t.me/"},
+	"whatsapp": {"ativo": False, "link": "", "texto": "Entre no canal de achadinhos"},
 	"plataformas": [],
 	"stories": [],
 }
@@ -320,6 +321,11 @@ def salvar_admin():
 		"ativo": request.form.get("telegram_ativo") == "on",
 		"nome": request.form.get("telegram_nome", "Telegram").strip(),
 		"link": request.form.get("telegram_link", "").strip(),
+	}
+	configuracao["whatsapp"] = {
+		"ativo": request.form.get("whatsapp_ativo") == "on",
+		"link": request.form.get("whatsapp_link", "").strip(),
+		"texto": request.form.get("whatsapp_texto", "Entre no canal de achadinhos").strip() or "Entre no canal de achadinhos",
 	}
 	plataformas = []
 	for indice in range(25):

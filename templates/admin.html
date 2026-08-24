@@ -337,6 +337,16 @@
             </section>
 
             <section class="panel">
+                <h2>WhatsApp · canal de achadinhos</h2>
+                <p class="hint">O botão ficará flutuando no site e abrirá diretamente o link informado.</p>
+                <div class="panel-grid">
+                    <label>Link do canal<input name="whatsapp_link" value="{{ configuracao.whatsapp.link|default('') }}" placeholder="https://chat.whatsapp.com/... ou https://whatsapp.com/channel/..." type="url"></label>
+                    <label>Texto do convite<input name="whatsapp_texto" value="{{ configuracao.whatsapp.texto|default('Entre no canal de achadinhos') }}" placeholder="Entre no canal de achadinhos"></label>
+                </div>
+                <label class="check"><input type="checkbox" name="whatsapp_ativo" {% if configuracao.whatsapp.ativo|default(false) %}checked{% endif %}> Exibir WhatsApp no site</label>
+            </section>
+
+            <section class="panel">
                 <h2>Stories 24h</h2>
                 <p class="hint">Publique até 20 stories com imagem e botão de link. Marque "Renovar 24h" para iniciar uma nova janela de 24 horas.</p>
                 {% for indice in range(20) %}
