@@ -237,6 +237,7 @@
             </div>
         </header>
 
+        {% if erro %}<div class="error">{{ erro }}</div>{% endif %}
         {% if request.args.get('salvo') %}
             <div class="success">Alterações salvas com sucesso.</div>
         {% endif %}

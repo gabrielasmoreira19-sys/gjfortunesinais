@@ -31,6 +31,7 @@ UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "slots"
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 SUPABASE_CONFIG_TABLE = os.environ.get("SUPABASE_CONFIG_TABLE", "site_config")
+ultimo_erro_supabase = ""
 CLOUDINARY_CONFIGURED = cloudinary is not None and all(os.environ.get(chave) for chave in ("CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"))
 if CLOUDINARY_CONFIGURED:
 	cloudinary.config(
@@ -152,7 +153,7 @@ def combinar_configuracao(configuracao):
 def salvar_configuracao(configuracao):
 	if supabase_configurado():
 		if not salvar_configuracao_supabase(configuracao):
-			raise RuntimeError("Nao foi possivel salvar no Supabase. Verifique a chave e a tabela site_config.")
+			raise RuntimeError("Não foi possível salvar no Supabase. Verifique a chave e a tabela site_config.")
 		return True
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
@@ -173,6 +174,7 @@ def supabase_configurado():
 
 
 def carregar_configuracao_supabase():
+	global ultimo_erro_supabase
 	if not supabase_configurado():
 		return None
 	try:
@@ -184,12 +186,15 @@ def carregar_configuracao_supabase():
 		)
 		resposta.raise_for_status()
 		registros = resposta.json()
+		ultimo_erro_supabase = ""
 		return registros[0].get("config") if registros else {}
-	except (requests.RequestException, ValueError, IndexError, AttributeError):
+	except (requests.RequestException, ValueError, IndexError, AttributeError) as erro:
+		ultimo_erro_supabase = str(erro)
 		return None
 
 
 def salvar_configuracao_supabase(configuracao):
+	global ultimo_erro_supabase
 	if not supabase_configurado():
 		return False
 	try:
@@ -201,8 +206,10 @@ def salvar_configuracao_supabase(configuracao):
 			timeout=8,
 		)
 		resposta.raise_for_status()
+		ultimo_erro_supabase = ""
 		return True
-	except requests.RequestException:
+	except requests.RequestException as erro:
+		ultimo_erro_supabase = str(erro)
 		return False
 
 
@@ -262,7 +269,7 @@ def salvar_upload(campo):
 			)
 			return resultado.get("secure_url", "")
 		except Exception as erro:
-			raise RuntimeError(f"Falha ao enviar imagem: {erro}") from erro
+			raise RuntimeError(f"Falha ao enviar a imagem para o Cloudinary: {erro}") from erro
 	ADMIN_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 	arquivo.save(ADMIN_UPLOADS_DIR / nome)
 	return url_for("admin_upload", nome=nome)
@@ -371,7 +378,13 @@ def salvar_admin():
 	try:
 		salvar_configuracao(configuracao)
 	except Exception as erro:
-		return render_template("admin.html", erro=f"Falha ao salvar: {erro}", configuracao=configuracao, logado=True, now=time.time()), 502
+		return render_template(
+			"admin.html",
+			erro=f"Falha ao salvar: {erro}",
+			configuracao=configuracao,
+			logado=True,
+			now=time.time(),
+		), 502
 	return redirect(url_for("admin", salvo=1))
 
 
