@@ -153,7 +153,8 @@ def combinar_configuracao(configuracao):
 def salvar_configuracao(configuracao):
 	if supabase_configurado():
 		if not salvar_configuracao_supabase(configuracao):
-			raise RuntimeError("Não foi possível salvar no Supabase. Verifique a chave e a tabela site_config.")
+			detalhe = f" Detalhe: {ultimo_erro_supabase}" if ultimo_erro_supabase else ""
+			raise RuntimeError(f"Não foi possível salvar no Supabase. Verifique a chave e a tabela site_config.{detalhe}")
 		return True
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
