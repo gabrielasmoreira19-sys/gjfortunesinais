@@ -127,10 +127,8 @@ def carregar_catalogo():
 
 def carregar_configuracao():
 	configuracao_remota = carregar_configuracao_supabase()
-	if configuracao_remota is not None:
+	if configuracao_remota:
 		return combinar_configuracao(configuracao_remota)
-	if supabase_configurado():
-		return combinar_configuracao({})
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	if not CONFIG_PATH.is_file():
 		with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
@@ -152,10 +150,8 @@ def combinar_configuracao(configuracao):
 
 def salvar_configuracao(configuracao):
 	if supabase_configurado():
-		if not salvar_configuracao_supabase(configuracao):
-			detalhe = f" Detalhe: {ultimo_erro_supabase}" if ultimo_erro_supabase else ""
-			raise RuntimeError(f"Não foi possível salvar no Supabase. Verifique a chave e a tabela site_config.{detalhe}")
-		return True
+		if salvar_configuracao_supabase(configuracao):
+			return True
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
 		json.dump(configuracao, arquivo, ensure_ascii=False, indent=4)
