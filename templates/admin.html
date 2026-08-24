@@ -346,8 +346,9 @@
                         <label>Título
                             <input name="story_titulo_{{ indice }}" value="{{ story.titulo|default('Story') }}">
                         </label>
-                        <label>Link do botão
+                        <label>Link da plataforma
                             <input name="story_link_{{ indice }}" value="{{ story.link|default('') }}" placeholder="https://">
+                            <span class="hint">Esse é o destino do botão “Abrir plataforma” no story.</span>
                         </label>
                         <label>Imagem
                             <input class="story-file-input" data-story-index="{{ indice }}" type="file" name="story_imagem_{{ indice }}" accept="image/*">
