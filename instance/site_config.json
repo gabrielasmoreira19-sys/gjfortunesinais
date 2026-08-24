@@ -19,14 +19,26 @@
         "nome": "Telegram",
         "link": "https://t.me/+movGF1krMxhkNDFh"
     },
+    "tema": {
+        "fundo_ativo": true,
+        "fundo_imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/tema_fundo_imagem_octyhk",
+        "favicon_emoji": "🎰"
+    },
+    "banner": {
+        "ativo": true,
+        "titulo": "GJFORTUNESINAIS",
+        "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.",
+        "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/banner_imagem_ieiflk",
+        "link": "#catalogo"
+    },
     "plataformas": [
         {
             "link": "https://www.trabalharpg.com/?id=120611476",
-            "imagem": "/admin/uploads/a0fd8530-fe84-404b-8f51-f1fa3ce24a1d.jfif"
+            "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787597226/gjfortunesinais/admin/plataforma_imagem_0_ld6sea"
         },
         {
             "link": "https://voltar777.com/?id=309305198",
-            "imagem": "/admin/uploads/photo_6069026017931629717_y.jpg"
+            "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787597227/gjfortunesinais/admin/plataforma_imagem_1_fkz96z"
         }
     ]
 }
