@@ -261,8 +261,8 @@ def salvar_upload(campo):
 				unique_filename=True,
 			)
 			return resultado.get("secure_url", "")
-		except Exception:
-			return ""
+		except Exception as erro:
+			raise RuntimeError(f"Falha ao enviar imagem: {erro}") from erro
 	ADMIN_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 	arquivo.save(ADMIN_UPLOADS_DIR / nome)
 	return url_for("admin_upload", nome=nome)
@@ -368,7 +368,10 @@ def salvar_admin():
 			}
 		)
 	configuracao["stories"] = stories
-	salvar_configuracao(configuracao)
+	try:
+		salvar_configuracao(configuracao)
+	except Exception as erro:
+		return render_template("admin.html", erro=f"Falha ao salvar: {erro}", configuracao=configuracao, logado=True, now=time.time()), 502
 	return redirect(url_for("admin", salvo=1))
 
 
