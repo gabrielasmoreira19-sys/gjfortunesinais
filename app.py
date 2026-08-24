@@ -128,6 +128,8 @@ def carregar_configuracao():
 	configuracao_remota = carregar_configuracao_supabase()
 	if configuracao_remota is not None:
 		return combinar_configuracao(configuracao_remota)
+	if supabase_configurado():
+		return combinar_configuracao({})
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	if not CONFIG_PATH.is_file():
 		with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
@@ -148,11 +150,14 @@ def combinar_configuracao(configuracao):
 
 
 def salvar_configuracao(configuracao):
-	if salvar_configuracao_supabase(configuracao):
-		return
+	if supabase_configurado():
+		if not salvar_configuracao_supabase(configuracao):
+			raise RuntimeError("Nao foi possivel salvar no Supabase. Verifique a chave e a tabela site_config.")
+		return True
 	CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 	with CONFIG_PATH.open("w", encoding="utf-8") as arquivo:
 		json.dump(configuracao, arquivo, ensure_ascii=False, indent=4)
+	return True
 
 
 def cabecalhos_supabase():
@@ -179,7 +184,7 @@ def carregar_configuracao_supabase():
 		)
 		resposta.raise_for_status()
 		registros = resposta.json()
-		return registros[0].get("config") if registros else None
+		return registros[0].get("config") if registros else {}
 	except (requests.RequestException, ValueError, IndexError, AttributeError):
 		return None
 
