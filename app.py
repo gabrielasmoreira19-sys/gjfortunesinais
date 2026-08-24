@@ -145,6 +145,18 @@ def combinar_configuracao(configuracao):
 			valor_atual = combinada.get(chave, {})
 			if isinstance(valor_atual, dict):
 				combinada[chave] = {**valor_padrao, **valor_atual}
+	for item in combinada.get("plataformas", []):
+		imagem = str(item.get("imagem", "")).strip()
+		if imagem.startswith("/admin/uploads/") and not imagem_config_disponivel(imagem):
+			item["imagem"] = ""
+	for chave in ("banner", "popup", "popup_2", "popup_3"):
+		imagem = str(combinada.get(chave, {}).get("imagem", "")).strip()
+		if imagem.startswith("/admin/uploads/") and not imagem_config_disponivel(imagem):
+			combinada[chave]["imagem"] = ""
+	for story in combinada.get("stories", []):
+		imagem = str(story.get("imagem", "")).strip()
+		if imagem.startswith("/admin/uploads/") and not imagem_config_disponivel(imagem):
+			story["imagem"] = ""
 	return combinada
 
 
