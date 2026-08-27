@@ -1,0 +1,5 @@
+pyTelegramBotAPI
+google-generativeai
+Pillow
+python-dotenv
+requests
