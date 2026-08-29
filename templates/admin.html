@@ -87,6 +87,37 @@
         .story-state.off { color: var(--muted); }
         .panel.hidden-item { display: none; }
         .row-hidden { display: none; }
+
+        .admin-tab-menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 12px 35px #0004;
+        }
+        .admin-tab-btn {
+            padding: 10px 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #241d35;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            cursor: pointer;
+        }
+        .admin-tab-btn:hover { color: var(--text); }
+        .admin-tab-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: #2f2645;
+        }
+        .admin-tab-pane { display: none; }
+        .admin-tab-pane.active { display: block; }
         .add-more-wrap { margin-top: 10px; }
         .add-more-btn {
             padding: 10px 12px;
@@ -243,6 +274,15 @@
         {% endif %}
 
         <form method="post" action="{{ url_for('salvar_admin') }}" enctype="multipart/form-data">
+            <div class="admin-tab-menu" id="adminTabMenu">
+                <button class="admin-tab-btn active" type="button" data-tab="banner">Banner &amp; Aparência</button>
+                <button class="admin-tab-btn" type="button" data-tab="popups">Pop-ups</button>
+                <button class="admin-tab-btn" type="button" data-tab="contato">Telegram &amp; WhatsApp</button>
+                <button class="admin-tab-btn" type="button" data-tab="stories">Stories</button>
+                <button class="admin-tab-btn" type="button" data-tab="plataformas">Plataformas</button>
+            </div>
+
+            <div class="admin-tab-pane active" data-tab-pane="banner">
             <section class="panel">
                 <h2>Banner principal</h2>
                 <div class="panel-grid">
@@ -273,7 +313,9 @@
                 </div>
                 <label class="check"><input type="checkbox" name="tema_fundo_ativo" {% if configuracao.tema.fundo_ativo %}checked{% endif %}> Ativar fundo desfocado/translúcido</label>
             </section>
+            </div>
 
+            <div class="admin-tab-pane" data-tab-pane="popups">
             <section class="panel" data-popup-order="1">
                 <h2>Pop-up de lançamento</h2>
                 <p class="hint">Dica: prefira usar URL da imagem (https://...) para evitar perder a foto após novo deploy.</p>
@@ -327,7 +369,9 @@
             <div class="add-more-wrap">
                 <button class="add-more-btn" id="addPopupBtn" type="button">+ Adicionar mais um pop-up</button>
             </div>
+            </div>
 
+            <div class="admin-tab-pane" data-tab-pane="contato">
             <section class="panel">
                 <h2>Telegram</h2>
                 <div class="panel-grid">
@@ -346,11 +390,13 @@
                 </div>
                 <label class="check"><input type="checkbox" name="whatsapp_ativo" {% if configuracao.whatsapp.ativo|default(false) %}checked{% endif %}> Exibir WhatsApp no site</label>
             </section>
+            </div>
 
+            <div class="admin-tab-pane" data-tab-pane="stories">
             <section class="panel">
                 <h2>Stories 24h</h2>
-                <p class="hint">Publique até 20 stories com imagem e botão de link. Marque "Renovar 24h" para iniciar uma nova janela de 24 horas.</p>
-                {% for indice in range(20) %}
+                <p class="hint">Publique quantos stories quiser (até 60) com imagem e botão de link. Marque "Renovar 24h" para iniciar uma nova janela de 24 horas.</p>
+                {% for indice in range(60) %}
                     {% set story = configuracao.stories[indice] if indice < configuracao.stories|length else {} %}
                     {% set expira = story.expira_em|default(0)|float %}
                     <div class="story-row" data-story-row="true">
@@ -380,11 +426,13 @@
                     <button class="add-more-btn" id="addStoryBtn" type="button">+ Adicionar mais um story</button>
                 </div>
             </section>
+            </div>
 
+            <div class="admin-tab-pane" data-tab-pane="plataformas">
             <section class="panel">
                 <h2>Plataformas</h2>
-                <p class="hint">Cadastre até 25 plataformas usando foto/logo e o link de destino.</p>
-                {% for indice in range(25) %}
+                <p class="hint">Cadastre quantas plataformas quiser (até 60) usando foto/logo e o link de destino.</p>
+                {% for indice in range(60) %}
                     {% set plataforma = configuracao.plataformas[indice] if indice < configuracao.plataformas|length else {} %}
                     <div class="platform-row" data-platform-row="true">
                         <label>Link da plataforma
@@ -401,6 +449,7 @@
                     <button class="add-more-btn" id="addPlatformBtn" type="button">+ Adicionar mais uma plataforma</button>
                 </div>
             </section>
+            </div>
 
             <button class="save" type="submit">Salvar alterações</button>
         </form>
@@ -722,6 +771,22 @@
         return Boolean(link || imagem);
     });
     controlarPopups();
+
+    function controlarAbasAdmin() {
+        const botoes = [...document.querySelectorAll('.admin-tab-btn')];
+        const paineis = [...document.querySelectorAll('.admin-tab-pane')];
+        if (!botoes.length || !paineis.length) return;
+        botoes.forEach(botao => {
+            botao.addEventListener('click', () => {
+                botoes.forEach(b => b.classList.remove('active'));
+                paineis.forEach(p => p.classList.remove('active'));
+                botao.classList.add('active');
+                const alvo = document.querySelector(`.admin-tab-pane[data-tab-pane="${botao.dataset.tab}"]`);
+                if (alvo) alvo.classList.add('active');
+            });
+        });
+    }
+    controlarAbasAdmin();
 })();
 </script>
 </body>

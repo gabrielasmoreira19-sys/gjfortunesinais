@@ -351,14 +351,14 @@ def salvar_admin():
 		"texto": request.form.get("whatsapp_texto", "Entre no canal de achadinhos").strip() or "Entre no canal de achadinhos",
 	}
 	plataformas = []
-	for indice in range(25):
+	for indice in range(60):
 		link = request.form.get(f"plataforma_link_{indice}", "").strip()
 		imagem = salvar_upload(f"plataforma_imagem_{indice}") or request.form.get(f"plataforma_imagem_url_{indice}", "").strip() or request.form.get(f"plataforma_imagem_atual_{indice}", "").strip()
 		if imagem or link:
 			plataformas.append({"link": link, "imagem": imagem})
 	configuracao["plataformas"] = plataformas
 	stories = []
-	for indice in range(20):
+	for indice in range(60):
 		titulo = request.form.get(f"story_titulo_{indice}", "Story").strip() or "Story"
 		link = request.form.get(f"story_link_{indice}", "").strip()
 		imagem = (
