@@ -1,5 +1,185 @@
 [
   {
+    "id": "hockey-league-wild-match",
+    "nome": "Hockey League Wild Match™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/hockey-league-wild-match-slot.png"
+  },
+  {
+    "id": "ripe-rewards",
+    "nome": "Ripe Rewards",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/ripe-rewards.png"
+  },
+  {
+    "id": "tut-s-treasure-tower",
+    "nome": "Tut’s Treasure Tower",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/29609d0776701023f5b834b90da579ae.png"
+  },
+  {
+    "id": "888-gold",
+    "nome": "888 Gold™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/888-gold-slot.png"
+  },
+  {
+    "id": "better-barn-house-bonanza",
+    "nome": "Better Barn House Bonanza",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/a88773b98b6c749c0587f02a556cf2bb.png"
+  },
+  {
+    "id": "crown-of-fire",
+    "nome": "Crown of Fire",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/crown-of-fire.png"
+  },
+  {
+    "id": "fire-archer",
+    "nome": "Fire Archer",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/fire-archer.png"
+  },
+  {
+    "id": "gates-of-olympus",
+    "nome": "Gates of Olympus™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/gates-of-olympus.png"
+  },
+  {
+    "id": "hockey-league",
+    "nome": "Hockey League",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/hockey-league-slot.png"
+  },
+  {
+    "id": "rocket-blast-megaways",
+    "nome": "Rocket Blast Megaways",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/rocket-blast-megaways.png"
+  },
+  {
+    "id": "vampy-party",
+    "nome": "Vampy Party",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/vampy-party.png"
+  },
+  {
+    "id": "gravity-bonanza",
+    "nome": "Gravity Bonanza™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/gravity-bonanza.png"
+  },
+  {
+    "id": "luxor-of-cleopatra",
+    "nome": "Luxor of Cleopatra",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/f8cc1871d141d092c0727b89ab018f51.png"
+  },
+  {
+    "id": "majestic-express-gold-run",
+    "nome": "Majestic Express – Gold Run",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/majestic-express-gold-run.png"
+  },
+  {
+    "id": "mummy-s-jewels-100",
+    "nome": "Mummy’s Jewels 100",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/11f78571bd951f09173e55b5feea138d.png"
+  },
+  {
+    "id": "power-of-merlin-megaways",
+    "nome": "Power of Merlin Megaways™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/power-of-merlin-megaways.png"
+  },
+  {
+    "id": "shining-hot-100",
+    "nome": "Shining Hot 100",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/shining-hot-100.png"
+  },
+  {
+    "id": "tales-of-egypt",
+    "nome": "Tales of Egypt",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/tales-of-egypt-slot.png"
+  },
+  {
+    "id": "treasure-wild",
+    "nome": "Treasure Wild™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/treasure-wild.png"
+  },
+  {
+    "id": "zeus-vs-typhon",
+    "nome": "Zeus vs Typhon",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/zeus-vs-typhon.png"
+  },
+  {
     "id": "book-of-the-fallen",
     "nome": "Book of the Fallen™",
     "provider": "Pragmatic Play",
@@ -18,8 +198,8 @@
     "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/bounty-hunter.png"
   },
   {
-    "id": "caishens-cash-pots",
-    "nome": "Caishen's Cash Pots",
+    "id": "caishen-s-cash-pots",
+    "nome": "Caishen’s Cash Pots",
     "provider": "Pragmatic Play",
     "minbet": "R$ 0,10",
     "padbet": "R$ 1,00",
@@ -63,7 +243,7 @@
     "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/shining-hot-20.png"
   },
   {
-    "id": "big-bass-secrets",
+    "id": "big-bass-secrets-of-the-golden-lake",
     "nome": "Big Bass Secrets of the Golden Lake",
     "provider": "Pragmatic Play",
     "minbet": "R$ 0,10",
@@ -214,5 +394,1013 @@
     "padbet": "R$ 1,00",
     "maxbet": "R$ 100,00",
     "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/sugar-rush-xmas.png"
+  },
+  {
+    "id": "sweet-rush-bonanza",
+    "nome": "Sweet Rush Bonanza",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/sweet-rush-bonanza.png"
+  },
+  {
+    "id": "the-alter-ego",
+    "nome": "The Alter Ego",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/the-alter-ego.png"
+  },
+  {
+    "id": "the-wild-machine",
+    "nome": "The Wild Machine™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/the-wild-machine-slot.png"
+  },
+  {
+    "id": "aladdin-and-the-sorcerer",
+    "nome": "Aladdin and the Sorcerer™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/aladdin-and-the-sorcerer-slot.png"
+  },
+  {
+    "id": "ancient-egypt",
+    "nome": "Ancient Egypt™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/ancient-egypt-slot.png"
+  },
+  {
+    "id": "big-bass-christmas-frozen-lake",
+    "nome": "Big Bass Christmas – Frozen Lake",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/big-bass-christmas-frozen-lake.png"
+  },
+  {
+    "id": "bigger-bass-splash",
+    "nome": "Bigger Bass Splash",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/bigger-bass-splash.png"
+  },
+  {
+    "id": "greedy-fortune-pig",
+    "nome": "Greedy Fortune Pig",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/greedy-fortune-pig.png"
+  },
+  {
+    "id": "ice-lobster",
+    "nome": "Ice Lobster",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/ice-lobster.png"
+  },
+  {
+    "id": "monster-superlanche",
+    "nome": "Monster Superlanche",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/monster-superlanche.png"
+  },
+  {
+    "id": "pizza-pizza-pizza",
+    "nome": "PIZZA! PIZZA? PIZZA!™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/pizza-pizza-pizza.png"
+  },
+  {
+    "id": "sleeping-dragon-ultra-dark",
+    "nome": "Sleeping Dragon Ultra Dark",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/ee3e6d142865eccbd18eaa93e6caaad8.png"
+  },
+  {
+    "id": "candy-rush",
+    "nome": "Candy Rush",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/31cb4866b95443c60145575035399bea.png"
+  },
+  {
+    "id": "empty-the-bank",
+    "nome": "Empty the Bank™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/empty-the-bank.png"
+  },
+  {
+    "id": "fire-stampede",
+    "nome": "Fire Stampede™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/fire-stampede.png"
+  },
+  {
+    "id": "hercules-son-of-zeus",
+    "nome": "Hercules Son of Zeus™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/hercules-son-zeus-slot.png"
+  },
+  {
+    "id": "journey-to-the-west",
+    "nome": "Journey to the West™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/journey-to-the-west-slot.png"
+  },
+  {
+    "id": "octobeer-fortunes",
+    "nome": "Octobeer Fortunes",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/octobeer-fortunes.png"
+  },
+  {
+    "id": "red-hot-luck",
+    "nome": "Red Hot Luck",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/red-hot-luck.png"
+  },
+  {
+    "id": "rock-vegas",
+    "nome": "Rock Vegas™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/rock-vegas.png"
+  },
+  {
+    "id": "the-dog-house-multihold",
+    "nome": "The Dog House Multihold™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/the-dog-house-multihold.png"
+  },
+  {
+    "id": "the-ultimate-5",
+    "nome": "The Ultimate 5",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/the-ultimate-5.png"
+  },
+  {
+    "id": "5-lions-gold",
+    "nome": "5 Lions Gold™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/5-lions-gold-slot.png"
+  },
+  {
+    "id": "big-bass-return-to-the-races",
+    "nome": "Big Bass Return to the Races",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/big-bass-return-to-the-races.png"
+  },
+  {
+    "id": "brick-house-bonanza",
+    "nome": "Brick House Bonanza",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/brick-house-bonanza.png"
+  },
+  {
+    "id": "goblin-heist-powernudge",
+    "nome": "Goblin Heist PowerNudge™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/goblin-heist-powernudge.png"
+  },
+  {
+    "id": "joker-s-jewels-hot",
+    "nome": "Joker’s Jewels Hot",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/jokers-jewels-hot.png"
+  },
+  {
+    "id": "pig-farm",
+    "nome": "Pig Farm",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/pig-farm.png"
+  },
+  {
+    "id": "wild-wild-bananas",
+    "nome": "Wild Wild Bananas™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/wild-wild-bananas.png"
+  },
+  {
+    "id": "3-dancing-monkeys",
+    "nome": "3 Dancing Monkeys™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/3-dancing-monkeys.png"
+  },
+  {
+    "id": "5-frozen-charms-megaways",
+    "nome": "5 Frozen Charms Megaways™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/5-frozen-charms-megaways.png"
+  },
+  {
+    "id": "big-bass-trophy-catch",
+    "nome": "Big Bass Trophy Catch",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/a1400c0dc3d93b70beac176513d04da6.png"
+  },
+  {
+    "id": "cowboy-coins",
+    "nome": "Cowboy Coins™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/cowboy-coins.png"
+  },
+  {
+    "id": "diamonds-are-forever-3-lines",
+    "nome": "Diamonds are Forever 3 Lines™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/diamonds-are-forever-3-lines-slot.png"
+  },
+  {
+    "id": "emotiwins",
+    "nome": "Emotiwins",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/emotiwins.png"
+  },
+  {
+    "id": "floating-dragon-hold-and-spin",
+    "nome": "Floating Dragon Hold and Spin™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/floating-dragon-hold-and-spin.png"
+  },
+  {
+    "id": "triple-pot-plinko-hercules",
+    "nome": "Triple Pot Plinko – Hercules",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/530eaa32041b1cb38e7ab254a7bb3bfe.png"
+  },
+  {
+    "id": "anaconda-gold",
+    "nome": "Anaconda Gold",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/anaconda-gold.png"
+  },
+  {
+    "id": "lucky-s-wild-pub-2",
+    "nome": "Lucky’s Wild Pub 2",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/1979441ab5d9769d9e06bcbed51a7c39.png"
+  },
+  {
+    "id": "wisdom-of-athena-1000",
+    "nome": "Wisdom of Athena 1000",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/wisdom-of-athena-1000.png"
+  },
+  {
+    "id": "7-clovers-of-fortune",
+    "nome": "7 Clovers of Fortune",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/7-clovers-of-fortune.png"
+  },
+  {
+    "id": "colossal-cash-zone",
+    "nome": "Colossal Cash Zone™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/colossal-cash-zone.png"
+  },
+  {
+    "id": "dragon-kingdom",
+    "nome": "Dragon Kingdom™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/dragon-kingdom-slot.png"
+  },
+  {
+    "id": "jackpot-blaze",
+    "nome": "Jackpot Blaze",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/jackpot-blaze.png"
+  },
+  {
+    "id": "leprechaun-song",
+    "nome": "Leprechaun Song™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/leprechaun-song-slot.png"
+  },
+  {
+    "id": "sweet-bonanza-2500",
+    "nome": "Sweet Bonanza 2500",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/e7ae90dda092f58a1c9e06144f716d71.png"
+  },
+  {
+    "id": "big-bass-vegas-double-down-deluxe",
+    "nome": "Big Bass Vegas Double Down Deluxe",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/big-bass-double-down-deluxe.png"
+  },
+  {
+    "id": "code-of-cairo",
+    "nome": "Code of Cairo",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/code-of-cairo.png"
+  },
+  {
+    "id": "dragon-hero",
+    "nome": "Dragon Hero™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/dragon-hero.png"
+  },
+  {
+    "id": "greek-gods",
+    "nome": "Greek Gods™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/greek-gods-slot.png"
+  },
+  {
+    "id": "haunted-crypt",
+    "nome": "Haunted Crypt",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/22530eb1dc0094d5b950e5fa7fe00b5c.png"
+  },
+  {
+    "id": "john-hunter-and-the-mayan-gods",
+    "nome": "John Hunter and the Mayan Gods™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/john-hunter-and-the-mayan-gods.png"
+  },
+  {
+    "id": "shining-hot-5",
+    "nome": "Shining Hot 5",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/shining-hot-5.png"
+  },
+  {
+    "id": "wild-wild-joker",
+    "nome": "Wild Wild Joker",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/wild-wild-joker.png"
+  },
+  {
+    "id": "buffalo-king-megaways",
+    "nome": "Buffalo King Megaways™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/buffalo-king-megaways.png"
+  },
+  {
+    "id": "captain-kraken-megaways",
+    "nome": "Captain Kraken Megaways",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/captain-kraken-megaways.png"
+  },
+  {
+    "id": "genie-s-gem-bonanza",
+    "nome": "Genie’s Gem Bonanza",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/genies-gem-bonanza.png"
+  },
+  {
+    "id": "sleeping-dragon",
+    "nome": "Sleeping Dragon",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/sleeping-dragon.png"
+  },
+  {
+    "id": "three-star-fortune",
+    "nome": "Three Star Fortune™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/three-star-fortune-slot.png"
+  },
+  {
+    "id": "wolf-gold",
+    "nome": "Wolf Gold®",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/wolf-gold-slot.png"
+  },
+  {
+    "id": "chicken-drop",
+    "nome": "Chicken Drop®",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/chicken-drop.png"
+  },
+  {
+    "id": "death-dominion",
+    "nome": "Death Dominion",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/993659e0c34d88d648f6e49f2775b6db.png"
+  },
+  {
+    "id": "fortune-hit-n-roll",
+    "nome": "Fortune Hit’n Roll",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/fortune-hitn-roll.png"
+  },
+  {
+    "id": "harvest-moon-grave-profits",
+    "nome": "Harvest Moon – Grave Profits",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/691fe4c704e31724801164b757e49561.png"
+  },
+  {
+    "id": "john-hunter-and-the-quest-for-bermuda-riches",
+    "nome": "John Hunter and the Quest for Bermuda Riches™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/john-hunter-and-the-quest-for-bermuda-riches.png"
+  },
+  {
+    "id": "lucky-ox",
+    "nome": "Lucky Ox",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/lucky-ox.png"
+  },
+  {
+    "id": "money-stacks",
+    "nome": "Money Stacks",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/money-stacks.png"
+  },
+  {
+    "id": "release-the-kraken",
+    "nome": "Release the Kraken®",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/release-the-kraken-slot.png"
+  },
+  {
+    "id": "3-genie-wishes",
+    "nome": "3 Genie Wishes™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/3-genie-wishes-slot.png"
+  },
+  {
+    "id": "777-rush",
+    "nome": "777 Rush",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/777-rush.png"
+  },
+  {
+    "id": "book-of-monsters",
+    "nome": "Book of Monsters",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/book-of-monsters.png"
+  },
+  {
+    "id": "caishen-s-cash",
+    "nome": "Caishen’s Cash™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/caishens-cash-slot.png"
+  },
+  {
+    "id": "gates-of-valhalla",
+    "nome": "Gates of Valhalla™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/gates-of-valhalla.png"
+  },
+  {
+    "id": "gods-of-giza",
+    "nome": "Gods of Giza™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/gods-of-giza.png"
+  },
+  {
+    "id": "spirit-of-adventure",
+    "nome": "Spirit of Adventure",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/spirit-of-adventure.png"
+  },
+  {
+    "id": "the-magic-cauldron-enchanted-brew",
+    "nome": "The Magic Cauldron – Enchanted Brew™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/the-magic-cauldron-enchanted-brew.png"
+  },
+  {
+    "id": "big-bass-halloween-2",
+    "nome": "Big Bass Halloween 2",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/big-bass-halloween-2.png"
+  },
+  {
+    "id": "blitz-super-wheel",
+    "nome": "Blitz Super Wheel",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/blitz-super-wheel.png"
+  },
+  {
+    "id": "club-tropicana",
+    "nome": "Club Tropicana™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/club-tropicana.png"
+  },
+  {
+    "id": "joker-s-revenge",
+    "nome": "Joker’s Revenge",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/4f51e1f87d19dd58fbd9bf44dc7533ad.png"
+  },
+  {
+    "id": "piggy-bankers",
+    "nome": "Piggy Bankers™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/piggy-bankers.png"
+  },
+  {
+    "id": "pinup-girls",
+    "nome": "Pinup Girls",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/pinup-girls.png"
+  },
+  {
+    "id": "pirates-pub",
+    "nome": "Pirates Pub™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/pirates-pub.png"
+  },
+  {
+    "id": "super-x",
+    "nome": "Super X™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/super-x.png"
+  },
+  {
+    "id": "wild-wildebeest-wins",
+    "nome": "Wild Wildebeest Wins",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/wild-wildebeest-wins.png"
+  },
+  {
+    "id": "cash-chips",
+    "nome": "Cash Chips™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/cash-chips.png"
+  },
+  {
+    "id": "chests-of-cai-shen-2",
+    "nome": "Chests of Cai Shen 2",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/chests-of-cai-shen-2.png"
+  },
+  {
+    "id": "lobster-house",
+    "nome": "Lobster House",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/lobster-house.png"
+  },
+  {
+    "id": "lucky-lightning",
+    "nome": "Lucky Lightning™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/lucky-lightning.png"
+  },
+  {
+    "id": "striking-hot-5",
+    "nome": "Striking Hot 5",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/striking-hot-5.png"
+  },
+  {
+    "id": "book-of-kingdoms",
+    "nome": "Book of Kingdoms®",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/book-of-kingdoms.png"
+  },
+  {
+    "id": "castle-of-fire",
+    "nome": "Castle of Fire",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/castle-of-fire.png"
+  },
+  {
+    "id": "escape-the-pyramid-fire-ice",
+    "nome": "Escape the Pyramid – Fire & Ice",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/escape-the-pyramid-fire-ice.png"
+  },
+  {
+    "id": "master-joker",
+    "nome": "Master Joker™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/master-joker-slot.png"
+  },
+  {
+    "id": "spellbinding-mystery",
+    "nome": "Spellbinding Mystery™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/spellbinding-mystery.png"
+  },
+  {
+    "id": "african-elephant",
+    "nome": "African Elephant™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/african-elephant.png"
+  },
+  {
+    "id": "dragon-pots-megaways",
+    "nome": "Dragon Pots Megaways™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/5d5980a4d127cf10673790a546c89198.png"
+  },
+  {
+    "id": "fire-stampede-ultimate",
+    "nome": "Fire Stampede Ultimate",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/fire-stampede-ultimate.png"
+  },
+  {
+    "id": "forge-of-olympus",
+    "nome": "Forge of Olympus™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/forge-of-olympus.png"
+  },
+  {
+    "id": "fury-of-anubis",
+    "nome": "Fury of Anubis",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/aa548ecf6a012d6a6146d14e9b736cf7.png"
+  },
+  {
+    "id": "lucky-dice",
+    "nome": "Lucky Dice",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/lucky-dice.png"
+  },
+  {
+    "id": "starlight-princess-super-scatter",
+    "nome": "Starlight Princess Super Scatter",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/starlight-princess-super-scatter.png"
+  },
+  {
+    "id": "bloody-dawn",
+    "nome": "Bloody Dawn",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/bloody-dawn.png"
+  },
+  {
+    "id": "great-ghosts",
+    "nome": "Great Ghosts!",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/ade3c85f91546477ed0659329f90c0a9.png"
+  },
+  {
+    "id": "hot-to-burn-extreme",
+    "nome": "Hot to Burn® Extreme",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/hot-to-burn-extreme.png"
+  },
+  {
+    "id": "mysterious",
+    "nome": "Mysterious™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/mysterious-slot.png"
+  },
+  {
+    "id": "angel-vs-sinner",
+    "nome": "Angel vs Sinner",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/angel-vs-sinner.png"
+  },
+  {
+    "id": "blazing-wilds-megaways",
+    "nome": "Blazing Wilds Megaways",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/blazing-wilds-megaways.png"
+  },
+  {
+    "id": "dragon-s-gate-bonus-choice",
+    "nome": "Dragon’s Gate – Bonus Choice",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/f6663a09095513273475140dc9aba3a1.png"
+  },
+  {
+    "id": "fire-strike",
+    "nome": "Fire Strike™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/fire-strike-slot.png"
+  },
+  {
+    "id": "super-tiki-strike",
+    "nome": "Super Tiki Strike",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/super-tiki-strike.png"
+  },
+  {
+    "id": "8-dragons",
+    "nome": "8 Dragons™",
+    "provider": "Pragmatic Play",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/pragmatic-play/cover/8-dragons-slot.png"
   }
 ]
