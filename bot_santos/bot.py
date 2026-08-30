@@ -30,6 +30,7 @@ STICKER_IDS = [item.strip() for item in os.environ.get("STICKER_IDS", "").split(
 ARQUIVO_STICKERS = os.path.join(os.path.dirname(__file__), "stickers_santos.json")
 ARQUIVO_STICKERS_BICHO = os.path.join(os.path.dirname(__file__), "stickers_bicho.json")
 ARQUIVO_CONFIG_GRUPOS = os.path.join(os.path.dirname(__file__), "config_grupos.json")
+LOCK_STICKERS = threading.Lock()  # Sincroniza acesso ao arquivo de stickers
 
 
 def carregar_lista_json(caminho):
@@ -40,8 +41,8 @@ def carregar_lista_json(caminho):
         return []
 
 
-def salvar_lista_json(dados, caminho):
-    escrever_json_atomico(caminho, dados)
+def salvar_lista_json(dados, caminho, usar_lock=None):
+    escrever_json_atomico(caminho, dados, usar_lock)
 
 
 def carregar_stickers():
@@ -49,7 +50,7 @@ def carregar_stickers():
 
 
 def salvar_stickers(stickers):
-    salvar_lista_json(stickers, ARQUIVO_STICKERS)
+    salvar_lista_json(stickers, ARQUIVO_STICKERS, LOCK_STICKERS)
 
 
 STICKER_IDS.extend(item for item in carregar_stickers() if item not in STICKER_IDS)
@@ -146,38 +147,59 @@ def carregar_config_grupos():
 
 def salvar_config_grupos(config_grupos):
     bruto = {str(chat_id): config for chat_id, config in config_grupos.items()}
-    escrever_json_atomico(ARQUIVO_CONFIG_GRUPOS, bruto)
+    escrever_json_atomico(ARQUIVO_CONFIG_GRUPOS, bruto, LOCK_CONFIG)
 
 
 CONFIG_GRUPOS = carregar_config_grupos()
 ARQUIVO_RANKING = os.path.join(os.path.dirname(__file__), "ranking_semanal.json")
+LOCK_RANKING = threading.Lock()  # Sincroniza acesso concorrente ao ranking
+LOCK_CONFIG = threading.Lock()   # Sincroniza acesso ao config_grupos
 
 
-
-def escrever_json_atomico(caminho, dados):
+def escrever_json_atomico(caminho, dados, usar_lock=None):
     caminho_temp = f"{caminho}.tmp"
-    with open(caminho_temp, "w", encoding="utf-8") as arquivo:
-        json.dump(dados, arquivo, ensure_ascii=False, indent=2)
-        arquivo.flush()
-        os.fsync(arquivo.fileno())
-    os.replace(caminho_temp, caminho)
+    
+    # Se for usar lock, adquire o lock
+    if usar_lock:
+        usar_lock.acquire()
+    
+    try:
+        with open(caminho_temp, "w", encoding="utf-8") as arquivo:
+            json.dump(dados, arquivo, ensure_ascii=False, indent=2)
+            arquivo.flush()
+            os.fsync(arquivo.fileno())
+        
+        # Retry loop para Windows (que pode ter problemas com os.replace)
+        for tentativa in range(3):
+            try:
+                os.replace(caminho_temp, caminho)
+                break
+            except PermissionError:
+                if tentativa < 2:
+                    time.sleep(0.1)  # Aguarda 100ms antes de tentar novamente
+                else:
+                    raise
+    finally:
+        if usar_lock:
+            usar_lock.release()
 
 
 def carregar_ranking():
-    try:
-        with open(ARQUIVO_RANKING, "r", encoding="utf-8") as arquivo:
-            bruto = json.load(arquivo)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-    # As chaves viram string no JSON; sem essa conversão, o ranking salvo nunca é reencontrado após reiniciar.
-    convertido = {}
-    for chat_id_str, jogadores in bruto.items():
-        convertido[int(chat_id_str)] = {int(user_id_str): dados for user_id_str, dados in jogadores.items()}
-    return convertido
+    with LOCK_RANKING:
+        try:
+            with open(ARQUIVO_RANKING, "r", encoding="utf-8") as arquivo:
+                bruto = json.load(arquivo)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+        # As chaves viram string no JSON; sem essa conversão, o ranking salvo nunca é reencontrado após reiniciar.
+        convertido = {}
+        for chat_id_str, jogadores in bruto.items():
+            convertido[int(chat_id_str)] = {int(user_id_str): dados for user_id_str, dados in jogadores.items()}
+        return convertido
 
 
 def salvar_ranking():
-    escrever_json_atomico(ARQUIVO_RANKING, {str(chat_id): {str(uid): dados for uid, dados in jogadores.items()} for chat_id, jogadores in PONTOS_SEMANAL.items()})
+    escrever_json_atomico(ARQUIVO_RANKING, {str(chat_id): {str(uid): dados for uid, dados in jogadores.items()} for chat_id, jogadores in PONTOS_SEMANAL.items()}, LOCK_RANKING)
 
 
 PONTOS_SEMANAL = carregar_ranking()
@@ -778,18 +800,20 @@ def rotina_jogos_automaticos():
 
 
 ARQUIVO_GATILHOS = os.path.join(os.path.dirname(__file__), "gatilhos_plataformas.json")
+LOCK_GATILHOS = threading.Lock()  # Sincroniza acesso ao arquivo de gatilhos
 
 
 def carregar_gatilhos():
-    try:
-        with open(ARQUIVO_GATILHOS, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+    with LOCK_GATILHOS:
+        try:
+            with open(ARQUIVO_GATILHOS, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
 
 
 def salvar_gatilhos(dados):
-    escrever_json_atomico(ARQUIVO_GATILHOS, dados)
+    escrever_json_atomico(ARQUIVO_GATILHOS, dados, LOCK_GATILHOS)
 
 
 GATILHOS_PLATAFORMAS = carregar_gatilhos()

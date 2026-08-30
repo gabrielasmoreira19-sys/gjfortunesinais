@@ -41,9 +41,9 @@
         "link": "https://t.me/+movGF1krMxhkNDFh"
     },
     "whatsapp": {
-        "ativo": false,
-        "link": "",
-        "texto": "Entre no canal de achadinhos"
+        "ativo": true,
+        "link": "https://wa.me/+5511999999999",
+        "texto": "Entre no canal do WhatsApp"
     },
     "plataformas": [
         {
