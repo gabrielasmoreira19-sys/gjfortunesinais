@@ -156,7 +156,13 @@
         .hero-card span { display:grid; place-items:center; width:100%; height:100%; color:#e8dffc; font-family:'Barlow Condensed',sans-serif; font-size:24px; letter-spacing:.4px; }
         .hero-carousel:hover .hero-track { animation-play-state:paused; }
         .platform-dance { margin-top:12px; overflow:hidden; border:1px solid #665487; border-radius:9px; background:linear-gradient(135deg,#3a2f55,#272038); box-shadow:0 12px 30px #0004; }
-        .platform-dance .platform-showcase { padding:12px 14px; }
+        .platform-dance .platform-showcase { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:12px; padding:14px; overflow:visible; perspective:none; }
+        .platform-dance .platform-card { min-height:104px; padding:10px; border:1px solid #ffffff1f; border-radius:9px; background:linear-gradient(160deg,#4d3c68,#251d37); box-shadow:0 7px 16px #0005; animation:none; }
+        .platform-dance .platform-card:hover { transform:translateY(-3px); border-color:var(--gold); }
+        .platform-dance .platform-card img { width:72px; height:72px; max-width:100%; max-height:none; border-radius:12px; object-fit:cover; transform:none; }
+        .platform-dance .platform-card span { transform:none; }
+        @media(min-width:1101px) { .grid { grid-template-columns:repeat(5,minmax(0,1fr)); } }
+        @media(max-width:760px) { .platform-dance .platform-showcase { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:10px; } .platform-dance .platform-card { min-height:86px; padding:7px; } .platform-dance .platform-card img { width:58px; height:58px; border-radius:9px; } }
         .card .info {
             position:relative;
             overflow:hidden;
