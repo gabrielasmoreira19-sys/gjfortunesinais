@@ -42,6 +42,7 @@ if CLOUDINARY_CONFIGURED:
 	)
 PG_GAMES_URL = "https://www.pgsoft.com/pt/games/all/"
 PG_SYNC_INTERVAL = 6 * 60 * 60
+INTERVALO_SINAIS_SEGUNDOS = 5 * 60
 PG_REMOVED_NAMES = {
 	"World Cup",
 	"Zeus vs Hades - Gods of War",
@@ -418,6 +419,31 @@ def encontrar_jogo(jogo_id):
 	)
 
 
+def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
+	instante = time.time() if agora is None else agora
+	ciclo = int(instante // INTERVALO_SINAIS_SEGUNDOS)
+	gerador = random.Random(f"gjfortunesinais:{ciclo}:{jogo_id}")
+	minima = gerador.randint(18, 88)
+	padrao = gerador.randint(18, 88)
+	maxima = gerador.randint(18, 96)
+	escada = gerar_escada_apostas(jogo)
+	minima_aposta = escada[0]
+	meio = escada[1:max(2, len(escada) // 2)] or escada
+	altas = escada[max(1, len(escada) // 2):] or escada
+	return {
+		"ciclo": ciclo,
+		"valido_ate": (ciclo + 1) * INTERVALO_SINAIS_SEGUNDOS,
+		"minima": minima,
+		"padrao": padrao,
+		"maxima": maxima,
+		"apostas": {
+			"minima": formatar_valor_aposta(minima_aposta),
+			"padrao": formatar_valor_aposta(gerador.choice(meio)),
+			"maxima": formatar_valor_aposta(gerador.choice(altas)),
+		},
+	}
+
+
 def preparar_faixas_indicativas(catalogo):
 	for indice, jogo in enumerate(catalogo.get("pg", [])):
 		jogo["exibir_min"] = jogo.get("min", "0,40")
@@ -586,28 +612,9 @@ def sinal(jogo_id):
 	jogo = encontrar_jogo(jogo_id)
 	if jogo is None:
 		return jsonify({"erro": "Jogo não encontrado"}), 404
-
-	minima = random.randint(42, 84)
-	padrao = random.randint(max(minima - 8, 45), min(minima + 12, 88))
-	maxima = random.randint(max(padrao, 55), 96)
-	escada = gerar_escada_apostas(jogo)
-	minima_aposta = escada[0]
-	meio = escada[1:max(2, len(escada) // 2)] or escada
-	altas = escada[max(1, len(escada) // 2):] or escada
-	padrao_aposta = random.choice(meio)
-	maxima_aposta = random.choice(altas)
-	return jsonify(
-		{
-			"minima": minima,
-			"padrao": padrao,
-			"maxima": maxima,
-			"apostas": {
-				"minima": formatar_valor_aposta(minima_aposta),
-				"padrao": formatar_valor_aposta(padrao_aposta),
-				"maxima": formatar_valor_aposta(maxima_aposta),
-			},
-		}
-	)
+	resposta = jsonify(gerar_sinal_do_ciclo(jogo_id, jogo))
+	resposta.headers["Cache-Control"] = "no-store"
+	return resposta
 
 
 if __name__ == "__main__":
