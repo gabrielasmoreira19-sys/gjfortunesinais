@@ -3,8 +3,13 @@
         "ativo": true,
         "titulo": "GJFORTUNESINAIS",
         "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.",
-        "imagem": "",
+        "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/banner_imagem_ieiflk",
         "link": "#catalogo"
+    },
+    "tema": {
+        "fundo_ativo": true,
+        "fundo_imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/tema_fundo_imagem_octyhk",
+        "favicon_emoji": "🎰"
     },
     "popup": {
         "ativo": false,
@@ -14,22 +19,31 @@
         "link": "#lancamentos",
         "botao": "Ver lançamentos"
     },
+    "popup_2": {
+        "ativo": false,
+        "titulo": "Nova plataforma",
+        "texto": "Confira a segunda oferta de entrada.",
+        "imagem": "",
+        "link": "#lancamentos",
+        "botao": "Entrar agora"
+    },
+    "popup_3": {
+        "ativo": false,
+        "titulo": "Oferta especial",
+        "texto": "Confira a terceira oferta de entrada.",
+        "imagem": "",
+        "link": "#lancamentos",
+        "botao": "Entrar agora"
+    },
     "telegram": {
         "ativo": true,
         "nome": "Telegram",
         "link": "https://t.me/+movGF1krMxhkNDFh"
     },
-    "tema": {
-        "fundo_ativo": true,
-        "fundo_imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/tema_fundo_imagem_octyhk",
-        "favicon_emoji": "🎰"
-    },
-    "banner": {
-        "ativo": true,
-        "titulo": "GJFORTUNESINAIS",
-        "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.",
-        "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787596765/gjfortunesinais/admin/banner_imagem_ieiflk",
-        "link": "#catalogo"
+    "whatsapp": {
+        "ativo": false,
+        "link": "",
+        "texto": "Entre no canal de achadinhos"
     },
     "plataformas": [
         {
@@ -40,5 +54,6 @@
             "link": "https://voltar777.com/?id=309305198",
             "imagem": "https://res.cloudinary.com/ypngwuxt/image/upload/v1787597227/gjfortunesinais/admin/plataforma_imagem_1_fkz96z"
         }
-    ]
+    ],
+    "stories": []
 }

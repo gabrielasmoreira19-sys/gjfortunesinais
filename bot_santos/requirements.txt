@@ -1,5 +1,6 @@
 pyTelegramBotAPI
-google-generativeai
+google-genai
 Pillow
 python-dotenv
 requests
+Flask

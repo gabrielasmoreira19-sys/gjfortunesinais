@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel Santos</title>
+  <style>
+    :root { --ink: #2c1930; --plum: #4f1f4b; --pink: #f15ca8; --paper: #fff8fc; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; color: var(--ink); font-family: Georgia, serif; background: var(--paper); }
+    main { width: min(100%, 390px); border: 2px solid var(--plum); padding: 28px; background: #fff; box-shadow: 8px 8px 0 #ffd1e7; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    p { line-height: 1.5; }
+    label { display: block; margin: 22px 0 8px; font-weight: bold; }
+    input, button { width: 100%; min-height: 48px; font: inherit; }
+    input { border: 1px solid var(--plum); padding: 10px; }
+    button { border: 0; background: var(--plum); color: white; cursor: pointer; font-weight: bold; }
+    .erro { color: #a01950; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🌸 Santos</h1>
+    <p>Painel privado de controle.</p>
+    {% if erro %}<p class="erro">{{ erro }}</p>{% endif %}
+    <form method="post">
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" required autofocus>
+      <p><button type="submit">Entrar no painel</button></p>
+    </form>
+  </main>
+</body>
+</html>

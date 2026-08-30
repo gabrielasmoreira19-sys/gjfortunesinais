@@ -1,3 +1,5 @@
 .env
 __pycache__/
 *.pyc
+ranking_semanal.json
+stickers_santos.json

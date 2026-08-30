@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel Santos</title>
+  <style>
+    :root { --ink: #2c1930; --plum: #4f1f4b; --pink: #f15ca8; --paper: #fff8fc; --green: #18754a; --red: #af2654; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; padding: 20px; color: var(--ink); font-family: Georgia, serif; background: var(--paper); }
+    main { width: min(100%, 520px); margin: 0 auto; }
+    header { border-bottom: 2px solid var(--plum); padding: 24px 0 18px; }
+    h1 { margin: 0; font-size: 34px; }
+    .subtitle { margin: 8px 0 0; }
+    .status { display: flex; align-items: center; gap: 10px; margin: 28px 0; padding: 18px; border: 1px solid var(--plum); background: #fff; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: {{ '#18754a' if ativa else '#af2654' }}; }
+    .status strong { color: {{ '#18754a' if ativa else '#af2654' }}; }
+    .actions { display: grid; gap: 12px; }
+    form { margin: 0; }
+    button { width: 100%; min-height: 56px; border: 0; color: white; font: bold 17px Georgia, serif; cursor: pointer; }
+    .start { background: var(--green); }
+    .stop { background: var(--red); }
+    .exit { background: transparent; border: 1px solid var(--plum); color: var(--plum); margin-top: 28px; }
+    .note { margin-top: 26px; font-size: 14px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>🌸 Painel da Santos</h1>
+      <p class="subtitle">Controle privado do bot no seu computador.</p>
+    </header>
+    <section class="status">
+      <span class="dot"></span>
+      <div>Status: <strong>{{ 'Santos ligada' if ativa else 'Santos desligada' }}</strong></div>
+    </section>
+    <section class="actions">
+      <div class="note">Este painel é para uso no computador local. Não há controle por celular.</div>
+    </section>
+    <form action="{{ url_for('sair') }}" method="post"><button class="exit" type="submit">Sair</button></form>
+  </main>
+</body>
+</html>

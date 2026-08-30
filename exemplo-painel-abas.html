@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Exemplo Painel - Abas por Botão + Stories Infinitos</title>
+<style>
+  :root {
+    --bg: #0d0d18;
+    --panel: rgba(25, 23, 37, 0.92);
+    --line: rgba(255,255,255,0.12);
+    --gold: #f4c65b;
+    --text: #f6f0ff;
+    --muted: #b9b1c6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #20172f 0%, #0d0d18 40%, #080910 100%);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 20px;
+  }
+  .shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: rgba(18,18,26,0.9);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .shell-title {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+  }
+
+  /* ---- MENU DE ABAS (BOTÕES) ---- */
+  .tab-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+  }
+  .tab-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #6a4fa8, #3d2a63);
+    border-color: rgba(255,255,255,0.25);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  }
+
+  .tab-content { padding: 22px 20px 26px; min-height: 320px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fade .18s ease; }
+  @keyframes fade { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+
+  .pane-title {
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #f4f0f9;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  label { display:block; font-size:.78rem; color: var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.03em; }
+  input[type=text], input[type=url] {
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    background: rgba(255,255,255,0.04); color:#fff; font-size:.85rem;
+  }
+  .save-btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg,#f4c65b,#c98f1f);
+    color: #24160a;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  /* ---- STORIES INFINITOS ---- */
+  .story-list { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .story-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border:1px solid var(--line); border-radius:10px;
+    background: rgba(255,255,255,0.03);
+  }
+  .story-item span.badge {
+    background: rgba(244,198,91,0.15); color: var(--gold); font-weight:800;
+    padding:4px 8px; border-radius:6px; font-size:.72rem;
+  }
+  .story-item input { flex:1; }
+  .story-item .remove-story {
+    border:none; background:rgba(255,60,60,.15); color:#ff8080; border-radius:6px;
+    padding:6px 10px; cursor:pointer; font-weight:700;
+  }
+  .add-story-btn {
+    padding: 9px 16px; border-radius: 8px; border:1px dashed var(--line);
+    background: transparent; color: var(--muted); cursor:pointer; font-weight:700;
+  }
+  .add-story-btn:hover { color:#fff; border-color:#fff; }
+  .hint { color: var(--muted); font-size:.78rem; margin-top:6px; }
+
+  /* ---- CAMPO DE IMAGEM COM PREVIEW ---- */
+  .image-field { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .image-preview {
+    width:64px; height:64px; border-radius:10px; border:1px dashed var(--line);
+    background: rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center;
+    overflow:hidden; flex-shrink:0; color:var(--muted); font-size:.65rem; text-align:center;
+  }
+  .image-preview img { width:100%; height:100%; object-fit:cover; }
+  .image-inputs { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .image-inputs input[type=file] {
+    font-size:.78rem; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="shell-title">Painel administrativo · Exemplo de organização por abas</div>
+
+    <div class="tab-menu" id="tabMenu">
+      <button class="tab-btn active" data-tab="banner">Banner</button>
+      <button class="tab-btn" data-tab="plataformas">Plataformas</button>
+      <button class="tab-btn" data-tab="stories">Stories</button>
+      <button class="tab-btn" data-tab="popup">Pop-up</button>
+      <button class="tab-btn" data-tab="telegram">Telegram / WhatsApp</button>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- BANNER -->
+      <div class="tab-pane active" data-pane="banner">
+        <h3 class="pane-title">Banner principal</h3>
+        <div class="field-row">
+          <div><label>Título</label><input type="text" placeholder="Ex: Promoção especial"></div>
+          <div><label>Link</label><input type="url" placeholder="https://..."></div>
+        </div>
+        <button class="save-btn">Salvar banner</button>
+      </div>
+
+      <!-- PLATAFORMAS -->
+      <div class="tab-pane" data-pane="plataformas">
+        <h3 class="pane-title">Plataformas</h3>
+        <div class="image-field">
+          <div class="image-preview" id="plataformaPreview">Sem imagem</div>
+          <div class="image-inputs">
+            <label>Imagem/logo da plataforma</label>
+            <input type="file" accept="image/*" class="image-input" data-preview="plataformaPreview">
+          </div>
+        </div>
+        <div class="field-row">
+          <div><label>Nome da plataforma</label><input type="text" placeholder="Ex: 701Win"></div>
+          <div><label>Link de destino</label><input type="url" placeholder="https://..."></div>
+        </div>
+        <p class="hint">Cada plataforma cadastrada aqui aparece automaticamente na grade "lado a lado" do site, com a imagem escolhida.</p>
+        <button class="save-btn">Salvar plataforma</button>
+      </div>
+
+      <!-- STORIES (infinitos) -->
+      <div class="tab-pane" data-pane="stories">
+        <h3 class="pane-title">Stories 24h</h3>
+        <div class="story-list" id="storyList">
+          <div class="story-item">
+            <span class="badge">1</span>
+            <div class="image-preview story-preview">Sem imagem</div>
+            <input type="file" accept="image/*" class="image-input story-image-input">
+            <input type="text" placeholder="Link de destino do story 1">
+            <button class="remove-story">Remover</button>
+          </div>
+          <div class="story-item">
+            <span class="badge">2</span>
+            <div class="image-preview story-preview">Sem imagem</div>
+            <input type="file" accept="image/*" class="image-input story-image-input">
+            <input type="text" placeholder="Link de destino do story 2">
+            <button class="remove-story">Remover</button>
+          </div>
+          <div class="story-item">
+            <span class="badge">3</span>
+            <div class="image-preview story-preview">Sem imagem</div>
+            <input type="file" accept="image/*" class="image-input story-image-input">
+            <input type="text" placeholder="Link de destino do story 3">
+            <button class="remove-story">Remover</button>
+          </div>
+        </div>
+        <button class="add-story-btn" id="addStoryBtn">+ Adicionar novo story</button>
+        <p class="hint">Sem limite fixo: você pode adicionar quantos quiser, cada um com sua própria foto, sem precisar mexer no código.</p>
+      </div>
+
+      <!-- POPUP -->
+      <div class="tab-pane" data-pane="popup">
+        <h3 class="pane-title">Pop-up de lançamento</h3>
+        <div class="field-row">
+          <div><label>Imagem</label><input type="url" placeholder="https://..."></div>
+          <div><label>Link do botão</label><input type="url" placeholder="https://..."></div>
+        </div>
+        <button class="save-btn">Salvar pop-up</button>
+      </div>
+
+      <!-- TELEGRAM / WHATSAPP -->
+      <div class="tab-pane" data-pane="telegram">
+        <h3 class="pane-title">Telegram / WhatsApp</h3>
+        <div class="field-row">
+          <div><label>Link do Telegram</label><input type="url" placeholder="https://t.me/..."></div>
+          <div><label>Link do WhatsApp</label><input type="url" placeholder="https://chat.whatsapp.com/..."></div>
+        </div>
+        <button class="save-btn">Salvar contatos</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Alterna entre as abas (só troca o que é exibido, cada seção fica isolada)
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.tab-pane');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector(`.tab-pane[data-pane="${btn.dataset.tab}"]`).classList.add('active');
+      });
+    });
+
+    // Preview de imagem: mostra a foto escolhida antes de salvar
+    function ligarPreview(input, previewEl) {
+      input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          previewEl.innerHTML = `<img src="${reader.result}" alt="Pré-visualização">`;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    document.querySelectorAll('.image-input').forEach(input => {
+      const previewId = input.dataset.preview;
+      const previewEl = previewId ? document.getElementById(previewId) : input.closest('.story-item')?.querySelector('.story-preview');
+      if (previewEl) ligarPreview(input, previewEl);
+    });
+
+    // Stories infinitos: adiciona quantos quiser, sem limite fixo, cada um com foto própria
+    const storyList = document.getElementById('storyList');
+    const addStoryBtn = document.getElementById('addStoryBtn');
+    addStoryBtn.addEventListener('click', () => {
+      const count = storyList.children.length + 1;
+      const item = document.createElement('div');
+      item.className = 'story-item';
+      item.innerHTML = `<span class="badge">${count}</span>
+        <div class="image-preview story-preview">Sem imagem</div>
+        <input type="file" accept="image/*" class="image-input story-image-input">
+        <input type="text" placeholder="Link de destino do story ${count}">
+        <button class="remove-story">Remover</button>`;
+      storyList.appendChild(item);
+      ligarPreview(item.querySelector('.image-input'), item.querySelector('.story-preview'));
+    });
+
+    storyList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-story')) {
+        e.target.closest('.story-item').remove();
+        [...storyList.children].forEach((el, i) => {
+          el.querySelector('.badge').textContent = i + 1;
+        });
+      }
+    });
+  </script>
+</body>
+</html>

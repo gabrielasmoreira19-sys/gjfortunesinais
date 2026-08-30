@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GJFORTUNESINAIS - Preto e Dourado</title>
+  <style>
+    :root { --bg:#0a0a0d; --panel:#141419; --panel2:#1a1a22; --line:#ffffff15; --ink:#fff; --muted:#a8a8b3; --gold:#d4af37; --gold-2:#f4e4a6; --green:#4ade80; --yellow:#fbbf24; --red:#f87171; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:linear-gradient(135deg,#0a0a0d 0%,#1a1416 50%,#0d0d12 100%); color:var(--ink); font-family:'Segoe UI', 'Trebuchet MS', sans-serif; }
+    a { color:inherit; text-decoration:none; }
+    .page { max-width:1280px; margin:auto; padding:20px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 20px; border:1px solid var(--gold); border-radius:10px; background:var(--panel); margin-bottom:20px; }
+    .brand { font-size:1.3rem; font-weight:900; letter-spacing:.06em; color:var(--gold-2); }
+    .timer { text-align:right; }
+    .timer-label { color:var(--muted); font-size:.85rem; }
+    .timer-value { color:var(--gold-2); font-size:1.5rem; font-weight:900; }
+    .marquee { margin:20px 0; overflow:hidden; border:1px solid var(--gold); border-radius:10px; background:var(--panel); }
+    .marquee-track { display:flex; gap:12px; width:max-content; padding:12px; animation:move 20s linear infinite; }
+    .mini { width:90px; height:50px; display:grid; place-items:center; border-radius:8px; background:var(--panel2); border:1px solid var(--line); color:var(--gold); font-size:.7rem; font-weight:900; text-align:center; }
+    @keyframes move { to { transform:translateX(-50%); } }
+    .section { margin:20px 0; padding:20px; border:1px solid var(--gold); border-radius:12px; background:var(--panel); }
+    .section h2 { margin:0 0 8px; font-size:1.3rem; color:var(--gold-2); }
+    .section p { margin:4px 0 0; color:var(--muted); font-size:.85rem; }
+    .platform-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(95px,1fr)); gap:16px 12px; }
+    .platform { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:8px; border:0; background:transparent; cursor:pointer; transition:transform .2s; animation:platformDance 3.8s ease-in-out infinite; }
+    .platform:nth-child(2n) { animation-delay:.45s; }
+    .platform:nth-child(3n) { animation-delay:.9s; }
+    .platform:hover { transform:translateY(-6px) scale(1.06); filter:brightness(1.15); }
+    .platform-logo { width:72px; height:72px; border-radius:12px; background:linear-gradient(135deg,#d4af37,#aa8c2d); display:grid; place-items:center; font-size:.75rem; font-weight:900; color:#000; box-shadow:0 8px 12px #0009; }
+    .platform-name { font-size:.65rem; font-weight:700; color:var(--muted); text-align:center; }
+    @keyframes platformDance { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
+    .signals { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
+    .card { overflow:hidden; border:1px solid var(--gold); border-radius:11px; background:var(--panel2); box-shadow:0 8px 18px #0009; transition:.2s; }
+    .card:hover { border-color:var(--gold-2); transform:translateY(-3px); box-shadow:0 12px 26px #d4af3744; }
+    .cover { position:relative; height:110px; background:linear-gradient(135deg,#d4af37,#8b7921); display:flex; align-items:flex-end; padding:10px; }
+    .cover::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent,#0a0a0daa); }
+    .distribution { position:absolute; top:8px; right:8px; padding:5px 8px; border-radius:6px; background:#0a0a0dd0; font-size:.65rem; font-weight:900; color:var(--gold); border:1px solid var(--gold); }
+    .name { position:relative; display:flex; align-items:center; gap:8px; font-size:.9rem; font-weight:900; color:var(--ink); }
+    .icon { width:32px; height:32px; border-radius:8px; background:var(--gold); color:#000; display:grid; place-items:center; font-size:.7rem; font-weight:900; }
+    .body { padding:12px; }
+    .metric { margin-bottom:10px; }
+    .metric-head { display:flex; justify-content:space-between; font-size:.7rem; font-weight:900; color:var(--muted); margin-bottom:5px; }
+    .bar { height:8px; background:var(--line); border-radius:999px; overflow:hidden; }
+    .bar span { display:block; height:100%; background:var(--gold); }
+    .bar.green span { background:var(--green); }
+    .bar.yellow span { background:var(--yellow); }
+    .bar.red span { background:var(--red); }
+    .values { margin:10px 0; padding:8px; background:var(--panel); border-left:2px solid var(--gold); border-radius:4px; font-size:.65rem; color:var(--muted); line-height:1.4; }
+    .play { width:100%; border:1px solid var(--gold); background:var(--gold); color:#000; padding:10px; border-radius:8px; font-weight:900; cursor:pointer; font-size:.75rem; transition:.2s; }
+    .play:hover { background:var(--gold-2); }
+    .updated { margin:15px 0 0; text-align:center; color:var(--muted); font-size:.7rem; }
+    .footer { margin-top:30px; padding:15px; border-top:1px solid var(--gold); text-align:center; color:var(--muted); font-size:.75rem; }
+    @media(max-width:600px) { .page { padding:12px; } .top { flex-direction:column; text-align:center; } .timer { text-align:center; } .platform-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 8px; } .signals { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="brand">GJ FORTUNE SINAIS</div>
+      <div class="timer">
+        <div class="timer-label">PRÓXIMA ATUALIZAÇÃO</div>
+        <div class="timer-value" id="clock">05:00</div>
+      </div>
+    </div>
+
+    <div class="marquee">
+      <div class="marquee-track">
+        <div class="mini">PG SOFT</div>
+        <div class="mini">PRAGMATIC</div>
+        <div class="mini">TADA</div>
+        <div class="mini">WG</div>
+        <div class="mini">JOGAR</div>
+        <div class="mini">PG SOFT</div>
+        <div class="mini">PRAGMATIC</div>
+        <div class="mini">TADA</div>
+        <div class="mini">WG</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Plataformas Parceiras</h2>
+      <p>Grade que quebra linha, logos animados, sem aparência de botão.</p>
+      <div class="platform-grid">
+        <a class="platform"><div class="platform-logo">701</div><div class="platform-name">701 Win</div></a>
+        <a class="platform"><div class="platform-logo">PG</div><div class="platform-name">Lavadora PG</div></a>
+        <a class="platform"><div class="platform-logo">91</div><div class="platform-name">91 Club</div></a>
+        <a class="platform"><div class="platform-logo">VOY</div><div class="platform-name">Voy PG</div></a>
+        <a class="platform"><div class="platform-logo">EK</div><div class="platform-name">EK Group</div></a>
+        <a class="platform"><div class="platform-logo">888</div><div class="platform-name">888 Diamond</div></a>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Sinais de Jogos</h2>
+      <p>Barras com cores, distribuição, faixas de apostas, ciclo estável de 5 minutos.</p>
+      <div class="signals" id="signals"></div>
+      <div class="updated">Atualizado em <b id="updatedAt">--:--:--</b></div>
+    </div>
+
+    <div class="footer">
+      <b>Preto &amp; Dourado</b> — Paleta revisada sem roxo. Indicadores apenas informativos, sem garantia de resultado.
+    </div>
+  </div>
+
+  <script>
+    const games = [
+      ['Fortune Tiger', 'Tiger', 'R$ 0,40', 'R$ 2,00', 'R$ 40,00'],
+      ['Fortune Rabbit', 'Rabbit', 'R$ 0,50', 'R$ 2,50', 'R$ 50,00'],
+      ['Fortune Ox', 'Ox', 'R$ 0,40', 'R$ 1,60', 'R$ 60,00'],
+      ['Fortune Mouse', 'Mouse', 'R$ 0,50', 'R$ 1,50', 'R$ 30,00'],
+    ];
+
+    const signals = document.getElementById('signals'), clock = document.getElementById('clock'), updatedAt = document.getElementById('updatedAt');
+
+    function quality(v) { return v >= 70 ? 'green' : v >= 40 ? 'yellow' : 'red'; }
+    
+    function createMetric(label, value) {
+      return `<div class="metric"><div class="metric-head"><span>${label}</span><strong>${value}%</strong></div><div class="bar ${quality(value)}"><span style="width:${value}%"></span></div></div>`;
+    }
+
+    function updateSignals() {
+      signals.innerHTML = games.map(game => {
+        const min = 18 + Math.floor(Math.random() * 70);
+        const std = 18 + Math.floor(Math.random() * 70);
+        const max = 18 + Math.floor(Math.random() * 78);
+        const dist = Math.max(min, std, max, 50 + Math.floor(Math.random() * 46));
+        return `<article class="card">
+          <div class="cover"><span class="distribution">Distribuição: ${dist}%</span><div class="name"><span class="icon">PG</span>${game[0]}</div></div>
+          <div class="body">
+            ${createMetric('Mín', min)}
+            ${createMetric('Pad', std)}
+            ${createMetric('Máx', max)}
+            <div class="values">Mín ${game[2]}<br>Pad ${game[3]}<br>Máx ${game[4]}</div>
+            <button class="play">JOGAR</button>
+          </div>
+        </article>`;
+      }).join('');
+      updatedAt.textContent = new Date().toLocaleTimeString('pt-BR');
+    }
+
+    function tick() {
+      const now = new Date(), remain = 300 - ((now.getMinutes() * 60 + now.getSeconds()) % 300);
+      clock.textContent = `${String(Math.floor(remain / 60)).padStart(2, '0')}:${String(remain % 60).padStart(2, '0')}`;
+    }
+
+    updateSignals();
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>

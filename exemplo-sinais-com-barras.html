@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exemplo Sinais com Barras</title>
+  <style>
+    :root {
+      --bg: #101113;
+      --surface: #1c1e25;
+      --border: #ffffff1a;
+      --text: #ffffff;
+      --muted: #d5d7dc;
+      --green: #43df73;
+      --red: #ff4548;
+      --yellow: #f4d54b;
+      --blue: #162e79;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #101113; color: var(--text); font-family: Arial, Helvetica, sans-serif; }
+    .page { max-width: 1260px; margin: auto; padding: 22px; }
+    .top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; padding:14px 16px; border:1px solid var(--border); border-radius:10px; background:#191b21; }
+    .brand { font-size:1rem; font-weight:900; letter-spacing:.04em; }
+    .clock-wrap { text-align:right; }
+    .clock-title { color:var(--muted); font-size:.78rem; font-weight:800; }
+    .clock { display:block; color:var(--green); font-size:1.4rem; font-weight:900; margin-top:3px; }
+    .categories { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 18px; }
+    .category { border:1px solid var(--border); border-radius:8px; background:#20222a; color:var(--muted); padding:9px 14px; font-size:.78rem; font-weight:800; cursor:pointer; }
+    .category.active { background:#087d4b; border-color:#46e584; color:white; }
+    .notice { margin: 0 0 18px; color:#bcc0c8; font-size:.78rem; }
+    .signals { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; }
+    .signal-card { overflow:hidden; min-width:0; border-radius:11px; background:linear-gradient(160deg,#23263a,#1d1b25); border:1px solid var(--border); box-shadow:0 9px 24px #00000059; }
+    .game-cover { position:relative; height:112px; padding:10px; display:flex; align-items:end; isolation:isolate; background:linear-gradient(145deg,#704b2b,#0e162a); }
+    .game-cover::before { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,transparent,#0c0c14d9); }
+    .game-cover.rabbit { background:linear-gradient(145deg,#954b7c,#271b48); }.game-cover.tiger { background:linear-gradient(145deg,#ce7c1e,#61172d); }.game-cover.ox { background:linear-gradient(145deg,#d66623,#631f1e); }.game-cover.mouse { background:linear-gradient(145deg,#ffa535,#4e1a1a); }.game-cover.dragon { background:linear-gradient(145deg,#67a349,#24432d); }
+    .distribution { position:absolute; top:9px; right:9px; border-radius:999px; padding:5px 7px; background:#0c0e13b8; font-size:.66rem; font-weight:900; color:#fff; }
+    .game-name { display:flex; align-items:center; gap:7px; font-size:.92rem; font-weight:900; }
+    .game-icon { width:32px; height:32px; display:grid; place-items:center; border-radius:9px; background:#fff; color:#1c1c1c; font-size:.62rem; font-weight:900; }
+    .card-body { padding:11px; }
+    .rtp-windows { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin:0 0 12px; }
+    .rtp-window { padding:6px 3px; border:1px solid #ffffff18; border-radius:6px; background:#ffffff09; text-align:center; }
+    .rtp-window span { display:block; color:#c9ccd2; font-size:.58rem; font-weight:800; text-transform:uppercase; }
+    .rtp-window strong { display:block; margin-top:2px; color:var(--green); font-size:.72rem; }
+    .rtp-window strong.low { color:var(--red); }
+    .rtp-window strong.mid { color:var(--yellow); }
+    .metric { margin-bottom:10px; }
+    .metric-head { display:flex; justify-content:space-between; gap:8px; margin-bottom:4px; font-size:.72rem; font-weight:900; }
+    .metric-head strong { color:#fff; }
+    .bar { height:11px; overflow:hidden; border-radius:999px; background:#ffffff26; }
+    .bar > span { display:block; height:100%; border-radius:inherit; transition:width .4s ease; }
+    .bar.red > span { background:var(--red); }.bar.green > span { background:var(--green); }.bar.yellow > span { background:var(--yellow); }
+    .values { display:grid; gap:4px; margin:12px 0; padding:9px; border-radius:8px; background:var(--blue); color:white; font-size:.66rem; font-weight:800; text-align:center; line-height:1.35; }
+    .play { width:100%; border:0; border-radius:9px; padding:11px 8px; color:#fff; background:#06a94d; font-weight:900; font-size:.78rem; cursor:pointer; }
+    .updated { margin:20px 0 0; padding:11px; border:1px solid var(--border); border-radius:9px; background:#1a1c22; color:#c7cad0; font-size:.75rem; text-align:center; }
+    .updated strong { color:#fff; }
+    @media (max-width:560px) { .page{padding:13px}.top{align-items:flex-start;flex-direction:column}.clock-wrap{text-align:left}.signals{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card-body{padding:9px}.game-cover{height:98px}.metric-head{font-size:.65rem}.values{font-size:.59rem}.game-name{font-size:.76rem}.game-icon{width:26px;height:26px}.rtp-window span{font-size:.52rem}.rtp-window strong{font-size:.64rem} }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div class="brand">GJFORTUNESINAIS · EXEMPLO LOCAL</div>
+      <div class="clock-wrap"><div class="clock-title">PRÓXIMA ATUALIZAÇÃO DOS SINAIS</div><time class="clock" id="clock">05:00</time></div>
+    </header>
+    <nav class="categories" aria-label="Categorias"><button class="category active">PG Soft</button><button class="category">Pragmatic</button><button class="category">Tada</button><button class="category">WG</button></nav>
+    <p class="notice">A cada ciclo de 5 minutos, os indicadores abaixo são recalculados neste exemplo para mostrar o comportamento visual.</p>
+    <section class="signals" id="signals">
+      <article class="signal-card" data-game="Fortune Rabbit" data-color="rabbit"><div class="game-cover rabbit"><span class="distribution">Distribuição: <b></b></span><div class="game-name"><span class="game-icon">PG</span>Fortune Rabbit</div></div><div class="card-body"><div class="metric"><div class="metric-head"><span>Aposta mínima</span><strong></strong></div><div class="bar red"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta padrão</span><strong></strong></div><div class="bar green"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta máxima</span><strong></strong></div><div class="bar yellow"><span></span></div></div><div class="values">Mínima R$ 0,50 a R$ 3,00<br>Padrão R$ 3,50 a R$ 10,00<br>Máxima acima de R$ 15,00</div><button class="play">JOGAR</button></div></article>
+      <article class="signal-card" data-game="Fortune Tiger" data-color="tiger"><div class="game-cover tiger"><span class="distribution">Distribuição: <b></b></span><div class="game-name"><span class="game-icon">PG</span>Fortune Tiger</div></div><div class="card-body"><div class="metric"><div class="metric-head"><span>Aposta mínima</span><strong></strong></div><div class="bar red"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta padrão</span><strong></strong></div><div class="bar green"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta máxima</span><strong></strong></div><div class="bar yellow"><span></span></div></div><div class="values">Mínima R$ 0,40 a R$ 2,40<br>Padrão R$ 2,80 a R$ 8,00<br>Máxima acima de R$ 12,00</div><button class="play">JOGAR</button></div></article>
+      <article class="signal-card" data-game="Fortune Ox" data-color="ox"><div class="game-cover ox"><span class="distribution">Distribuição: <b></b></span><div class="game-name"><span class="game-icon">PG</span>Fortune Ox</div></div><div class="card-body"><div class="metric"><div class="metric-head"><span>Aposta mínima</span><strong></strong></div><div class="bar red"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta padrão</span><strong></strong></div><div class="bar green"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta máxima</span><strong></strong></div><div class="bar yellow"><span></span></div></div><div class="values">Mínima R$ 0,50 a R$ 3,00<br>Padrão R$ 3,50 a R$ 10,00<br>Máxima acima de R$ 15,00</div><button class="play">JOGAR</button></div></article>
+      <article class="signal-card" data-game="Fortune Mouse" data-color="mouse"><div class="game-cover mouse"><span class="distribution">Distribuição: <b></b></span><div class="game-name"><span class="game-icon">PG</span>Fortune Mouse</div></div><div class="card-body"><div class="metric"><div class="metric-head"><span>Aposta mínima</span><strong></strong></div><div class="bar red"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta padrão</span><strong></strong></div><div class="bar green"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta máxima</span><strong></strong></div><div class="bar yellow"><span></span></div></div><div class="values">Mínima R$ 0,50 a R$ 3,00<br>Padrão R$ 3,50 a R$ 10,00<br>Máxima acima de R$ 15,00</div><button class="play">JOGAR</button></div></article>
+      <article class="signal-card" data-game="Fortune Dragon" data-color="dragon"><div class="game-cover dragon"><span class="distribution">Distribuição: <b></b></span><div class="game-name"><span class="game-icon">PG</span>Fortune Dragon</div></div><div class="card-body"><div class="metric"><div class="metric-head"><span>Aposta mínima</span><strong></strong></div><div class="bar red"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta padrão</span><strong></strong></div><div class="bar green"><span></span></div></div><div class="metric"><div class="metric-head"><span>Aposta máxima</span><strong></strong></div><div class="bar yellow"><span></span></div></div><div class="values">Mínima R$ 0,40 a R$ 2,40<br>Padrão R$ 2,80 a R$ 8,00<br>Máxima acima de R$ 12,00</div><button class="play">JOGAR</button></div></article>
+    </section>
+    <p class="updated">Última atualização visual: <strong id="updatedAt">--:--:--</strong></p>
+  </main>
+  <script>
+    const clock = document.getElementById('clock');
+    const updatedAt = document.getElementById('updatedAt');
+    const cards = [...document.querySelectorAll('.signal-card')];
+
+    function classeRtp(value) {
+      return value >= 96 ? '' : value >= 94 ? 'mid' : 'low';
+    }
+
+    function atualizarIndicadores() {
+      cards.forEach((card, index) => {
+        const values = [
+          15 + ((index * 17 + Math.floor(Math.random() * 35)) % 80),
+          20 + ((index * 23 + Math.floor(Math.random() * 40)) % 75),
+          18 + ((index * 31 + Math.floor(Math.random() * 43)) % 78)
+        ];
+        const distribution = Math.max(...values, 50 + Math.floor(Math.random() * 45));
+        card.querySelectorAll('.metric').forEach((metric, metricIndex) => {
+          const bar = metric.querySelector('.bar');
+          const quality = values[metricIndex] >= 70 ? 'green' : values[metricIndex] >= 40 ? 'yellow' : 'red';
+          bar.className = `bar ${quality}`;
+          metric.querySelector('strong').textContent = `${values[metricIndex]}%`;
+          bar.querySelector('span').style.width = `${values[metricIndex]}%`;
+        });
+        card.querySelector('.distribution b').textContent = `${distribution}%`;
+        const rtp24 = (93 + Math.random() * 5.8).toFixed(2);
+        const rtp7 = (94 + Math.random() * 3.2).toFixed(2);
+        const rtp30 = (95 + Math.random() * 2.1).toFixed(2);
+        let rtpWindows = card.querySelector('.rtp-windows');
+        if (!rtpWindows) {
+          rtpWindows = document.createElement('div');
+          rtpWindows.className = 'rtp-windows';
+          card.querySelector('.card-body').prepend(rtpWindows);
+        }
+        rtpWindows.innerHTML = `<div class="rtp-window"><span>RTP 24h</span><strong class="${classeRtp(rtp24)}">${rtp24.replace('.', ',')}%</strong></div><div class="rtp-window"><span>RTP 7 dias</span><strong class="${classeRtp(rtp7)}">${rtp7.replace('.', ',')}%</strong></div><div class="rtp-window"><span>RTP 30 dias</span><strong class="${classeRtp(rtp30)}">${rtp30.replace('.', ',')}%</strong></div>`;
+      });
+      updatedAt.textContent = new Date().toLocaleTimeString('pt-BR');
+    }
+
+    function tick() {
+      const now = new Date();
+      const remaining = 300 - ((now.getMinutes() * 60 + now.getSeconds()) % 300);
+      const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const seconds = String(remaining % 60).padStart(2, '0');
+      clock.textContent = `${minutes}:${seconds}`;
+      if (remaining === 300 && now.getSeconds() === 0) atualizarIndicadores();
+    }
+
+    document.querySelectorAll('.category').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.category').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+
+    atualizarIndicadores();
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exemplo Plataformas - Lado a Lado</title>
+  <style>
+    :root {
+      --bg: #0d0d18;
+      --bg-2: #170f22;
+      --panel: rgba(25, 23, 37, 0.92);
+      --panel-2: rgba(42, 34, 58, 0.92);
+      --line: rgba(255,255,255,0.12);
+      --gold: #f4c65b;
+      --red: #ff2b52;
+      --green: #3ad182;
+      --text: #f6f0ff;
+      --muted: #d8d2df;
+      --shadow: rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at top, #20172f 0%, #0d0d18 38%, #080910 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      padding: 20px;
+    }
+
+    .demo-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: rgba(18, 18, 26, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.42);
+    }
+
+    .top-carousel {
+      background: linear-gradient(180deg, #0b0d13, #140d1d 48%, #0d0d15);
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .marquee-wrap {
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      padding: 10px 0;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 16px;
+      min-width: max-content;
+      animation: slide 22s linear infinite;
+      padding-left: 16px;
+    }
+
+    @keyframes slide {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .mini-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 136px;
+      height: 68px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: linear-gradient(145deg, rgba(58,61,76,0.8), rgba(25,23,36,0.88));
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .mini-card.red { background: linear-gradient(145deg, #4e1f27, #18131d); }
+    .mini-card.gold { background: linear-gradient(145deg, #443118, #18131d); }
+    .mini-card.green { background: linear-gradient(145deg, #1f3e30, #18131d); }
+    .mini-card.purple { background: linear-gradient(145deg, #382b4f, #18131d); }
+
+    .platform-section {
+      padding: 26px 22px 28px;
+      background: rgba(29, 28, 39, 0.94);
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      text-align: center;
+      font-size: clamp(1.6rem, 2vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #f4f0f9;
+    }
+
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .platform-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 190px;
+      padding: 12px 10px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(160deg, rgba(94, 72, 122, 0.48), rgba(18, 16, 28, 0.85));
+      box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+      overflow: hidden;
+      text-decoration: none;
+      color: #ffffff;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .platform-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 30px rgba(0,0,0,0.28);
+    }
+
+    .platform-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.2), transparent 35%);
+    }
+
+    .platform-card img {
+      position: relative;
+      z-index: 1;
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 18px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.32);
+      background: rgba(255,255,255,0.08);
+      margin-bottom: 8px;
+    }
+
+    .platform-card .title {
+      position: relative;
+      z-index: 1;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      color: #f2ddf2;
+      margin-bottom: 8px;
+    }
+
+    .platform-card .stats {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: grid;
+      gap: 4px;
+      font-size: 0.72rem;
+      color: #f4ebff;
+    }
+
+    .platform-card .stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .platform-card .stat strong {
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .platform-card .cta {
+      position: relative;
+      z-index: 1;
+      margin-top: 8px;
+      width: 100%;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      border-radius: 999px;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .platform-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+      .platform-card { min-height: 112px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-shell">
+    <div class="top-carousel">
+      <div class="top-bar">
+        <span>GJFORTUNESINAIS</span>
+        <span>•</span>
+        <span>Plataformas em destaque</span>
+      </div>
+
+      <div class="marquee-wrap" aria-label="plataformas em movimento">
+        <div class="marquee-track">
+          <div class="mini-card red">PG</div>
+          <div class="mini-card gold">JOGOS</div>
+          <div class="mini-card green">PLAY</div>
+          <div class="mini-card purple">TD</div>
+          <div class="mini-card red">PG</div>
+          <div class="mini-card gold">JOGOS</div>
+          <div class="mini-card green">PLAY</div>
+          <div class="mini-card purple">TD</div>
+          <div class="mini-card red">PG</div>
+          <div class="mini-card gold">JOGOS</div>
+          <div class="mini-card green">PLAY</div>
+          <div class="mini-card purple">TD</div>
+          <div class="mini-card red">PG</div>
+          <div class="mini-card gold">JOGOS</div>
+          <div class="mini-card green">PLAY</div>
+          <div class="mini-card purple">TD</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="platform-section">
+      <h2 class="section-title">Plataformas parceiras</h2>
+
+      <div class="platform-grid" aria-label="grade de plataformas">
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=300&q=80" alt="Fortune Rabbit" />
+          <div class="title">Fortune Rabbit</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>85%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>49%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>71%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>86%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=300&q=80" alt="Fortune Tiger" />
+          <div class="title">Fortune Tiger</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>48%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>68%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>55%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>71%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=300&q=80" alt="Fortune Ox" />
+          <div class="title">Fortune Ox</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>42%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>16%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>54%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>57%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=300&q=80" alt="Fortune Snake" />
+          <div class="title">Fortune Snake</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>90%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>98%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>62%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>98%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=300&q=80" alt="Graffiti Rush" />
+          <div class="title">Graffiti Rush</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>30%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>59%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>42%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>60%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=300&q=80" alt="Rio Fantasia" />
+          <div class="title">Rio Fantasia</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>73%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>95%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>25%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>96%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=300&q=80" alt="Geisha's Revenge" />
+          <div class="title">Geisha's Revenge</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>92%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>18%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>67%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>93%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=300&q=80" alt="Wild Ape" />
+          <div class="title">Wild Ape</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>68%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>18%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>13%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>69%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=300&q=80" alt="Dragon Tiger Luck" />
+          <div class="title">Dragon Tiger Luck</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>56%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>71%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>21%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>74%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80" alt="Doomsday Rampage" />
+          <div class="title">Doomsday Rampage</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>22%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>11%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>91%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>94%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=300&q=80" alt="Star Fortune" />
+          <div class="title">Star Fortune</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>60%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>54%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>78%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>82%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+
+        <a class="platform-card" href="#" target="_blank" rel="noopener noreferrer">
+          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=80" alt="Lucky Gold" />
+          <div class="title">Lucky Gold</div>
+          <div class="stats">
+            <div class="stat"><span>Mínima</span><strong>51%</strong></div>
+            <div class="stat"><span>Padrão</span><strong>73%</strong></div>
+            <div class="stat"><span>Máxima</span><strong>64%</strong></div>
+            <div class="stat"><span>Distrib.</span><strong>77%</strong></div>
+          </div>
+          <div class="cta">Jogar</div>
+        </a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

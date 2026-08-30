@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exemplo PG Soft - Dados técnicos</title>
+  <style>
+    :root { --bg:#10101a; --card:#201d31; --line:#ffffff20; --ink:#f8f5ff; --muted:#c7c1d2; --gold:#f2c75d; --green:#4be17c; --red:#ff6e70; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); font-family:Arial,Helvetica,sans-serif; background:radial-gradient(circle at 15% 0,#4a295e,transparent 32%),radial-gradient(circle at 90% 0,#125260,transparent 28%),var(--bg); }
+    header { display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:auto; padding:18px 22px; border-bottom:1px solid var(--line); font-weight:900; }
+    header span { color:var(--gold); font-size:.75rem; text-transform:uppercase; }
+    main { max-width:1200px; margin:auto; padding:30px 22px 44px; }
+    h1 { margin:0; font-size:clamp(1.5rem,3vw,2.3rem); }
+    .intro { margin:9px 0 23px; color:var(--muted); font-size:.9rem; line-height:1.5; }
+    .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+    .tabs button { padding:10px 15px; border:1px solid var(--line); border-radius:8px; background:#ffffff0b; color:var(--muted); font-weight:800; cursor:pointer; }
+    .tabs button.active { background:#6a4ca4; color:#fff; border-color:#ffffff4d; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+    .card { overflow:hidden; border:1px solid var(--line); border-radius:12px; background:linear-gradient(150deg,#2c2642,var(--card)); box-shadow:0 15px 32px #0005; }
+    .cover { min-height:126px; display:flex; align-items:end; padding:12px; background:linear-gradient(180deg,#7d467d,#281f42 70%); }
+    .cover.tiger { background:linear-gradient(145deg,#c57d1f,#5d151f 72%); }.cover.rabbit { background:linear-gradient(145deg,#d883ae,#502a69 72%); }.cover.ox { background:linear-gradient(145deg,#dd7e27,#64301d 72%); }.cover.mouse { background:linear-gradient(145deg,#ffa957,#704322 72%); }
+    .cover h2 { margin:0; font-size:1.08rem; }.cover p { margin:4px 0 0; font-size:.73rem; color:#ffefbe; font-weight:700; }
+    .body { padding:14px; }.rtp { display:flex; align-items:baseline; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid var(--line); }.rtp span { color:var(--muted); font-size:.72rem; text-transform:uppercase; font-weight:800; }.rtp strong { color:var(--green); font-size:1.5rem; }
+    .rows { display:grid; gap:9px; margin:13px 0; }.row { display:flex; justify-content:space-between; gap:8px; font-size:.8rem; color:var(--muted); }.row b { color:var(--ink); text-align:right; }.high { color:var(--red)!important; }
+    .features { display:flex; flex-wrap:wrap; gap:6px; }.features span { padding:4px 7px; border:1px solid var(--line); border-radius:999px; color:#e2dced; background:#ffffff0a; font-size:.65rem; font-weight:700; }
+    .open { width:100%; margin-top:14px; padding:10px; border:0; border-radius:8px; color:white; background:#087a48; font-weight:900; font-size:.76rem; }.notice { margin-top:22px; padding:13px; border-left:3px solid var(--gold); background:#ffffff0a; color:var(--muted); font-size:.76rem; line-height:1.5; }.notice b { color:#fff; }
+  </style>
+</head>
+<body>
+  <header><div>GJFORTUNESINAIS</div><span>Exemplo local, não publicado</span></header>
+  <main>
+    <h1>PG Soft</h1>
+    <p class="intro">Assim ficaria uma aba exclusiva para jogos da PG Soft, exibindo dados técnicos da API em vez de porcentagens de sinal.</p>
+    <div class="tabs"><button class="active">PG Soft</button><button>Pragmatic</button><button>Tada</button><button>WG</button></div>
+    <section class="grid">
+      <article class="card"><div class="cover tiger"><div><h2>Fortune Tiger</h2><p>PG Soft</p></div></div><div class="body"><div class="rtp"><span>RTP teórico</span><strong>96,96%</strong></div><div class="rows"><div class="row"><span>Volatilidade</span><b class="high">Média / Alta</b></div><div class="row"><span>Aposta</span><b>R$ 0,40 a R$ 100,00</b></div><div class="row"><span>Vitória máxima</span><b>2.500x</b></div></div><div class="features"><span>Wild</span><span>Free spins</span><span>Multiplicador</span></div><button class="open">ABRIR PLATAFORMA</button></div></article>
+      <article class="card"><div class="cover rabbit"><div><h2>Fortune Rabbit</h2><p>PG Soft</p></div></div><div class="body"><div class="rtp"><span>RTP teórico</span><strong>96,75%</strong></div><div class="rows"><div class="row"><span>Volatilidade</span><b class="high">Média / Alta</b></div><div class="row"><span>Aposta</span><b>R$ 0,50 a R$ 100,00</b></div><div class="row"><span>Vitória máxima</span><b>5.000x</b></div></div><div class="features"><span>Scatter</span><span>Free spins</span><span>Multiplicador</span></div><button class="open">ABRIR PLATAFORMA</button></div></article>
+      <article class="card"><div class="cover ox"><div><h2>Fortune Ox</h2><p>PG Soft</p></div></div><div class="body"><div class="rtp"><span>RTP teórico</span><strong>96,75%</strong></div><div class="rows"><div class="row"><span>Volatilidade</span><b class="high">Alta</b></div><div class="row"><span>Aposta</span><b>R$ 0,50 a R$ 100,00</b></div><div class="row"><span>Vitória máxima</span><b>5.000x</b></div></div><div class="features"><span>Free spins</span><span>Wild</span><span>Multiplicador</span></div><button class="open">ABRIR PLATAFORMA</button></div></article>
+      <article class="card"><div class="cover mouse"><div><h2>Fortune Mouse</h2><p>PG Soft</p></div></div><div class="body"><div class="rtp"><span>RTP teórico</span><strong>96,76%</strong></div><div class="rows"><div class="row"><span>Volatilidade</span><b>Média</b></div><div class="row"><span>Aposta</span><b>R$ 0,50 a R$ 100,00</b></div><div class="row"><span>Vitória máxima</span><b>10.000x</b></div></div><div class="features"><span>Wild</span><span>Free spins</span><span>Multiplicador</span></div><button class="open">ABRIR PLATAFORMA</button></div></article>
+    </section>
+    <p class="notice"><b>Somente exemplo visual.</b> Estes valores ilustram os campos técnicos possíveis. Antes de publicar, os dados precisam ser conferidos na API licenciada/configurada; RTP é teórico, não é sinal em tempo real e não garante resultado.</p>
+  </main>
+</body>
+</html>
