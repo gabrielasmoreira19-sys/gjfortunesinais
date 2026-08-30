@@ -1,0 +1,92 @@
+[
+  {
+    "id": "golden-egg",
+    "nome": "Golden Egg",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/golden-egg.png"
+  },
+  {
+    "id": "lucky-twins",
+    "nome": "Lucky Twins",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/lucky-twins.png"
+  },
+  {
+    "id": "mega-bang",
+    "nome": "Mega Bang",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/mega-bang.png"
+  },
+  {
+    "id": "dragon-hatch",
+    "nome": "Dragon Hatch",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/dragon-hatch.png"
+  },
+  {
+    "id": "wild-cash",
+    "nome": "Wild Cash",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/wild-cash.png"
+  },
+  {
+    "id": "fortune-gate",
+    "nome": "Fortune Gate",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/fortune-gate.png"
+  },
+  {
+    "id": "lucky-coin",
+    "nome": "Lucky Coin",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/lucky-coin.png"
+  },
+  {
+    "id": "magic-coins",
+    "nome": "Magic Coins",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/magic-coins.png"
+  },
+  {
+    "id": "reel-empire",
+    "nome": "Reel Empire",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/reel-empire.png"
+  },
+  {
+    "id": "wild-heist",
+    "nome": "Wild Heist",
+    "provider": "TaDa",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/tada-gaming/cover/wild-heist.png"
+  }
+]

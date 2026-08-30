@@ -24,6 +24,12 @@ from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "jogos_pg.json"
+CATALOGS_PROVEDORES = {
+	"pg": BASE_DIR / "jogos_pg.json",
+	"pragmatic": BASE_DIR / "jogos_pragmatic.json",
+	"tada": BASE_DIR / "jogos_tada.json",
+	"wg": BASE_DIR / "jogos_wg.json",
+}
 DATA_DIR = Path(os.environ.get("SITE_DATA_DIR", BASE_DIR / "instance"))
 CONFIG_PATH = DATA_DIR / "site_config.json"
 ADMIN_UPLOADS_DIR = DATA_DIR / "uploads" / "admin"
@@ -124,6 +130,31 @@ class PGGamesParser(HTMLParser):
 def carregar_catalogo():
 	with CATALOG_PATH.open(encoding="utf-8") as arquivo:
 		return json.load(arquivo)
+
+
+def carregar_catalogo_provedor(provedor="pg"):
+	"""Carrega catálogo de um provedor específico"""
+	caminho = CATALOGS_PROVEDORES.get(provedor, CATALOG_PATH)
+	if not caminho.is_file():
+		return []
+	try:
+		with caminho.open(encoding="utf-8") as arquivo:
+			dados = json.load(arquivo)
+	except (json.JSONDecodeError, IOError):
+		return []
+	# jogos_pg.json tem estrutura {"pg": [...]}, os demais são listas diretas
+	if isinstance(dados, dict):
+		return dados.get(provedor, dados.get("pg", []))
+	return dados
+
+
+def carregar_todos_catalogos():
+	"""Carrega catálogos de todos os provedores e mescla"""
+	todos = []
+	for provedor in CATALOGS_PROVEDORES:
+		jogos = carregar_catalogo_provedor(provedor)
+		todos.extend(jogos)
+	return todos
 
 
 def carregar_configuracao():
@@ -412,11 +443,16 @@ def admin_upload(nome):
 
 
 def encontrar_jogo(jogo_id):
-	catalogo = carregar_catalogo()
-	return next(
-		(jogo for jogo in catalogo.get("pg", []) if str(jogo.get("id")) == str(jogo_id)),
-		None,
-	)
+	# Procura em todos os provedores
+	for provedor in CATALOGS_PROVEDORES:
+		jogos = carregar_catalogo_provedor(provedor)
+		jogo = next(
+			(jogo for jogo in jogos if str(jogo.get("id")) == str(jogo_id)),
+			None,
+		)
+		if jogo is not None:
+			return jogo
+	return None
 
 
 def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
@@ -445,7 +481,9 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 
 
 def preparar_faixas_indicativas(catalogo):
-	for indice, jogo in enumerate(catalogo.get("pg", [])):
+	# Aceita tanto {"pg": [...]} quanto lista direta
+	jogos = catalogo if isinstance(catalogo, list) else catalogo.get("pg", [])
+	for indice, jogo in enumerate(jogos):
 		jogo["exibir_min"] = jogo.get("min", "0,40")
 		jogo["exibir_pad"] = jogo.get("pad", "2,00")
 		jogo["exibir_max"] = jogo.get("max", "100,00")
@@ -555,8 +593,19 @@ def sincronizar_lancamentos_pg():
 @app.route("/")
 def index():
 	sincronizar_lancamentos_pg()
-	catalogo = carregar_catalogo()
-	preparar_faixas_indicativas(catalogo)
+	
+	# Carregar catálogos de todos os provedores
+	catalogo = {
+		"pg": carregar_catalogo_provedor("pg"),
+		"pragmatic": carregar_catalogo_provedor("pragmatic"),
+		"tada": carregar_catalogo_provedor("tada"),
+		"wg": carregar_catalogo_provedor("wg"),
+	}
+	
+	# Preparar faixas para todos os jogos
+	for jogos_provedor in catalogo.values():
+		preparar_faixas_indicativas({"jogos": jogos_provedor})
+	
 	configuracao = carregar_configuracao()
 	stories_ativas = filtrar_stories_ativas(configuracao.get("stories", []))
 	popups_ativos = []

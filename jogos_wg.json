@@ -1,0 +1,92 @@
+[
+  {
+    "id": "lucky-leprechaun",
+    "nome": "Lucky Leprechaun",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/lucky-leprechaun.png"
+  },
+  {
+    "id": "money-train",
+    "nome": "Money Train",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/money-train.png"
+  },
+  {
+    "id": "royal-fortune",
+    "nome": "Royal Fortune",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/royal-fortune.png"
+  },
+  {
+    "id": "wild-west",
+    "nome": "Wild West",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/wild-west.png"
+  },
+  {
+    "id": "treasure-chest",
+    "nome": "Treasure Chest",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/treasure-chest.png"
+  },
+  {
+    "id": "mystical-moon",
+    "nome": "Mystical Moon",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/mystical-moon.png"
+  },
+  {
+    "id": "golden-dragon",
+    "nome": "Golden Dragon",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/golden-dragon.png"
+  },
+  {
+    "id": "ancient-temple",
+    "nome": "Ancient Temple",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/ancient-temple.png"
+  },
+  {
+    "id": "jewel-quest",
+    "nome": "Jewel Quest",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/jewel-quest.png"
+  },
+  {
+    "id": "pharaoh-gold",
+    "nome": "Pharaoh Gold",
+    "provider": "WG",
+    "minbet": "R$ 0,10",
+    "padbet": "R$ 1,00",
+    "maxbet": "R$ 100,00",
+    "imagem": "https://rainhadoslot.bet/static/image/games/wg/cover/pharaoh-gold.png"
+  }
+]
