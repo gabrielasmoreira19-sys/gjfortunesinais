@@ -647,13 +647,8 @@ def sincronizar_lancamentos_pg():
 def index():
 	sincronizar_lancamentos_pg()
 	
-	# Carregar catálogos de todos os provedores
-	catalogo = {
-		"pg": carregar_catalogo_provedor("pg"),
-		"pragmatic": carregar_catalogo_provedor("pragmatic"),
-		"tada": carregar_catalogo_provedor("tada"),
-		"wg": carregar_catalogo_provedor("wg"),
-	}
+	# Exibe apenas jogos PG enquanto as apostas dos demais provedores não são verificadas.
+	catalogo = {"pg": carregar_catalogo_provedor("pg")}
 	
 	# Preparar faixas para todos os jogos
 	for jogos_provedor in catalogo.values():
