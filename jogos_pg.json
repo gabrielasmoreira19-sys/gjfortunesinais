@@ -48,8 +48,8 @@
         {
             "id": "104",
             "nome": "Treasures Of Aztec",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,50",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/104.png"
         },
@@ -100,16 +100,16 @@
         {
             "id": "108",
             "nome": "Wild Bandito",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/108.png"
         },
         {
             "id": "85",
             "nome": "Leprechaun Riches",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/85.png"
         },
@@ -134,8 +134,8 @@
         {
             "id": "155",
             "nome": "Gemstones Gold",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/155.png"
         },
@@ -151,56 +151,56 @@
         {
             "id": "165",
             "nome": "Forge Of Wealth",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/165.png"
         },
         {
             "id": "170",
             "nome": "Ultimate Striker",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/170.png"
         },
         {
             "id": "97",
             "nome": "Midas Fortune",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/97.png"
         },
         {
             "id": "112",
             "nome": "Wild Bounty Showdown",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/112.png"
         },
         {
             "id": "118",
             "nome": "Speed Winner",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/118.png"
         },
         {
             "id": "121",
             "nome": "Lucky Piggy",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/121.png"
         },
         {
             "id": "129",
             "nome": "Rooster Rumble",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/129.png"
         },
@@ -216,8 +216,8 @@
         {
             "id": "146",
             "nome": "Legendary Monkey King",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/146.png"
         },
@@ -233,8 +233,8 @@
         {
             "id": "66",
             "nome": "Wild Fireworks",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/66.png"
         },
@@ -259,16 +259,16 @@
         {
             "id": "99",
             "nome": "Asgardian Rising",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/99.png"
         },
         {
             "id": "101",
             "nome": "Diner Delights",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/101.png"
         },
@@ -284,136 +284,136 @@
         {
             "id": "105",
             "nome": "Totem Wonders",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/105.png"
         },
         {
             "id": "114",
             "nome": "Wild Coaster",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/114.png"
         },
         {
             "id": "116",
             "nome": "Legend Of Perseus",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/116.png"
         },
         {
             "id": "125",
             "nome": "Battleground Royale",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/125.png"
         },
         {
             "id": "132",
             "nome": "Butterfly Blossom",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/132.png"
         },
         {
             "id": "134",
             "nome": "Destiny Of Sun And Moon",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/134.png"
         },
         {
             "id": "136",
             "nome": "Garuda Gems",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/136.png"
         },
         {
             "id": "138",
             "nome": "Oriental Prosperity",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/138.png"
         },
         {
             "id": "139",
             "nome": "Mask Carnival",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/139.png"
         },
         {
             "id": "141",
             "nome": "Cocktail Nights",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/141.png"
         },
         {
             "id": "144",
             "nome": "Spirited Wonders",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/144.png"
         },
         {
             "id": "147",
             "nome": "Buffalo Win",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/147.png"
         },
         {
             "id": "149",
             "nome": "Supermarket Spree",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/149.png"
         },
         {
             "id": "153",
             "nome": "Mermaid Riches",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/153.png"
         },
         {
             "id": "156",
             "nome": "Jurassic Kingdom",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/156.png"
         },
         {
             "id": "157",
             "nome": "Rise Of Apollo",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/157.png"
         },
         {
             "id": "159",
             "nome": "Heist Stakes",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/159.png"
         },
@@ -438,8 +438,8 @@
         {
             "id": "164",
             "nome": "Crypto Gold",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/164.png"
         },
@@ -464,24 +464,24 @@
         {
             "id": "72",
             "nome": "Jack Frost’s Winter",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/72.png"
         },
         {
             "id": "76",
             "nome": "Lucky Neko",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/76.png"
         },
         {
             "id": "78",
             "nome": "Queen Of Bounty",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/78.png"
         },
@@ -506,24 +506,24 @@
         {
             "id": "65",
             "nome": "Phoenix Rises",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/65.png"
         },
         {
             "id": "63",
             "nome": "Dreams Of Macau",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/63.png"
         },
         {
             "id": "62",
             "nome": "Candy Burst",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/62.png"
         },
@@ -575,16 +575,16 @@
         {
             "id": "40",
             "nome": "Plushie Frenzy",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,50",
+            "pad": "2,50",
             "max": "75,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/40.png"
         },
         {
             "id": "39",
             "nome": "Hood Vs Wolf",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,50",
+            "pad": "2,50",
             "max": "75,00",
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/39.png"
         },
@@ -609,40 +609,40 @@
         {
             "id": "pg-200",
             "nome": "Touchdown Wins",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/touchdown-wins/app_icon_small@3x-f71f05de.png"
         },
         {
             "id": "pg-199",
             "nome": "Farmstead Fortune",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/farmstead-fort/app_icon_small@3x-40c4f765.png"
         },
         {
             "id": "pg-198",
             "nome": "Tornado Rampage",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/tornado-rampg/app_icon_small@3x-4b2ffffc.png"
         },
         {
             "id": "pg-197",
             "nome": "Monkeys Wild Party",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/monkey-wild-pty/app_icon_small@3x-d420ba03.png"
         },
         {
             "id": "pg-196",
             "nome": "Zombie Blasters",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/zombie-blaster/app_icon_small@3x-e0c8301b.png"
         },
@@ -658,24 +658,24 @@
         {
             "id": "pg-194",
             "nome": "Mighty Mania",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/mighty-mania/app_icon_small@3x-976fae8d.png"
         },
         {
             "id": "pg-193",
             "nome": "Reel Royale Showdown",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/reel-royale-sd/app_icon_small@3x-65cbf0fb.png"
         },
         {
             "id": "pg-192",
             "nome": "Funky Fortunez",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://public.pg-demo.com/pages/static/image/en/Small_Icon/funky-fortunez/app_icon_small@3x-7da0b671.png"
         },
@@ -691,8 +691,8 @@
         {
             "id": "2001029",
             "nome": "Cash Mania",
-            "min": "1,00",
-            "pad": "5,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "200,00",
             "imagem": ""
         },
@@ -717,24 +717,24 @@
         {
             "id": "2001030",
             "nome": "Wild Ape #3258",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": ""
         },
         {
             "id": "2001008",
             "nome": "Bakery Bonanza",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": ""
         },
         {
             "id": "2000120",
             "nome": "The Queen's Banquet",
-            "min": "0,80",
-            "pad": "4,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "100,00",
             "imagem": "https://tse1.explicit.bing.net/th/id/OIP.tABEX8VS6-aTbwr7WAQtEAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
         }

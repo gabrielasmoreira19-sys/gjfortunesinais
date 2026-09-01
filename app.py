@@ -517,9 +517,7 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 
 
 def extrair_valor_real(jogo, chave_curta, chave_longa):
-	# So considera valor real se o jogo foi marcado como verificado manualmente na plataforma
-	if not jogo.get("aposta_verificada"):
-		return None
+	# Le o valor ja existente no catalogo (verificado ou nao), sem inventar nada novo
 	valor = jogo.get(chave_curta)
 	if valor:
 		return str(valor).strip()
@@ -530,9 +528,8 @@ def extrair_valor_real(jogo, chave_curta, chave_longa):
 
 
 def normalizar_faixas_jogo(jogo, indice=0):
-	# Prioriza valores reais verificados no catalogo (min/pad/max ou minbet/padbet/maxbet).
-	# Para jogos ainda nao verificados, usa um combo determinístico por id (estavel e variado)
-	# em vez de repetir sempre o mesmo valor, ja que nao existe fonte oficial publica disso.
+	# Usa sempre o que ja esta no catalogo (min/pad/max ou minbet/padbet/maxbet), verificado ou nao.
+	# So cai no combo determinístico por id se o jogo realmente nao tiver nenhum valor cadastrado.
 	min_real = extrair_valor_real(jogo, "min", "minbet")
 	pad_real = extrair_valor_real(jogo, "pad", "padbet")
 	max_real = extrair_valor_real(jogo, "max", "maxbet")
