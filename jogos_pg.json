@@ -436,9 +436,10 @@
         {
             "id": "163",
             "nome": "Majestic Treasures",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/163.png"
         },
         {
@@ -595,14 +596,6 @@
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/39.png"
         },
         {
-            "id": "35",
-            "nome": "Hotpot",
-            "min": "0,50",
-            "pad": "2,50",
-            "max": "50,00",
-            "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/35.png"
-        },
-        {
             "id": "30",
             "nome": "Baccarat Deluxe",
             "min": "1,00",
@@ -613,9 +606,10 @@
         {
             "id": "28",
             "nome": "Dragon Legend",
-            "min": "0,50",
-            "pad": "2,50",
-            "max": "50,00",
+            "min": "0,45",
+            "pad": "2,25",
+            "max": "450,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/28.png"
         },
         {
