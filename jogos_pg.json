@@ -561,9 +561,10 @@
         {
             "id": "48",
             "nome": "Tree Of Fortune",
-            "min": "0,20",
-            "pad": "1,00",
-            "max": "25,00",
+            "min": "0,30",
+            "pad": "1,50",
+            "max": "1500,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/48.png"
         },
         {
