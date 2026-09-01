@@ -56,9 +56,10 @@
         {
             "id": "92",
             "nome": "Mahjong Ways 2",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "500,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "100,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/92.png"
         },
         {
@@ -713,9 +714,10 @@
         {
             "id": "2001042",
             "nome": "Museum Wonders",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "500,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "200,00",
+            "aposta_verificada": true,
             "imagem": ""
         },
         {
