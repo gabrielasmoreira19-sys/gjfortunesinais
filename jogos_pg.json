@@ -3,9 +3,10 @@
         {
             "id": "126",
             "nome": "Fortune Tiger",
-            "min": "0,50",
-            "pad": "2,50",
-            "max": "40,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "500,00",
+            "aposta_verificada": true,
             "imagem": "https://slotsteusinofc.com/wp-content/uploads/2026/02/fortune-tigre.avif"
         },
         {
@@ -13,7 +14,8 @@
             "nome": "Fortune Ox",
             "min": "0,50",
             "pad": "2,50",
-            "max": "60,00",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://slotsteusinofc.com/wp-content/uploads/2026/02/Sem-Titulo-1.png"
         },
         {
@@ -21,23 +23,26 @@
             "nome": "Fortune Rabbit",
             "min": "0,50",
             "pad": "2,50",
-            "max": "50,00",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://slotsteusinofc.com/wp-content/uploads/2026/02/3-1.jpg"
         },
         {
             "id": "94",
             "nome": "Fortune Mouse",
-            "min": "0,20",
-            "pad": "1,00",
-            "max": "30,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "500,00",
+            "aposta_verificada": true,
             "imagem": "https://slotsteusinofc.com/wp-content/uploads/2026/02/rato.avif"
         },
         {
             "id": "169",
             "nome": "Fortune Dragon",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "80,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "500,00",
+            "aposta_verificada": true,
             "imagem": "https://slotsteusinofc.com/wp-content/uploads/2026/02/cobra.avif"
         },
         {
@@ -115,9 +120,10 @@
         {
             "id": "150",
             "nome": "Pinata Wins",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "200,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/150.png"
         },
         {
@@ -131,9 +137,10 @@
         {
             "id": "158",
             "nome": "Dragon Hatch 2",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "200,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/158.png"
         },
         {
@@ -515,17 +522,19 @@
         {
             "id": "61",
             "nome": "Shaolin Soccer",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "500,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/61.png"
         },
         {
             "id": "58",
             "nome": "Dragon Hatch",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "200,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/58.png"
         },
         {
@@ -595,9 +604,10 @@
         {
             "id": "27",
             "nome": "Hip Hop Panda",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,30",
+            "pad": "3,00",
+            "max": "600,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/27.png"
         },
         {

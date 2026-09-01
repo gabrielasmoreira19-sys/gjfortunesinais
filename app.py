@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import random
@@ -82,13 +83,26 @@ app.secret_key = os.environ.get("SITE_SECRET_KEY", "troque-esta-chave-em-produca
 ultima_sincronizacao_pg = 0.0
 lock_sincronizacao_pg = threading.Lock()
 FAIXAS_INDICATIVAS = (
+	("0,20", "1,00", "20,00"),
+	("0,20", "1,00", "30,00"),
 	("0,40", "2,00", "40,00"),
 	("0,40", "2,00", "60,00"),
 	("0,50", "2,50", "50,00"),
 	("0,50", "2,50", "75,00"),
 	("0,80", "4,00", "100,00"),
+	("0,80", "4,00", "120,00"),
+	("1,00", "5,00", "150,00"),
 	("1,00", "5,00", "200,00"),
+	("2,00", "10,00", "300,00"),
 )
+
+
+def combo_aposta_por_id(jogo_id):
+	# Sem fonte oficial de aposta min/max por jogo (e config de plataforma, nao do provedor):
+	# hash estavel do id garante variedade real e o mesmo jogo sempre mostra o mesmo valor.
+	digest = hashlib.md5(str(jogo_id).encode("utf-8")).hexdigest()
+	indice = int(digest, 16) % len(FAIXAS_INDICATIVAS)
+	return FAIXAS_INDICATIVAS[indice]
 CONFIG_PADRAO = {
 	"banner": {"ativo": True, "titulo": "GJFORTUNESINAIS", "texto": "Sinais e informações dos seus jogos favoritos em um só lugar.", "imagem": "", "link": "#catalogo"},
 	"tema": {"fundo_ativo": False, "fundo_imagem": "", "favicon_emoji": "🎰"},
@@ -455,24 +469,13 @@ def encontrar_jogo(jogo_id):
 	return None
 
 
-def extrair_valor_aposta(jogo, chave_curta, chave_longa, padrao):
-	# Catálogos diferentes usam nomes de campo diferentes (pg: min/pad/max, demais: minbet/padbet/maxbet com prefixo "R$ ")
-	valor = jogo.get(chave_curta)
-	if valor:
-		return str(valor).strip()
-	valor_longo = jogo.get(chave_longa)
-	if valor_longo:
-		return str(valor_longo).replace("R$", "").strip()
-	return padrao
-
-
 def classificar_volatilidade(jogo):
 	maximo = converter_valor(jogo.get("exibir_max"), 100.0)
 	if maximo <= 30:
 		return "baixa"
 	if maximo <= 60:
 		return "media"
-	if maximo <= 120:
+	if maximo <= 150:
 		return "alta"
 	return "muito_alta"
 
@@ -513,22 +516,32 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 	}
 
 
+def extrair_valor_real(jogo, chave_curta, chave_longa):
+	# So considera valor real se o jogo foi marcado como verificado manualmente na plataforma
+	if not jogo.get("aposta_verificada"):
+		return None
+	valor = jogo.get(chave_curta)
+	if valor:
+		return str(valor).strip()
+	valor_longo = jogo.get(chave_longa)
+	if valor_longo:
+		return str(valor_longo).replace("R$", "").strip()
+	return None
+
+
 def normalizar_faixas_jogo(jogo, indice=0):
-	# Garante exibir_min/pad/max preenchidos independente do formato do catálogo de origem
-	if "exibir_min" not in jogo:
-		jogo["exibir_min"] = extrair_valor_aposta(jogo, "min", "minbet", "0,40")
-	if "exibir_pad" not in jogo:
-		jogo["exibir_pad"] = extrair_valor_aposta(jogo, "pad", "padbet", "2,00")
-	if "exibir_max" not in jogo:
-		jogo["exibir_max"] = extrair_valor_aposta(jogo, "max", "maxbet", "100,00")
-	if (jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"]) == (
-		"0,40",
-		"2,00",
-		"100,00",
-	):
-		faixa = FAIXAS_INDICATIVAS[indice % len(FAIXAS_INDICATIVAS)]
-		jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"] = faixa
+	# Prioriza valores reais verificados no catalogo (min/pad/max ou minbet/padbet/maxbet).
+	# Para jogos ainda nao verificados, usa um combo determinístico por id (estavel e variado)
+	# em vez de repetir sempre o mesmo valor, ja que nao existe fonte oficial publica disso.
+	min_real = extrair_valor_real(jogo, "min", "minbet")
+	pad_real = extrair_valor_real(jogo, "pad", "padbet")
+	max_real = extrair_valor_real(jogo, "max", "maxbet")
+	if min_real and pad_real and max_real:
+		jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"] = min_real, pad_real, max_real
+	else:
+		jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"] = combo_aposta_por_id(jogo.get("id", indice))
 	return jogo
+
 
 
 def preparar_faixas_indicativas(catalogo):
