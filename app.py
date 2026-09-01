@@ -547,6 +547,7 @@ def preparar_faixas_indicativas(catalogo):
 	for indice, jogo in enumerate(jogos):
 		normalizar_faixas_jogo(jogo, indice)
 		jogo["sinal"] = gerar_sinal_do_ciclo(jogo.get("id"), jogo)
+		jogo["faixas_aposta"] = gerar_faixas_aposta(jogo)
 
 
 def converter_valor(valor, padrao):
@@ -576,6 +577,19 @@ def gerar_escada_apostas(jogo):
 
 def formatar_valor_aposta(valor):
 	return f"{valor:.2f}".replace(".", ",")
+
+
+def gerar_faixas_aposta(jogo):
+	minima = converter_valor(jogo.get("exibir_min"), 0.4)
+	maxima = converter_valor(jogo.get("exibir_max"), 100.0)
+	baixa_fim = min(minima * 10, maxima)
+	padrao_inicio = min(minima * 12, maxima)
+	padrao_fim = min(minima * 40, maxima)
+	return {
+		"minima": f"R$ {formatar_valor_aposta(minima)} a R$ {formatar_valor_aposta(baixa_fim)}",
+		"padrao": f"R$ {formatar_valor_aposta(padrao_inicio)} a R$ {formatar_valor_aposta(padrao_fim)}",
+		"maxima": f"Acima de R$ {formatar_valor_aposta(padrao_fim)}",
+	}
 
 
 def ordenar_jogos_pg(jogos):
