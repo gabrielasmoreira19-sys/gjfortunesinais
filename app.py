@@ -451,17 +451,49 @@ def encontrar_jogo(jogo_id):
 			None,
 		)
 		if jogo is not None:
-			return jogo
+			return normalizar_faixas_jogo(jogo)
 	return None
+
+
+def extrair_valor_aposta(jogo, chave_curta, chave_longa, padrao):
+	# Catálogos diferentes usam nomes de campo diferentes (pg: min/pad/max, demais: minbet/padbet/maxbet com prefixo "R$ ")
+	valor = jogo.get(chave_curta)
+	if valor:
+		return str(valor).strip()
+	valor_longo = jogo.get(chave_longa)
+	if valor_longo:
+		return str(valor_longo).replace("R$", "").strip()
+	return padrao
+
+
+def classificar_volatilidade(jogo):
+	maximo = converter_valor(jogo.get("exibir_max"), 100.0)
+	if maximo <= 30:
+		return "baixa"
+	if maximo <= 60:
+		return "media"
+	if maximo <= 120:
+		return "alta"
+	return "muito_alta"
+
+
+FAIXAS_PERCENTUAIS_POR_VOLATILIDADE = {
+	"baixa": {"minima": (28, 68), "padrao": (32, 62), "maxima": (42, 74), "distribuicao": (90, 99)},
+	"media": {"minima": (20, 80), "padrao": (24, 76), "maxima": (34, 88), "distribuicao": (86, 98)},
+	"alta": {"minima": (14, 86), "padrao": (18, 84), "maxima": (30, 94), "distribuicao": (82, 97)},
+	"muito_alta": {"minima": (10, 88), "padrao": (15, 88), "maxima": (25, 96), "distribuicao": (78, 96)},
+}
 
 
 def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 	instante = time.time() if agora is None else agora
 	ciclo = int(instante // INTERVALO_SINAIS_SEGUNDOS)
 	gerador = random.Random(f"gjfortunesinais:{ciclo}:{jogo_id}")
-	minima = gerador.randint(18, 88)
-	padrao = gerador.randint(18, 88)
-	maxima = gerador.randint(18, 96)
+	faixas = FAIXAS_PERCENTUAIS_POR_VOLATILIDADE[classificar_volatilidade(jogo)]
+	minima = gerador.randint(*faixas["minima"])
+	padrao = gerador.randint(*faixas["padrao"])
+	maxima = gerador.randint(*faixas["maxima"])
+	distribuicao = gerador.randint(*faixas["distribuicao"])
 	escada = gerar_escada_apostas(jogo)
 	minima_aposta = escada[0]
 	meio = escada[1:max(2, len(escada) // 2)] or escada
@@ -472,6 +504,7 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 		"minima": minima,
 		"padrao": padrao,
 		"maxima": maxima,
+		"distribuicao": distribuicao,
 		"apostas": {
 			"minima": formatar_valor_aposta(minima_aposta),
 			"padrao": formatar_valor_aposta(gerador.choice(meio)),
@@ -480,20 +513,30 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 	}
 
 
+def normalizar_faixas_jogo(jogo, indice=0):
+	# Garante exibir_min/pad/max preenchidos independente do formato do catálogo de origem
+	if "exibir_min" not in jogo:
+		jogo["exibir_min"] = extrair_valor_aposta(jogo, "min", "minbet", "0,40")
+	if "exibir_pad" not in jogo:
+		jogo["exibir_pad"] = extrair_valor_aposta(jogo, "pad", "padbet", "2,00")
+	if "exibir_max" not in jogo:
+		jogo["exibir_max"] = extrair_valor_aposta(jogo, "max", "maxbet", "100,00")
+	if (jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"]) == (
+		"0,40",
+		"2,00",
+		"100,00",
+	):
+		faixa = FAIXAS_INDICATIVAS[indice % len(FAIXAS_INDICATIVAS)]
+		jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"] = faixa
+	return jogo
+
+
 def preparar_faixas_indicativas(catalogo):
 	# Aceita tanto {"pg": [...]} quanto lista direta
 	jogos = catalogo if isinstance(catalogo, list) else catalogo.get("pg", [])
 	for indice, jogo in enumerate(jogos):
-		jogo["exibir_min"] = jogo.get("min", "0,40")
-		jogo["exibir_pad"] = jogo.get("pad", "2,00")
-		jogo["exibir_max"] = jogo.get("max", "100,00")
-		if (jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"]) == (
-			"0,40",
-			"2,00",
-			"100,00",
-		):
-			faixa = FAIXAS_INDICATIVAS[indice % len(FAIXAS_INDICATIVAS)]
-			jogo["exibir_min"], jogo["exibir_pad"], jogo["exibir_max"] = faixa
+		normalizar_faixas_jogo(jogo, indice)
+		jogo["sinal"] = gerar_sinal_do_ciclo(jogo.get("id"), jogo)
 
 
 def converter_valor(valor, padrao):
@@ -507,8 +550,8 @@ def converter_valor(valor, padrao):
 
 
 def gerar_escada_apostas(jogo):
-	base = converter_valor(jogo.get("min"), 0.4)
-	limite = converter_valor(jogo.get("max"), 100.0)
+	base = converter_valor(jogo.get("exibir_min") or jogo.get("min"), 0.4)
+	limite = converter_valor(jogo.get("exibir_max") or jogo.get("max"), 100.0)
 	valores = []
 	for escala in (1, 10, 100):
 		passo = base * escala
@@ -604,7 +647,7 @@ def index():
 	
 	# Preparar faixas para todos os jogos
 	for jogos_provedor in catalogo.values():
-		preparar_faixas_indicativas({"jogos": jogos_provedor})
+		preparar_faixas_indicativas(jogos_provedor)
 	
 	configuracao = carregar_configuracao()
 	stories_ativas = filtrar_stories_ativas(configuracao.get("stories", []))
