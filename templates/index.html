@@ -196,6 +196,12 @@
         body::after { content:''; position:fixed; inset:0; z-index:-1; background:repeating-linear-gradient(125deg,rgba(255,255,255,.025) 0 1px,transparent 1px 15px); }
         .top,.platforms,.hero-carousel,.platform-dance,.managed-banner,.responsible-banner,.update,.search,.filter,.card { background-color:rgba(31,22,48,.64); backdrop-filter:blur(18px) saturate(1.12); }
         .card { background-image:linear-gradient(180deg,rgba(104,81,137,.38),rgba(23,16,37,.72)); }
+        .grid { perspective:1200px; perspective-origin:center top; }
+        .card { transform:translateZ(0); transform-style:preserve-3d; box-shadow:0 15px 26px #0008, inset 0 1px #ffffff22; }
+        .card .cover { transform:translateZ(16px); }
+        .card .info { transform:translateZ(8px); }
+        .card:hover { transform:translateY(-7px) rotateX(2deg) rotateY(-1deg); box-shadow:0 24px 34px #000a, 0 0 18px #d4af3740; }
+        @media(max-width:760px) { .card:hover { transform:none; } }
         .how-modal,.bank-modal { width:min(560px,100%); max-height:min(760px,calc(100vh - 30px)); overflow:auto; background:linear-gradient(145deg,rgba(62,47,88,.94),rgba(24,17,39,.96)); backdrop-filter:blur(20px); }
         .guide-intro { margin-bottom:16px !important; color:#f4eef9 !important; font-size:13px !important; }
         .guide-section { margin-top:16px; padding-top:14px; border-top:1px solid #ffffff24; }
@@ -266,11 +272,9 @@
         const formatarAposta = valor => `R$ ${valor.toFixed(2).replace('.', ',')}`;
         const lerAposta = valor => Number(String(valor || '').replace('R$', '').replaceAll('.', '').replace(',', '.').trim()) || 0;
         const tituloCatalogo = document.getElementById('catalogo');
-        tituloCatalogo.insertAdjacentHTML('beforebegin', '<section class="highlights"><div class="highlights-head"><h2>Em alta neste ciclo</h2><span>Índices atualizados a cada 5 minutos</span></div><div class="highlight-list" id="highlightList"></div></section>');
         tituloCatalogo.insertAdjacentHTML('afterend', '<div class="quick-filters" aria-label="Filtros rápidos"><button class="quick-filter active" type="button" data-filter="all">Todos</button><button class="quick-filter" type="button" data-filter="hot">Em alta</button><button class="quick-filter" type="button" data-filter="new">Novos</button><button class="quick-filter" type="button" data-filter="favorite">Favoritos</button></div>');
         cards.forEach(card => { const distribuicao = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '')) || 0; card.dataset.distribution = distribuicao; const valores = [...card.querySelectorAll('.bets strong')].map(item => lerAposta(item.textContent)); const [minima, , maxima] = valores; if (minima > 0 && maxima >= minima) { const baixaFim = Math.min(minima * 10, maxima), padraoInicio = Math.min(minima * 12, maxima), padraoFim = Math.min(minima * 40, maxima); card.querySelector('.bets').innerHTML = `<div class="bet">MÍNIMA<strong>${formatarAposta(minima)} a ${formatarAposta(baixaFim)}</strong></div><div class="bet">PADRÃO<strong>${formatarAposta(padraoInicio)} a ${formatarAposta(padraoFim)}</strong></div><div class="bet">MÁXIMA<strong>Acima de ${formatarAposta(padraoFim)}</strong></div>`; } if (distribuicao >= 90) { card.classList.add('featured'); card.querySelector('.cover')?.insertAdjacentHTML('beforeend', '<span class="hot">+90%</span>'); const jogar = card.querySelector('.play'); if (jogar) jogar.textContent = 'Jogue agora'; } card.querySelector('.heart')?.addEventListener('click', () => { card.classList.toggle('favorite'); card.querySelector('.heart').textContent = card.classList.contains('favorite') ? '♥' : '♡'; filterCards(); }); });
-        document.getElementById('highlightList').innerHTML = [...cards].sort((a, b) => Number(b.dataset.distribution) - Number(a.dataset.distribution)).slice(0, 5).map(card => `<div class="highlight"><strong>${card.dataset.distribution}%</strong><span>${card.querySelector('h3')?.textContent || ''}</span></div>`).join('');
-        function atualizarRankingEDestaques() { cards.forEach(card => { const distribuicao = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '')) || 0; card.dataset.distribution = distribuicao; const selo = card.querySelector('.hot'); if (distribuicao >= 90) { card.classList.add('featured'); if (!selo) card.querySelector('.cover')?.insertAdjacentHTML('beforeend', '<span class="hot">+90%</span>'); const jogar = card.querySelector('.play'); if (jogar) jogar.textContent = 'Jogue agora'; } else { card.classList.remove('featured'); selo?.remove(); } }); document.getElementById('highlightList').innerHTML = [...cards].sort((a, b) => Number(b.dataset.distribution) - Number(a.dataset.distribution)).slice(0, 5).map(card => `<div class="highlight"><strong>${card.dataset.distribution}%</strong><span>${card.querySelector('h3')?.textContent || ''}</span></div>`).join(''); }
+        function atualizarDestaques() { cards.forEach(card => { const distribuicao = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '')) || 0; card.dataset.distribution = distribuicao; const selo = card.querySelector('.hot'); if (distribuicao >= 90) { card.classList.add('featured'); if (!selo) card.querySelector('.cover')?.insertAdjacentHTML('beforeend', '<span class="hot">+90%</span>'); const jogar = card.querySelector('.play'); if (jogar) jogar.textContent = 'Jogue agora'; } else { card.classList.remove('featured'); selo?.remove(); } }); }
         document.querySelectorAll('.quick-filter').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('.quick-filter').forEach(item => item.classList.remove('active')); button.classList.add('active'); quickFilter = button.dataset.filter; filterCards(); }));
         const INTERVALO_SINAIS = 5 * 60 * 1000;
         let cicloProcessado = Math.floor(Date.now() / INTERVALO_SINAIS);
@@ -344,7 +348,7 @@
                     }
                 }));
                 ordenarCardsPorDistribuicao(pontuacoes);
-                atualizarRankingEDestaques();
+                atualizarDestaques();
                 filterCards();
             } finally {
                 atualizandoSinais = false;
