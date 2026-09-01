@@ -112,9 +112,10 @@
         {
             "id": "145",
             "nome": "Yakuza Honor",
-            "min": "1,00",
-            "pad": "5,00",
+            "min": "0,40",
+            "pad": "2,00",
             "max": "200,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/145.png"
         },
         {
@@ -202,9 +203,10 @@
         {
             "id": "143",
             "nome": "Emoji Riches",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/143.png"
         },
         {
@@ -242,9 +244,10 @@
         {
             "id": "50",
             "nome": "The Great Icescape",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "75,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "150,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/50.png"
         },
         {
@@ -266,9 +269,10 @@
         {
             "id": "103",
             "nome": "Alchemy Gold",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/103.png"
         },
         {
@@ -418,9 +422,10 @@
         {
             "id": "161",
             "nome": "Candy Bonanza",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "400,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/161.png"
         },
         {
@@ -540,9 +545,10 @@
         {
             "id": "57",
             "nome": "Mahjong Ways",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "400,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "100,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/57.png"
         },
         {
@@ -556,9 +562,10 @@
         {
             "id": "42",
             "nome": "Medusa",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "75,00",
+            "min": "0,30",
+            "pad": "3,00",
+            "max": "300,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/42.png"
         },
         {
@@ -709,9 +716,10 @@
         {
             "id": "2000064",
             "nome": "Muay Thai Champion",
-            "min": "1,00",
-            "pad": "5,00",
-            "max": "150,00",
+            "min": "0,40",
+            "pad": "2,00",
+            "max": "200,00",
+            "aposta_verificada": true,
             "imagem": ""
         },
         {
