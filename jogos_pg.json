@@ -236,9 +236,10 @@
         {
             "id": "52",
             "nome": "Double Fortune",
-            "min": "0,50",
-            "pad": "2,50",
-            "max": "50,00",
+            "min": "0,30",
+            "pad": "1,50",
+            "max": "120,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/52.png"
         },
         {
@@ -447,17 +448,19 @@
         {
             "id": "166",
             "nome": "Bali Vacation",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "500,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/166.png"
         },
         {
             "id": "70",
             "nome": "Galactic Gems",
-            "min": "0,80",
-            "pad": "4,00",
-            "max": "100,00",
+            "min": "0,50",
+            "pad": "2,50",
+            "max": "200,00",
+            "aposta_verificada": true,
             "imagem": "https://sg-res.9am-games.com/PGSoft/s/gameIcon/70.png"
         },
         {
