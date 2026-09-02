@@ -25,23 +25,3 @@ services:
         sync: false
       - key: SITE_SECRET_KEY
         generateValue: true
-
-  - type: worker
-    name: santos-bot
-    runtime: python
-    rootDir: bot_santos
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -u bot.py
-    disk:
-      name: santos-data
-      mountPath: /var/data
-      sizeGB: 1
-    envVars:
-      - key: SANTOS_DATA_DIR
-        value: /var/data
-      - key: TELEGRAM_TOKEN
-        sync: false
-      - key: GEMINI_KEY
-        sync: false
-      - key: GIPHY_API_KEY
-        sync: false
