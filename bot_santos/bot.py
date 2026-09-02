@@ -16,6 +16,8 @@ import html
 import re
 import shlex
 import requests
+import traceback
+import shutil
 from collections import deque
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv
@@ -27,9 +29,22 @@ TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_KEY")
 GIPHY_API_KEY = os.environ.get("GIPHY_API_KEY")
 STICKER_IDS = [item.strip() for item in os.environ.get("STICKER_IDS", "").split(",") if item.strip()]
-ARQUIVO_STICKERS = os.path.join(os.path.dirname(__file__), "stickers_santos.json")
-ARQUIVO_STICKERS_BICHO = os.path.join(os.path.dirname(__file__), "stickers_bicho.json")
-ARQUIVO_CONFIG_GRUPOS = os.path.join(os.path.dirname(__file__), "config_grupos.json")
+DIRETORIO_BOT = os.path.dirname(__file__)
+DIRETORIO_DADOS = os.environ.get("SANTOS_DATA_DIR", DIRETORIO_BOT)
+os.makedirs(DIRETORIO_DADOS, exist_ok=True)
+
+
+def caminho_dados_santos(nome_arquivo):
+    caminho = os.path.join(DIRETORIO_DADOS, nome_arquivo)
+    modelo = os.path.join(DIRETORIO_BOT, nome_arquivo)
+    if not os.path.exists(caminho) and os.path.exists(modelo):
+        shutil.copy2(modelo, caminho)
+    return caminho
+
+
+ARQUIVO_STICKERS = caminho_dados_santos("stickers_santos.json")
+ARQUIVO_STICKERS_BICHO = caminho_dados_santos("stickers_bicho.json")
+ARQUIVO_CONFIG_GRUPOS = caminho_dados_santos("config_grupos.json")
 LOCK_STICKERS = threading.Lock()  # Sincroniza acesso ao arquivo de stickers
 
 
@@ -64,9 +79,9 @@ if not TELEGRAM_TOKEN or not GEMINI_KEY:
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-# Sobrescreve qualquer lista de comandos antiga configurada no BotFather, que causava confusão no menu do PV.
-try:
-    bot.set_my_commands(
+def atualizar_menu_comandos():
+    try:
+        bot.set_my_commands(
         [
             BotCommand("start", "Abrir a central privada da Santos"),
             BotCommand("ajuda", "Abrir a central privada da Santos"),
@@ -78,9 +93,9 @@ try:
             BotCommand("bichos", "Ver quantos stickers de bicho estão salvos"),
         ],
         scope=BotCommandScopeAllPrivateChats(),
-    )
-except Exception as erro:
-    print(f"Não consegui atualizar o menu de comandos: {type(erro).__name__}: {erro}")
+        )
+    except Exception as erro:
+        print(f"Não consegui atualizar o menu de comandos: {type(erro).__name__}: {erro}", flush=True)
 
 GEMINI_MODELO = "gemini-3.6-flash"
 genai_client = genai.Client(api_key=GEMINI_KEY)
@@ -125,6 +140,7 @@ def buscar_gif(termo):
 
 # Memória e Estruturas
 ULTIMA_FOTO_PV = {}
+AGUARDANDO_EDICAO_LINK = {}  # user_id -> {"gatilho": ..., "campo": "url"|"foto"}
 
 
 def config_grupo_padrao():
@@ -151,7 +167,7 @@ def salvar_config_grupos(config_grupos):
 
 
 CONFIG_GRUPOS = carregar_config_grupos()
-ARQUIVO_RANKING = os.path.join(os.path.dirname(__file__), "ranking_semanal.json")
+ARQUIVO_RANKING = caminho_dados_santos("ranking_semanal.json")
 LOCK_RANKING = threading.Lock()  # Sincroniza acesso concorrente ao ranking
 LOCK_CONFIG = threading.Lock()   # Sincroniza acesso ao config_grupos
 
@@ -220,9 +236,6 @@ def sincronizar_grupos_conhecidos():
         houve_mudanca = True
     if houve_mudanca:
         salvar_config_grupos(CONFIG_GRUPOS)
-
-
-sincronizar_grupos_conhecidos()
 
 
 HISTORICO_ESCOLHAS = {}
@@ -799,7 +812,7 @@ def rotina_jogos_automaticos():
             liberar_jogo(chat_id, nome_jogo)
 
 
-ARQUIVO_GATILHOS = os.path.join(os.path.dirname(__file__), "gatilhos_plataformas.json")
+ARQUIVO_GATILHOS = caminho_dados_santos("gatilhos_plataformas.json")
 LOCK_GATILHOS = threading.Lock()  # Sincroniza acesso ao arquivo de gatilhos
 
 
@@ -832,6 +845,30 @@ FRASES_PLATAFORMA = [
     "Sextou o coração na {g}? Bora! 🎀",
     "Não fala que eu não avisei, hein! A {g} tá voando 🕊️:",
 ]
+
+def aliases_do_gatilho(gatilho):
+    base = re.sub(r"[^A-Z0-9]+", "", gatilho.upper())
+    aliases = {base, gatilho.upper().replace(" ", "")}
+    aliases.add(gatilho.upper())
+    if base:
+        partes = re.findall(r"[A-Z]+|\d+", base)
+        aliases.update(partes)
+        # Caso de gatilhos compostos tipo "RIACHO777" -> aceita "RIACHO" ou "777"
+        for parte in partes:
+            if len(parte) >= 2:
+                aliases.add(parte)
+    return {alias for alias in aliases if alias}
+
+
+def detectar_gatilho_plataforma(texto_upper):
+    for gatilho, dados in GATILHOS_PLATAFORMAS.items():
+        if not dados.get("ativo", True):
+            continue
+        aliases = aliases_do_gatilho(gatilho)
+        if any(alias and alias in texto_upper for alias in aliases):
+            return gatilho, dados
+    return None, None
+
 
 RESPOSTAS_SAUDACAO = {
     "BOM DIA": [
@@ -1587,9 +1624,25 @@ def texto_ataque_naval(game):
 
 @bot.message_handler(content_types=['photo'])
 def capturar_foto_pv(mensagem):
-    if mensagem.chat.type == "private":
-        ULTIMA_FOTO_PV[mensagem.chat.id] = mensagem.photo[-1].file_id
-        bot.reply_to(mensagem, "🖼️ Foto guardadinha! Agora me manda: <code>/addlink [gatilho] [url]</code>\n\n<i>O gatilho é a palavra que, quando alguém falar no grupo, eu solto esse link automaticamente 😉</i>", parse_mode="HTML")
+    if mensagem.chat.type != "private":
+        return
+    ULTIMA_FOTO_PV[mensagem.chat.id] = mensagem.photo[-1].file_id
+
+    edicao = AGUARDANDO_EDICAO_LINK.get(mensagem.from_user.id)
+    if edicao and edicao["campo"] == "foto":
+        gatilho = edicao["gatilho"]
+        if gatilho in GATILHOS_PLATAFORMAS:
+            GATILHOS_PLATAFORMAS[gatilho]["file_id"] = mensagem.photo[-1].file_id
+            salvar_gatilhos(GATILHOS_PLATAFORMAS)
+            AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
+            bot.reply_to(mensagem, f"✅ Foto da <b>{gatilho}</b> atualizada!", parse_mode="HTML")
+            bot.send_message(mensagem.chat.id, texto_detalhe_link(gatilho), reply_markup=teclado_detalhe_link(gatilho), parse_mode="HTML")
+        else:
+            AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
+            bot.reply_to(mensagem, "🤔 Esse link não existe mais.")
+        return
+
+    bot.reply_to(mensagem, "🖼️ Foto guardadinha! Agora me manda: <code>/addlink [gatilho] [url]</code>\n\n<i>O gatilho é a palavra que, quando alguém falar no grupo, eu solto esse link automaticamente 😉</i>", parse_mode="HTML")
 
 
 @bot.message_handler(content_types=['sticker'])
@@ -1653,9 +1706,66 @@ def texto_menu_links():
         "➕ <b>2.</b> <code>/addlink [gatilho] [url]</code> — salva o link\n"
         "<i>Ex: /addlink URBEPG https://exemplo.com\n"
         "Palavra com espaço: /addlink \"GRUPO DA GABI\" https://exemplo.com</i>\n"
-        "📋 <b>3.</b> <code>/links</code> — vê tudo que já cadastrei\n"
-        "🗑️ <b>4.</b> <code>/removerlink [gatilho]</code> — remove um link"
+        "📋 <b>3.</b> Toque em \"Ver links\" pra gerenciar (ativar/desativar/remover)"
     )
+
+
+def teclado_menu_links_intro():
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(InlineKeyboardButton("📋 Ver links", callback_data="linkcfg_lista"))
+    markup.add(InlineKeyboardButton("⬅️ Voltar", callback_data="menu_inicio"))
+    return markup
+
+
+def texto_lista_links():
+    if not GATILHOS_PLATAFORMAS:
+        return "🔗 <b>LINKS DE PLATAFORMA</b>\n\nAinda não tem nenhum link cadastrado."
+    linhas = ["🔗 <b>LINKS DE PLATAFORMA</b>\n"]
+    for indice, (gatilho, dados) in enumerate(GATILHOS_PLATAFORMAS.items(), start=1):
+        marcador = "✅" if dados.get("ativo", True) else "❌"
+        linhas.append(f"{indice}. {marcador} <b>{gatilho}</b>")
+    linhas.append("\n👀 Toque no número pra ver detalhes, no status pra ligar/desligar, ou na lixeira pra apagar.")
+    return "\n".join(linhas)
+
+
+def teclado_lista_links():
+    markup = InlineKeyboardMarkup(row_width=3)
+    for indice, (gatilho, dados) in enumerate(GATILHOS_PLATAFORMAS.items(), start=1):
+        marcador = "✅ Ativado" if dados.get("ativo", True) else "❌ Desativado"
+        markup.row(
+            InlineKeyboardButton(f"🔗 {indice}", callback_data=f"linkcfg_ver_{gatilho}"),
+            InlineKeyboardButton(marcador, callback_data=f"linkcfg_toggle_{gatilho}"),
+            InlineKeyboardButton("🗑️", callback_data=f"linkcfg_del_{gatilho}"),
+        )
+    markup.add(InlineKeyboardButton("➕ Adicionar link", callback_data="linkcfg_add"))
+    markup.add(InlineKeyboardButton("⬅️ Voltar", callback_data="menu_inicio"))
+    return markup
+
+
+def texto_detalhe_link(gatilho):
+    dados = GATILHOS_PLATAFORMAS.get(gatilho)
+    if not dados:
+        return "🤔 Esse link não existe mais."
+    marcador = "✅ Ativado" if dados.get("ativo", True) else "❌ Desativado"
+    foto = "🖼️ Com foto" if dados.get("file_id") else "📝 Sem foto (só texto)"
+    return (
+        f"🔗 <b>{gatilho}</b>\n\n"
+        f"Status: {marcador}\n"
+        f"{foto}\n"
+        f"Link: {dados['url']}"
+    )
+
+
+def teclado_detalhe_link(gatilho):
+    dados = GATILHOS_PLATAFORMAS.get(gatilho, {})
+    marcador = "❌ Desativar" if dados.get("ativo", True) else "✅ Ativar"
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(InlineKeyboardButton(marcador, callback_data=f"linkcfg_toggle_{gatilho}"))
+    markup.add(InlineKeyboardButton("✏️ Editar link (URL)", callback_data=f"linkcfg_editurl_{gatilho}"))
+    markup.add(InlineKeyboardButton("🖼️ Editar foto", callback_data=f"linkcfg_editfoto_{gatilho}"))
+    markup.add(InlineKeyboardButton("🗑️ Remover", callback_data=f"linkcfg_del_{gatilho}"))
+    markup.add(InlineKeyboardButton("⬅️ Voltar pra lista", callback_data="linkcfg_lista"))
+    return markup
 
 
 def texto_menu_bicho():
@@ -1747,7 +1857,7 @@ def comandos_pv_geral(mensagem):
             bot.reply_to(mensagem, "⚠️ Confira o gatilho e use um link começando com <code>http://</code> ou <code>https://</code>.", parse_mode="HTML")
             return
         file_id = ULTIMA_FOTO_PV.get(mensagem.chat.id, "")
-        GATILHOS_PLATAFORMAS[gatilho] = {"url": url, "file_id": file_id}
+        GATILHOS_PLATAFORMAS[gatilho] = {"url": url, "file_id": file_id, "ativo": True}
         salvar_gatilhos(GATILHOS_PLATAFORMAS)
         preview = escolher_sem_repetir("preview_pv", [frase.format(g=gatilho) for frase in FRASES_PLATAFORMA])
         aviso_foto = "" if file_id else "\n\n⚠️ <i>Você não me mandou foto ainda, então vou soltar só o texto + link quando o gatilho for falado.</i>"
@@ -1775,21 +1885,31 @@ def comandos_pv_geral(mensagem):
         return
 
     if texto_lower.startswith("/links"):
-        if not GATILHOS_PLATAFORMAS:
-            bot.reply_to(mensagem, "📋 Ainda não tenho nenhuma plataforma cadastrada. Manda uma foto + <code>/addlink</code> pra eu aprender!", parse_mode="HTML")
-            return
-        markup = InlineKeyboardMarkup(row_width=1)
-        linhas = ["📋 <b>Plataformas cadastradas:</b>\n"]
-        for g, d in GATILHOS_PLATAFORMAS.items():
-            linhas.append(f"• <b>{g}</b> ➔ {d['url']}")
-            markup.add(InlineKeyboardButton(f"🗑️ Remover {g}", callback_data=f"rmlink_{g}"))
-        bot.reply_to(mensagem, "\n".join(linhas), reply_markup=markup, parse_mode="HTML")
+        bot.reply_to(mensagem, texto_lista_links(), reply_markup=teclado_lista_links(), parse_mode="HTML")
         return
 
  
 
 @bot.message_handler(func=lambda mensagem: mensagem.chat.type == "private")
 def processar_acao_privada(mensagem):
+    edicao = AGUARDANDO_EDICAO_LINK.get(mensagem.from_user.id)
+    if edicao and edicao["campo"] == "url":
+        gatilho = edicao["gatilho"]
+        nova_url = (mensagem.text or "").strip()
+        if not nova_url.lower().startswith(("http://", "https://")):
+            bot.reply_to(mensagem, "⚠️ Manda um link começando com <code>http://</code> ou <code>https://</code>.", parse_mode="HTML")
+            return
+        if gatilho in GATILHOS_PLATAFORMAS:
+            GATILHOS_PLATAFORMAS[gatilho]["url"] = nova_url
+            salvar_gatilhos(GATILHOS_PLATAFORMAS)
+            AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
+            bot.reply_to(mensagem, f"✅ Link da <b>{gatilho}</b> atualizado!", parse_mode="HTML")
+            bot.send_message(mensagem.chat.id, texto_detalhe_link(gatilho), reply_markup=teclado_detalhe_link(gatilho), parse_mode="HTML")
+        else:
+            AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
+            bot.reply_to(mensagem, "🤔 Esse link não existe mais.")
+        return
+
     acao = DETETIVE_ACOES.get(mensagem.from_user.id)
     if not acao:
         return
@@ -1850,7 +1970,74 @@ def processar_callback(call):
         return
 
     if data == "menu_links":
-        bot.edit_message_text(texto_menu_links(), chat_id, call.message.message_id, reply_markup=teclado_voltar_menu(), parse_mode="HTML")
+        bot.edit_message_text(texto_menu_links(), chat_id, call.message.message_id, reply_markup=teclado_menu_links_intro(), parse_mode="HTML")
+        return
+
+    if data == "linkcfg_lista":
+        bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+        return
+
+    if data == "linkcfg_add":
+        bot.edit_message_text(texto_menu_links(), chat_id, call.message.message_id, reply_markup=teclado_menu_links_intro(), parse_mode="HTML")
+        return
+
+    if data.startswith("linkcfg_ver_"):
+        gatilho = data.replace("linkcfg_ver_", "", 1)
+        AGUARDANDO_EDICAO_LINK.pop(user_id, None)
+        if gatilho not in GATILHOS_PLATAFORMAS:
+            bot.answer_callback_query(call.id, "Esse link já foi removido.")
+            bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+            return
+        bot.edit_message_text(texto_detalhe_link(gatilho), chat_id, call.message.message_id, reply_markup=teclado_detalhe_link(gatilho), parse_mode="HTML")
+        return
+
+    if data.startswith("linkcfg_toggle_"):
+        gatilho = data.replace("linkcfg_toggle_", "", 1)
+        if gatilho in GATILHOS_PLATAFORMAS:
+            GATILHOS_PLATAFORMAS[gatilho]["ativo"] = not GATILHOS_PLATAFORMAS[gatilho].get("ativo", True)
+            salvar_gatilhos(GATILHOS_PLATAFORMAS)
+            ligou = GATILHOS_PLATAFORMAS[gatilho]["ativo"]
+            bot.answer_callback_query(call.id, f"{'✅ Ativado' if ligou else '❌ Desativado'}: {gatilho}")
+        bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+        return
+
+    if data.startswith("linkcfg_del_"):
+        gatilho = data.replace("linkcfg_del_", "", 1)
+        if gatilho in GATILHOS_PLATAFORMAS:
+            del GATILHOS_PLATAFORMAS[gatilho]
+            salvar_gatilhos(GATILHOS_PLATAFORMAS)
+            bot.answer_callback_query(call.id, f"🗑️ {gatilho} removida!")
+        else:
+            bot.answer_callback_query(call.id, "Já tinha sido removida.")
+        bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+        return
+
+    if data.startswith("linkcfg_editurl_"):
+        gatilho = data.replace("linkcfg_editurl_", "", 1)
+        if gatilho not in GATILHOS_PLATAFORMAS:
+            bot.answer_callback_query(call.id, "Esse link já foi removido.")
+            bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+            return
+        AGUARDANDO_EDICAO_LINK[user_id] = {"gatilho": gatilho, "campo": "url"}
+        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("❌ Cancelar", callback_data=f"linkcfg_ver_{gatilho}"))
+        bot.edit_message_text(
+            f"✏️ Manda o novo link (URL) da <b>{gatilho}</b>.\n\n<i>Precisa começar com http:// ou https://</i>",
+            chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML",
+        )
+        return
+
+    if data.startswith("linkcfg_editfoto_"):
+        gatilho = data.replace("linkcfg_editfoto_", "", 1)
+        if gatilho not in GATILHOS_PLATAFORMAS:
+            bot.answer_callback_query(call.id, "Esse link já foi removido.")
+            bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+            return
+        AGUARDANDO_EDICAO_LINK[user_id] = {"gatilho": gatilho, "campo": "foto"}
+        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("❌ Cancelar", callback_data=f"linkcfg_ver_{gatilho}"))
+        bot.edit_message_text(
+            f"🖼️ Manda a nova foto/banner da <b>{gatilho}</b>.",
+            chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML",
+        )
         return
 
     if data == "menu_bicho":
@@ -2321,19 +2508,8 @@ def processar_callback(call):
             bot.answer_callback_query(call.id, f"🗑️ {gatilho} removida!")
         else:
             bot.answer_callback_query(call.id, "Já tinha sido removida.")
-        if not GATILHOS_PLATAFORMAS:
-            try:
-                bot.edit_message_text("📋 Nenhuma plataforma cadastrada no momento.", chat_id, call.message.message_id)
-            except Exception:
-                pass
-            return
-        markup = InlineKeyboardMarkup(row_width=1)
-        linhas = ["📋 <b>Plataformas cadastradas:</b>\n"]
-        for g, d in GATILHOS_PLATAFORMAS.items():
-            linhas.append(f"• <b>{g}</b> ➔ {d['url']}")
-            markup.add(InlineKeyboardButton(f"🗑️ Remover {g}", callback_data=f"rmlink_{g}"))
         try:
-            bot.edit_message_text("\n".join(linhas), chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML")
+            bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
         except Exception:
             pass
         return
@@ -2676,7 +2852,8 @@ def processador_grupos(mensagem):
     try:
         processar_mensagem_grupo(mensagem)
     except Exception as erro:
-        print(f"Erro isolado em mensagem: {type(erro).__name__}: {erro}")
+        print(f"Erro isolado em mensagem: {type(erro).__name__}: {erro}", flush=True)
+        traceback.print_exc()
 
 
 @bot.my_chat_member_handler()
@@ -2702,10 +2879,11 @@ def processar_mensagem_grupo(mensagem):
         CONFIG_GRUPOS[chat_id]["nome"] = nome_atual
         salvar_config_grupos(CONFIG_GRUPOS)
 
-    texto = (mensagem.text or "").strip()
+    texto = (mensagem.text or mensagem.caption or "").strip()
     texto_upper = texto.upper()
     user_id = mensagem.from_user.id
     user_name = mensagem.from_user.first_name or "Membro"
+    print(f"Mensagem recebida | chat={chat_id} | usuario={user_name} | texto={texto!r}", flush=True)
 
     registrar_interacao(chat_id, user_id, user_name)
 
@@ -3266,17 +3444,19 @@ def processar_mensagem_grupo(mensagem):
         return
 
     # Handlers de jogo acima já retornam quando consomem a mensagem; se chegou aqui, nenhum jogo travou o texto.
-    for g, dados in GATILHOS_PLATAFORMAS.items():
-        if g in texto_upper:
-            frase = escolher_sem_repetir("plataforma_" + g, [frase.format(g=g) for frase in FRASES_PLATAFORMA])
-            if dados.get('file_id'):
-                bot.send_photo(chat_id, dados['file_id'], caption=f"{frase}\n\n{dados['url']}", parse_mode="HTML")
-            else:
-                bot.reply_to(mensagem, f"{frase}\n\n{dados['url']}", parse_mode="HTML")
-            return
+    gatilho, dados = detectar_gatilho_plataforma(texto_upper)
+    if gatilho and dados:
+        print(f"Gatilho detectado | chat={chat_id} | gatilho={gatilho}", flush=True)
+        frase = escolher_sem_repetir("plataforma_" + gatilho, [frase.format(g=gatilho) for frase in FRASES_PLATAFORMA])
+        if dados.get('file_id'):
+            bot.send_photo(chat_id, dados['file_id'], caption=f"{frase}\n\n{dados['url']}", parse_mode="HTML")
+        else:
+            bot.reply_to(mensagem, f"{frase}\n\n{dados['url']}", parse_mode="HTML")
+        return
 
     saudacao = next((saudacao for saudacao in RESPOSTAS_SAUDACAO if saudacao in texto_upper), None)
     if saudacao:
+        print(f"Saudacao detectada | chat={chat_id} | tipo={saudacao}", flush=True)
         bot.reply_to(mensagem, escolher_sem_repetir("saudacao_" + saudacao, RESPOSTAS_SAUDACAO[saudacao]))
         return
 
@@ -3298,6 +3478,17 @@ def processar_mensagem_grupo(mensagem):
             enviar_sticker_interacao(chat_id)
 
 
-print("Santos - versão corrigida (trava de jogo + variáveis de ambiente)")
+print("Santos - versão corrigida (trava de jogo + variáveis de ambiente)", flush=True)
+print("Santos ligada e ouvindo mensagens do Telegram...", flush=True)
+threading.Thread(target=atualizar_menu_comandos, daemon=True).start()
+threading.Thread(target=sincronizar_grupos_conhecidos, daemon=True).start()
 threading.Thread(target=rotina_jogos_automaticos, daemon=True).start()
-bot.infinity_polling()
+
+while True:
+    try:
+        bot.remove_webhook()
+        bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=False)
+    except Exception as erro:
+        print(f"Polling da Santos caiu: {type(erro).__name__}: {erro}", flush=True)
+        print("Tentando religar em 5 segundos...", flush=True)
+        time.sleep(5)

@@ -31,8 +31,14 @@ services:
     runtime: python
     rootDir: bot_santos
     buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
+    startCommand: python -u bot.py
+    disk:
+      name: santos-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
+      - key: SANTOS_DATA_DIR
+        value: /var/data
       - key: TELEGRAM_TOKEN
         sync: false
       - key: GEMINI_KEY
