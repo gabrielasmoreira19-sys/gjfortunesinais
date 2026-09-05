@@ -478,7 +478,7 @@
             const host = document.getElementById('feedbackStories');
             if (!host || !Array.isArray(stories24h)) return;
             host.innerHTML = '';
-            stories24h.slice(0, 20).forEach((story, indice) => {
+            stories24h.forEach((story, indice) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'feedback-story';
