@@ -482,7 +482,9 @@ def encontrar_jogo(jogo_id):
 
 def mesclar_jogos_grupo_fp(jogos):
 	existentes = {str(jogo.get("nome", "")).strip().casefold() for jogo in jogos}
-	for nome in ordem_jogos_grupo_fp:
+	nomes_fp = list(ordem_jogos_grupo_fp)
+	nomes_fp.extend(nome for nome in jogos_grupo_fp if nome not in nomes_fp)
+	for nome in nomes_fp:
 		jogo_fp = jogos_grupo_fp.get(nome)
 		if not jogo_fp or nome in existentes:
 			continue
