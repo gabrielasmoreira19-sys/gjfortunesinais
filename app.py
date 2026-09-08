@@ -20,6 +20,7 @@ try:
 except ImportError:
 	requests = None
 from flask import Flask, Response, jsonify, redirect, render_template, request, session, send_from_directory, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 
@@ -33,6 +34,7 @@ CATALOGS_PROVEDORES = {
 }
 DATA_DIR = Path(os.environ.get("SITE_DATA_DIR", BASE_DIR / "instance"))
 CONFIG_PATH = DATA_DIR / "site_config.json"
+USERS_PATH = DATA_DIR / "users.json"
 ADMIN_UPLOADS_DIR = DATA_DIR / "uploads" / "admin"
 UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "slots"
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
@@ -314,6 +316,69 @@ def imagem_config_disponivel(imagem_url):
 
 def administrador_logado():
 	return session.get("admin_logado") is True
+
+
+def carregar_usuarios():
+	if not USERS_PATH.is_file():
+		return {}
+	try:
+		with USERS_PATH.open(encoding="utf-8") as arquivo:
+			usuarios = json.load(arquivo)
+		return usuarios if isinstance(usuarios, dict) else {}
+	except (OSError, json.JSONDecodeError):
+		return {}
+
+
+def salvar_usuarios(usuarios):
+	USERS_PATH.parent.mkdir(parents=True, exist_ok=True)
+	temporario = USERS_PATH.with_suffix(".tmp")
+	with temporario.open("w", encoding="utf-8") as arquivo:
+		json.dump(usuarios, arquivo, ensure_ascii=False, indent=2)
+	temporario.replace(USERS_PATH)
+
+
+def usuario_logado():
+	return session.get("usuario_email") or ""
+
+
+@app.route("/cadastro", methods=["GET", "POST"])
+def cadastro():
+	erro = ""
+	if request.method == "POST":
+		email = request.form.get("email", "").strip().lower()
+		senha = request.form.get("senha", "")
+		if "@" not in email or len(senha) < 6:
+			erro = "Informe um e-mail válido e uma senha com pelo menos 6 caracteres."
+		else:
+			usuarios = carregar_usuarios()
+			if email in usuarios:
+				erro = "Este e-mail já está cadastrado."
+			else:
+				usuarios[email] = {"senha": generate_password_hash(senha), "criado_em": time.time()}
+				salvar_usuarios(usuarios)
+				session["usuario_email"] = email
+				return redirect(url_for("index"))
+	return render_template("auth.html", modo="cadastro", erro=erro)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+	erro = ""
+	if request.method == "POST":
+		email = request.form.get("email", "").strip().lower()
+		senha = request.form.get("senha", "")
+		usuario = carregar_usuarios().get(email, {})
+		if usuario and check_password_hash(usuario.get("senha", ""), senha):
+			session["usuario_email"] = email
+			return redirect(url_for("index"))
+		erro = "E-mail ou senha incorretos."
+	return render_template("auth.html", modo="login", erro=erro)
+
+
+@app.get("/logout")
+def logout():
+	session.pop("usuario_email", None)
+	return redirect(url_for("index"))
 
 
 def salvar_upload(campo):
@@ -843,6 +908,7 @@ def index():
 		configuracao=configuracao,
 		stories_ativas=stories_ativas,
 		popup_entrada=popup_entrada,
+		usuario_email=usuario_logado(),
 	)
 
 

@@ -193,6 +193,11 @@
         .technical-data { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0 10px; padding:8px; border:1px solid #ffffff20; border-radius:8px; background:#0d091866; color:#cfc7dc; font-size:.68rem; }
         .technical-data span { display:flex; flex-direction:column; gap:3px; }
         .technical-data strong { color:#f3d477; font-size:.74rem; }
+        .member-access { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; padding:12px 14px; border:1px solid #f0c85c66; border-radius:10px; background:#24172ee8; color:#e9dfef; font-size:.82rem; }
+        .member-access a { flex:0 0 auto; padding:9px 12px; border-radius:7px; background:var(--gold); color:#241708; font-weight:900; text-decoration:none; }
+        .vip-bets { display:grid; gap:7px; margin:9px 0; padding:9px; border:1px solid #f0c85c66; border-radius:8px; background:#211631cc; color:#d8cce0; font-size:.67rem; }
+        .vip-bets strong { color:#f3d477; }
+        .vip-bets button { padding:7px 9px; border:0; border-radius:6px; background:var(--green); color:#07160c; font-size:.68rem; font-weight:900; cursor:pointer; }
         @keyframes heroSlide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     </style>
     <style>
@@ -270,6 +275,18 @@
     </main>
     <script id="pageData" type="application/json">{{ {"stories": stories_ativas, "plataformas": configuracao.plataformas} | tojson }}</script>
     <script>
+        const usuarioLogado = {{ 'true' if usuario_email else 'false' }};
+        const catalogoTitulo = document.getElementById('catalogo');
+        if (catalogoTitulo && !usuarioLogado) catalogoTitulo.insertAdjacentHTML('afterend', '<div class="member-access"><span>Cadastre-se para liberar as apostas sugeridas e a área de sinais.</span><a href="{{ url_for("cadastro") }}">Criar cadastro</a></div>');
+        if (catalogoTitulo && usuarioLogado) catalogoTitulo.insertAdjacentHTML('afterend', '<div class="member-access"><span>Área liberada para {{ usuario_email }}</span><a href="{{ url_for("logout") }}">Sair</a></div>');
+        if (usuarioLogado) {
+            document.querySelectorAll('.card').forEach(card => {
+                const bets = [...card.querySelectorAll('.bets .bet strong')].map(item => item.textContent.trim());
+                if (!bets.length || card.querySelector('.vip-bets')) return;
+                card.querySelector('.bets')?.insertAdjacentHTML('afterend', `<div class="vip-bets"><strong>APOSTAS SUGERIDAS</strong><span>BET BÔNUS: ${bets[0] || '-'}</span><span>BET CONEXÃO: ${bets[1] || '-'}</span><span>BET EXTRA: ${bets[2] || '-'}</span><button type="button" data-generate-member>GERAR SINAL</button></div>`);
+            });
+            document.querySelectorAll('[data-generate-member]').forEach(button => button.addEventListener('click', () => { button.textContent = 'SINAL GERADO'; window.setTimeout(() => { button.textContent = 'GERAR SINAL'; }, 3000); }));
+        }
         document.querySelectorAll('.card').forEach(card => {
             const titulo = card.querySelector('h3');
             if (!titulo || card.querySelector('.technical-data')) return;

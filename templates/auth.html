@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ 'Criar cadastro' if modo == 'cadastro' else 'Entrar' }} | GJFORTUNESINAIS</title>
+    <style>
+        :root { --bg:#100b18; --panel:#21162d; --line:#5e3b72; --gold:#f0c85c; --muted:#cfc4d8; --green:#24bd62; }
+        * { box-sizing:border-box; }
+        body { min-height:100vh; margin:0; display:grid; place-items:center; padding:20px; color:#fff; background:radial-gradient(circle at 15% 0,#432652,transparent 34%),linear-gradient(135deg,#130b1d,#252044); font-family:Georgia,serif; }
+        .auth { width:min(430px,100%); padding:30px; border:1px solid var(--line); border-radius:14px; background:#21162df2; box-shadow:0 24px 60px #0008; }
+        .brand { margin-bottom:26px; color:var(--gold); font-size:1.3rem; font-weight:900; text-align:center; letter-spacing:.04em; }
+        h1 { margin:0 0 8px; font-size:1.6rem; text-align:center; }
+        p { color:var(--muted); line-height:1.5; text-align:center; }
+        form { display:grid; gap:12px; margin-top:22px; }
+        label { display:grid; gap:6px; color:var(--muted); font-size:.83rem; }
+        input { width:100%; padding:12px; border:1px solid #ffffff2b; border-radius:8px; background:#0f0b17; color:#fff; font:inherit; }
+        button { padding:12px; border:0; border-radius:8px; background:linear-gradient(180deg,#f7d875,#dcae36); color:#251708; font-weight:900; cursor:pointer; }
+        .error { padding:10px; border:1px solid #ef777766; border-radius:8px; color:#ffb1b1; background:#8e252533; font-size:.84rem; }
+        .link { display:block; margin-top:18px; color:var(--gold); text-align:center; }
+        .back { display:block; margin-top:12px; color:var(--muted); text-align:center; font-size:.85rem; }
+    </style>
+</head>
+<body>
+    <main class="auth">
+        <div class="brand">GJFORTUNESINAIS</div>
+        <h1>{{ 'Crie seu acesso' if modo == 'cadastro' else 'Acesse seus sinais' }}</h1>
+        <p>{{ 'Cadastre-se para liberar as apostas sugeridas e a área de sinais.' if modo == 'cadastro' else 'Entre para acessar as apostas sugeridas dos cards.' }}</p>
+        {% if erro %}<div class="error">{{ erro }}</div>{% endif %}
+        <form method="post">
+            <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+            <label>Senha<input name="senha" type="password" minlength="6" autocomplete="{{ 'new-password' if modo == 'cadastro' else 'current-password' }}" required></label>
+            <button type="submit">{{ 'Criar cadastro' if modo == 'cadastro' else 'Entrar' }}</button>
+        </form>
+        {% if modo == 'cadastro' %}<a class="link" href="{{ url_for('login') }}">Já tenho cadastro</a>{% else %}<a class="link" href="{{ url_for('cadastro') }}">Criar cadastro</a>{% endif %}
+        <a class="back" href="{{ url_for('index') }}">Voltar ao site</a>
+    </main>
+</body>
+</html>
