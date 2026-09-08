@@ -3,9 +3,13 @@ import json
 import os
 import random
 import re
+import secrets
+import smtplib
 import threading
 import time
 import urllib.request
+from datetime import timedelta
+from email.message import EmailMessage
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -85,6 +89,7 @@ ORDEM_DESTAQUES_PG = (
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SITE_SECRET_KEY", "troque-esta-chave-em-producao")
+app.permanent_session_lifetime = timedelta(days=30)
 ultima_sincronizacao_pg = 0.0
 lock_sincronizacao_pg = threading.Lock()
 ultima_sincronizacao_fp = 0.0
@@ -341,6 +346,27 @@ def usuario_logado():
 	return session.get("usuario_email") or ""
 
 
+def smtp_configurado():
+	return bool(os.environ.get("SMTP_HOST") and os.environ.get("SMTP_FROM"))
+
+
+def enviar_link_redefinicao(email, link):
+	if not smtp_configurado():
+		return False
+	mensagem = EmailMessage()
+	mensagem["Subject"] = "Redefina sua senha - GJFORTUNESINAIS"
+	mensagem["From"] = os.environ["SMTP_FROM"]
+	mensagem["To"] = email
+	mensagem.set_content(f"Use este link para criar uma nova senha: {link}\n\nO link expira em 30 minutos.")
+	with smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "587")), timeout=15) as servidor:
+		if os.environ.get("SMTP_TLS", "true").lower() != "false":
+			servidor.starttls()
+		if os.environ.get("SMTP_USER"):
+			servidor.login(os.environ["SMTP_USER"], os.environ.get("SMTP_PASSWORD", ""))
+		servidor.send_message(mensagem)
+	return True
+
+
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
 	erro = ""
@@ -371,9 +397,48 @@ def login():
 		usuario = carregar_usuarios().get(email, {})
 		if usuario and check_password_hash(usuario.get("senha", ""), senha):
 			session["usuario_email"] = email
+			session.permanent = request.form.get("lembrar") == "on"
 			return redirect(url_for("index"))
 		erro = "E-mail ou senha incorretos."
 	return render_template("auth.html", modo="login", erro=erro)
+
+
+@app.route("/esqueci-senha", methods=["GET", "POST"])
+def esqueci_senha():
+	mensagem = ""
+	if request.method == "POST":
+		email = request.form.get("email", "").strip().lower()
+		usuarios = carregar_usuarios()
+		usuario = usuarios.get(email)
+		if usuario:
+			token = secrets.token_urlsafe(32)
+			usuario["reset_token"] = generate_password_hash(token)
+			usuario["reset_expira_em"] = time.time() + 30 * 60
+			salvar_usuarios(usuarios)
+			try:
+				enviar_link_redefinicao(email, url_for("redefinir_senha", token=token, _external=True))
+			except (OSError, smtplib.SMTPException):
+				pass
+		mensagem = "Se existir uma conta com este e-mail, enviaremos um link para redefinir a senha."
+	return render_template("auth.html", modo="esqueci", mensagem=mensagem)
+
+
+@app.route("/redefinir-senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+	usuarios = carregar_usuarios()
+	email = next((chave for chave, usuario in usuarios.items() if usuario.get("reset_expira_em", 0) > time.time() and check_password_hash(usuario.get("reset_token", ""), token)), None)
+	if not email:
+		return render_template("auth.html", modo="redefinir", erro="Este link é inválido ou expirou."), 400
+	if request.method == "POST":
+		senha = request.form.get("senha", "")
+		if len(senha) < 6:
+			return render_template("auth.html", modo="redefinir", erro="A senha deve ter pelo menos 6 caracteres."), 400
+		usuarios[email]["senha"] = generate_password_hash(senha)
+		usuarios[email].pop("reset_token", None)
+		usuarios[email].pop("reset_expira_em", None)
+		salvar_usuarios(usuarios)
+		return redirect(url_for("login"))
+	return render_template("auth.html", modo="redefinir")
 
 
 @app.get("/logout")
