@@ -576,10 +576,13 @@ def sincronizar_sinais_grupo_fp():
 					if nome and nome not in nova_ordem:
 						nova_ordem.append(nome)
 					if nome:
+						imagem = str(jogo.get("imageUrl", "")).strip()
+						if imagem.startswith("/"):
+							imagem = f"{FP_SINAIS_URL.rstrip('/')}{imagem}"
 						novos_jogos[nome] = {
 						"id": f"fp-{jogo.get('id')}",
 						"nome": str(jogo.get("nomeJogo", "")).strip(),
-						"imagem": str(jogo.get("imageUrl", "")).strip(),
+						"imagem": imagem,
 						"bets": [str(valor).strip() for valor in jogo.get("bets", [])],
 					}
 					valores = {
