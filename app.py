@@ -8,7 +8,7 @@ import smtplib
 import threading
 import time
 import urllib.request
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.message import EmailMessage
 from html.parser import HTMLParser
 from pathlib import Path
@@ -97,6 +97,8 @@ lock_sincronizacao_fp = threading.Lock()
 sinais_grupo_fp = {}
 ordem_jogos_grupo_fp = []
 jogos_grupo_fp = {}
+ultima_atualizacao_fp_remota = 0.0
+lock_usuarios = threading.Lock()
 FAIXAS_INDICATIVAS = (
 	("0,20", "1,00", "20,00"),
 	("0,20", "1,00", "30,00"),
@@ -335,11 +337,14 @@ def carregar_usuarios():
 
 
 def salvar_usuarios(usuarios):
-	USERS_PATH.parent.mkdir(parents=True, exist_ok=True)
-	temporario = USERS_PATH.with_suffix(".tmp")
-	with temporario.open("w", encoding="utf-8") as arquivo:
-		json.dump(usuarios, arquivo, ensure_ascii=False, indent=2)
-	temporario.replace(USERS_PATH)
+	with lock_usuarios:
+		USERS_PATH.parent.mkdir(parents=True, exist_ok=True)
+		temporario = USERS_PATH.with_suffix(".tmp")
+		with temporario.open("w", encoding="utf-8") as arquivo:
+			json.dump(usuarios, arquivo, ensure_ascii=False, indent=2)
+			temporario.flush()
+			os.fsync(arquivo.fileno())
+		temporario.replace(USERS_PATH)
 
 
 def usuario_logado():
@@ -372,7 +377,7 @@ def cadastro():
 	erro = ""
 	if request.method == "POST":
 		nome = request.form.get("nome", "").strip()
-		email = request.form.get("email", "").strip().lower()
+		email = request.form.get("email", "").strip().casefold()
 		senha = request.form.get("senha", "")
 		if len(nome.split()) < 2 or "@" not in email or len(senha) < 6:
 			erro = "Informe seu nome completo, um e-mail válido e uma senha com pelo menos 6 caracteres."
@@ -392,7 +397,7 @@ def cadastro():
 def login():
 	erro = ""
 	if request.method == "POST":
-		email = request.form.get("email", "").strip().lower()
+		email = request.form.get("email", "").strip().casefold()
 		senha = request.form.get("senha", "")
 		usuario = carregar_usuarios().get(email, {})
 		if usuario and check_password_hash(usuario.get("senha", ""), senha):
@@ -407,7 +412,7 @@ def login():
 def esqueci_senha():
 	mensagem = ""
 	if request.method == "POST":
-		email = request.form.get("email", "").strip().lower()
+		email = request.form.get("email", "").strip().casefold()
 		usuarios = carregar_usuarios()
 		usuario = usuarios.get(email)
 		if usuario:
@@ -709,7 +714,7 @@ def apostas_sugeridas_grupo_fp(bets, minima, padrao, maxima, categoria="PG"):
 
 
 def sincronizar_sinais_grupo_fp():
-	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp, jogos_grupo_fp
+	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp, jogos_grupo_fp, ultima_atualizacao_fp_remota
 	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
 		return
 
@@ -720,6 +725,7 @@ def sincronizar_sinais_grupo_fp():
 			novos_sinais = {}
 			nova_ordem = []
 			novos_jogos = {}
+			ultima_atualizacao = 0.0
 			headers = {
 				"Accept": "text/x-component",
 				"Content-Type": "text/plain;charset=UTF-8",
@@ -739,6 +745,10 @@ def sincronizar_sinais_grupo_fp():
 				if not conteudo:
 					break
 				for jogo in conteudo.get("games", []):
+					try:
+						ultima_atualizacao = max(ultima_atualizacao, datetime.fromisoformat(str(jogo.get("updatedAt", "")).replace("Z", "+00:00")).timestamp())
+					except (TypeError, ValueError):
+						pass
 					nome = str(jogo.get("nomeJogo", "")).strip().casefold()
 					if nome and nome not in nova_ordem:
 						nova_ordem.append(nome)
@@ -769,6 +779,7 @@ def sincronizar_sinais_grupo_fp():
 				sinais_grupo_fp.update(novos_sinais)
 				ordem_jogos_grupo_fp = nova_ordem
 				jogos_grupo_fp = novos_jogos
+				ultima_atualizacao_fp_remota = ultima_atualizacao or time.time()
 			ultima_sincronizacao_fp = time.time()
 		except (OSError, ValueError, requests.RequestException):
 			return
@@ -793,6 +804,7 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 			**sinal_fp,
 			"apostas": {},
 			"faixas_aposta": sinal_fp.get("faixas_aposta"),
+			"fp_atualizado_em": ultima_atualizacao_fp_remota,
 		}
 	instante = time.time() if agora is None else agora
 	ciclo = int(instante // INTERVALO_SINAIS_SEGUNDOS)
@@ -813,6 +825,7 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 		"padrao": padrao,
 		"maxima": maxima,
 		"distribuicao": distribuicao,
+		"fp_atualizado_em": 0,
 		"apostas": {
 			"minima": formatar_valor_aposta(minima_aposta),
 			"padrao": formatar_valor_aposta(gerador.choice(meio)),

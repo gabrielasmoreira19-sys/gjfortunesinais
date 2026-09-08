@@ -368,6 +368,7 @@
             try {
                 const pontuacoes = new Map();
                 const partesAssinatura = [];
+                let horarioFp = 0;
                 await Promise.all(cards.map(async card => {
                     const id = card.id.replace('jogo-', '');
                     try {
@@ -390,6 +391,7 @@
                         }
                         atualizarApostasSugeridas(card, data.apostas_sugeridas);
                         pontuacoes.set(card.id, maxima);
+                        horarioFp = Math.max(horarioFp, Number(data.fp_atualizado_em) || 0);
                         partesAssinatura.push(`${id}:${data.minima}-${data.padrao}-${data.maxima}-${distribuicao}`);
                     } catch {
                         const atual = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '').replace(',', '.')) || 0;
@@ -400,7 +402,8 @@
                 atualizarDestaques();
                 filterCards();
                 const novaAssinatura = partesAssinatura.sort().join('|');
-                if (assinaturaSinais && novaAssinatura !== assinaturaSinais) baseContagem = Date.now();
+                if (horarioFp > 0) baseContagem = horarioFp * 1000;
+                else if (assinaturaSinais && novaAssinatura !== assinaturaSinais) baseContagem = Date.now();
                 assinaturaSinais = novaAssinatura;
             } finally {
                 atualizandoSinais = false;
