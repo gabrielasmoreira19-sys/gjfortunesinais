@@ -334,13 +334,6 @@
         function ordenarCardsPorDistribuicao(pontuacoes) {
             const grid = document.getElementById('gridJogos');
             if (!grid) return;
-            const ordenados = [...cards].sort((a, b) => {
-                const scoreA = pontuacoes.get(a.id) ?? -1;
-                const scoreB = pontuacoes.get(b.id) ?? -1;
-                return scoreB - scoreA;
-            });
-            ordenados.forEach(card => grid.appendChild(card));
-            cards = [...grid.querySelectorAll('.card')];
             atualizarFundoTranslucidoCards();
         }
         async function atualizarSinais() {
