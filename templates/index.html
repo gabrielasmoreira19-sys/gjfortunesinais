@@ -363,7 +363,8 @@
                             preenchimentos[index].style.width = `${valores[index]}%`;
                             atualizarCor(preenchimentos[index], valores[index]);
                         });
-                        card.querySelector('.distribution strong').textContent = `${maxima}%`;
+                        const distribuicao = Number(data.distribuicao) || 0;
+                        card.querySelector('.distribution strong').textContent = `${distribuicao}%`;
                         pontuacoes.set(card.id, maxima);
                     } catch {
                         const atual = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '').replace(',', '.')) || 0;
