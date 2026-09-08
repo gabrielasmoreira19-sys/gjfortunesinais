@@ -196,13 +196,15 @@
         .member-view .wins, .member-view .bets, .member-view .technical-data { display:none; }
         .member-access { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; padding:12px 14px; border:1px solid #f0c85c66; border-radius:10px; background:#24172ee8; color:#e9dfef; font-size:.82rem; }
         .member-access a { flex:0 0 auto; padding:9px 12px; border-radius:7px; background:var(--gold); color:#241708; font-weight:900; text-decoration:none; }
-        .vip-bets { display:grid; gap:8px; margin:9px 0; padding:10px; border:1px solid #f0c85c66; border-radius:8px; background:#211631cc; color:#d8cce0; font-size:.67rem; }
+        .vip-bets { display:grid; gap:8px; margin:9px 0; padding:10px; border:1px solid #f0c85c66; border-radius:8px; background:#211631cc; color:#d8cce0; font-size:.67rem; text-align:center; }
         .vip-bets-title { color:#f3d477; font-size:.78rem; font-weight:900; }
         .vip-bet-group { display:grid; gap:4px; }
-        .vip-bet-group > strong { color:#fff; font-size:.68rem; text-align:center; }
-        .vip-bet-values { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; }
-        .vip-bet-values span { flex:1 1 70px; min-width:0; padding:5px 4px; border-radius:5px; background:#f0b900; color:#241708; font-size:.65rem; font-weight:900; text-align:center; overflow-wrap:anywhere; }
-        .vip-bets button { padding:7px 9px; border:0; border-radius:6px; background:var(--green); color:#07160c; font-size:.68rem; font-weight:900; cursor:pointer; }
+        .vip-bet-group > strong { color:#fff; font-size:.68rem; text-align:center; letter-spacing:.03em; }
+        .vip-bet-values { display:flex; flex-wrap:wrap; justify-content:center; gap:5px; }
+        .vip-item { flex:1 1 65px; min-width:0; padding:5px 6px; border-radius:6px; background:#f0b900; color:#241708; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+        .vip-item small { font-size:.58rem; font-weight:800; color:#3d2400; text-transform:uppercase; letter-spacing:.02em; line-height:1.1; margin-bottom:2px; }
+        .vip-item strong { font-size:.8rem; font-weight:900; color:#120c02; line-height:1.1; }
+        .vip-bets button { margin-top:2px; padding:8px 10px; border:0; border-radius:6px; background:var(--green); color:#07160c; font-size:.7rem; font-weight:900; cursor:pointer; }
         @keyframes heroSlide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     </style>
     <style>
@@ -286,14 +288,36 @@
         if (catalogoTitulo && usuarioLogado) catalogoTitulo.insertAdjacentHTML('afterend', '<div class="member-access"><span>Área liberada para {{ usuario_email }}</span><a href="{{ url_for("logout") }}">Sair</a></div>');
         function atualizarApostasSugeridas(card, apostas) {
             if (!usuarioLogado || !apostas) return;
-            const formatar = grupo => Object.entries(grupo || {}).filter(([, valor]) => valor).map(([chave, valor]) => `<span>${({ bonus: 'BET BÔNUS', conexao: 'BET CONEXÃO', extra: 'BET EXTRA' }[chave] || chave.toUpperCase())}: ${valor}</span>`).join('');
+            const labels = { bonus: 'BET BÔNUS', conexao: 'BET CONEXÃO', extra: 'BET EXTRA' };
+            const formatar = grupo => Object.entries(grupo || {})
+                .filter(([, valor]) => valor)
+                .map(([chave, valor]) => `<div class="vip-item"><small>${labels[chave] || chave.toUpperCase()}</small><strong>${valor}</strong></div>`)
+                .join('');
             let painel = card.querySelector('.vip-bets');
-            if (!painel) { card.querySelector('.bets')?.insertAdjacentHTML('afterend', '<div class="vip-bets"><strong class="vip-bets-title">APOSTAS SUGERIDAS</strong><div class="vip-bet-group"><strong>MÍNIMA</strong><div class="vip-bet-values" data-vip-minima></div></div><div class="vip-bet-group"><strong>PADRÃO</strong><div class="vip-bet-values" data-vip-padrao></div></div><div class="vip-bet-group"><strong>MÁXIMA</strong><div class="vip-bet-values" data-vip-maxima></div></div><button type="button" data-generate-member>GERAR SINAL</button></div>'); painel = card.querySelector('.vip-bets'); }
-            painel.querySelector('[data-vip-minima]').innerHTML = formatar(apostas.minima);
-            painel.querySelector('[data-vip-padrao]').innerHTML = formatar(apostas.padrao);
-            painel.querySelector('[data-vip-maxima]').innerHTML = formatar(apostas.maxima);
+            if (!painel) {
+                card.querySelector('.bets')?.insertAdjacentHTML('afterend', '<div class="vip-bets"><strong class="vip-bets-title">APOSTAS SUGERIDAS</strong><div class="vip-bet-group" data-group-minima><strong>MÍNIMA</strong><div class="vip-bet-values" data-vip-minima></div></div><div class="vip-bet-group" data-group-padrao><strong>PADRÃO</strong><div class="vip-bet-values" data-vip-padrao></div></div><div class="vip-bet-group" data-group-maxima><strong>MÁXIMA</strong><div class="vip-bet-values" data-vip-maxima></div></div><button type="button" data-generate-member>GERAR SINAL</button></div>');
+                painel = card.querySelector('.vip-bets');
+            }
+            const htmlMinima = formatar(apostas.minima);
+            const htmlPadrao = formatar(apostas.padrao);
+            const htmlMaxima = formatar(apostas.maxima);
+            
+            const groupMinima = painel.querySelector('[data-group-minima]');
+            const groupPadrao = painel.querySelector('[data-group-padrao]');
+            const groupMaxima = painel.querySelector('[data-group-maxima]');
+            
+            if (groupMinima) { groupMinima.style.display = htmlMinima ? '' : 'none'; groupMinima.querySelector('[data-vip-minima]').innerHTML = htmlMinima; }
+            if (groupPadrao) { groupPadrao.style.display = htmlPadrao ? '' : 'none'; groupPadrao.querySelector('[data-vip-padrao]').innerHTML = htmlPadrao; }
+            if (groupMaxima) { groupMaxima.style.display = htmlMaxima ? '' : 'none'; groupMaxima.querySelector('[data-vip-maxima]').innerHTML = htmlMaxima; }
+            
             const button = painel.querySelector('[data-generate-member]');
-            if (button && !button.dataset.bound) { button.dataset.bound = 'true'; button.addEventListener('click', () => { button.textContent = 'SINAL GERADO'; window.setTimeout(() => { button.textContent = 'GERAR SINAL'; }, 3000); }); }
+            if (button && !button.dataset.bound) {
+                button.dataset.bound = 'true';
+                button.addEventListener('click', () => {
+                    button.textContent = 'SINAL GERADO';
+                    window.setTimeout(() => { button.textContent = 'GERAR SINAL'; }, 3000);
+                });
+            }
         }
         document.querySelectorAll('.card').forEach(card => {
             const titulo = card.querySelector('h3');
