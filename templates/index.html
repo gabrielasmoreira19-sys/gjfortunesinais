@@ -190,6 +190,9 @@
             z-index:0;
         }
         .card .info > * { position:relative; z-index:1; }
+        .technical-data { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0 10px; padding:8px; border:1px solid #ffffff20; border-radius:8px; background:#0d091866; color:#cfc7dc; font-size:.68rem; }
+        .technical-data span { display:flex; flex-direction:column; gap:3px; }
+        .technical-data strong { color:#f3d477; font-size:.74rem; }
         @keyframes heroSlide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
     </style>
     <style>
@@ -267,10 +270,27 @@
     </main>
     <script id="pageData" type="application/json">{{ {"stories": stories_ativas, "plataformas": configuracao.plataformas} | tojson }}</script>
     <script>
+        document.querySelectorAll('.card').forEach(card => {
+            const titulo = card.querySelector('h3');
+            if (!titulo || card.querySelector('.technical-data')) return;
+            const provedor = { pg: 'PG Soft', pragmatic: 'Pragmatic Play', tada: 'TaDa Gaming', wg: 'WG' }[card.dataset.provider] || card.dataset.provider;
+            const maximoTexto = card.querySelector('.bets .bet:nth-child(3) strong')?.textContent || '';
+            const maximo = Number(maximoTexto.replace(/R\$|\./g, '').replace(',', '.').trim()) || 100;
+            const volatilidade = maximo <= 30 ? 'Baixa' : maximo <= 60 ? 'Média' : maximo <= 150 ? 'Alta' : 'Muito alta';
+            titulo.insertAdjacentHTML('afterend', `<div class="technical-data"><span>Provedor<strong>${provedor}</strong></span><span>Volatilidade<strong>${volatilidade}</strong></span></div>`);
+        });
+    </script>
+    <script>
         const pageDataNode = document.getElementById('pageData');
         const pageData = pageDataNode ? JSON.parse(pageDataNode.textContent || '{}') : {};
         const stories24h = Array.isArray(pageData.stories) ? pageData.stories : [];
         const plataformasCadastradas = Array.isArray(pageData.plataformas) ? pageData.plataformas : [];
+        const gerarCodigoDemonstrativo = () => {
+            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let codigo = '#';
+            for (let indice = 0; indice < 6; indice += 1) codigo += caracteres[Math.floor(Math.random() * caracteres.length)];
+            return `${codigo}*10X`;
+        };
         const search = document.getElementById('search'), empty = document.getElementById('empty'), count = document.getElementById('count'); let cards = [...document.querySelectorAll('.card')]; let favorites = false, quickFilter = 'all';
         const formatarAposta = valor => `R$ ${valor.toFixed(2).replace('.', ',')}`;
         const lerAposta = valor => Number(String(valor || '').replace('R$', '').replaceAll('.', '').replace(',', '.').trim()) || 0;
@@ -395,6 +415,8 @@
         atualizarSinais();
         filterCards();
         const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
+        const gerarCodigoOption = document.createElement('button'); gerarCodigoOption.className = 'play-option'; gerarCodigoOption.type = 'button'; gerarCodigoOption.textContent = 'Gerar código demonstrativo'; document.querySelector('.play-options')?.appendChild(gerarCodigoOption);
+        gerarCodigoOption.addEventListener('click', () => { gerarCodigoOption.disabled = true; gerarCodigoOption.textContent = 'Gerando...'; let progresso = 0; const codigoIntervalo = window.setInterval(() => { progresso += 20; gerarCodigoOption.textContent = `Gerando ${progresso}%`; if (progresso >= 100) { window.clearInterval(codigoIntervalo); const codigo = gerarCodigoDemonstrativo(); playResult.innerHTML = `Código demonstrativo para <strong>${jogoSelecionado}</strong>: <code>${codigo}</code><br><small>Este código é gerado localmente e não altera o resultado do jogo.</small><br><button type="button" class="copy-link" id="copyDemoCode">Copiar código</button>`; document.getElementById('copyDemoCode').addEventListener('click', async () => { await navigator.clipboard?.writeText(codigo); document.getElementById('copyDemoCode').textContent = 'Copiado'; }); gerarCodigoOption.disabled = false; gerarCodigoOption.textContent = 'Gerar novo código'; } }, 120); });
         function escolherPlataformaAleatoria() {
             if (!plataformasValidas.length) return null;
             const indice = Math.floor(Math.random() * plataformasValidas.length);

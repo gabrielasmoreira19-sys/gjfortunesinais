@@ -50,6 +50,9 @@ if CLOUDINARY_CONFIGURED:
 PG_GAMES_URL = "https://www.pgsoft.com/pt/games/all/"
 PG_SYNC_INTERVAL = 6 * 60 * 60
 INTERVALO_SINAIS_SEGUNDOS = 5 * 60
+FP_SINAIS_URL = "https://grupofpsinais.io/"
+FP_GET_GAMES_ACTION = os.environ.get("FP_GET_GAMES_ACTION", "78273770f67e1f4a79df922ae8905c49681d230098")
+FP_SYNC_INTERVAL = 5 * 60
 PG_REMOVED_NAMES = {
 	"World Cup",
 	"Zeus vs Hades - Gods of War",
@@ -82,6 +85,9 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SITE_SECRET_KEY", "troque-esta-chave-em-producao")
 ultima_sincronizacao_pg = 0.0
 lock_sincronizacao_pg = threading.Lock()
+ultima_sincronizacao_fp = 0.0
+lock_sincronizacao_fp = threading.Lock()
+sinais_grupo_fp = {}
 FAIXAS_INDICATIVAS = (
 	("0,20", "1,00", "20,00"),
 	("0,20", "1,00", "30,00"),
@@ -480,6 +486,67 @@ def classificar_volatilidade(jogo):
 	return "muito_alta"
 
 
+def extrair_resposta_server_action(resposta):
+	for linha in resposta.text.splitlines():
+		if not linha.startswith("1:"):
+			continue
+		try:
+			conteudo = json.loads(linha[2:])
+		except (TypeError, ValueError):
+			continue
+		if isinstance(conteudo, dict) and isinstance(conteudo.get("games"), list):
+			return conteudo
+	return None
+
+
+def sincronizar_sinais_grupo_fp():
+	global ultima_sincronizacao_fp
+	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
+		return
+
+	with lock_sincronizacao_fp:
+		if time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
+			return
+		try:
+			novos_sinais = {}
+			headers = {
+				"Accept": "text/x-component",
+				"Content-Type": "text/plain;charset=UTF-8",
+				"User-Agent": "Mozilla/5.0",
+				"Next-Action": FP_GET_GAMES_ACTION,
+				"Next-Router-State-Tree": "%5B%22%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%2C0%5D%7D%2Cnull%2Cnull%2C16%5D",
+			}
+			for pagina in range(1, 21):
+				resposta = requests.post(
+					FP_SINAIS_URL,
+					headers=headers,
+					data=json.dumps(["PG", None, "all", pagina]),
+					timeout=12,
+				)
+				resposta.raise_for_status()
+				conteudo = extrair_resposta_server_action(resposta)
+				if not conteudo:
+					break
+				for jogo in conteudo.get("games", []):
+					nome = str(jogo.get("nomeJogo", "")).strip().casefold()
+					valores = {
+						"minima": jogo.get("minima"),
+						"padrao": jogo.get("padrao"),
+						"maxima": jogo.get("maxima"),
+						"distribuicao": jogo.get("porcentagem"),
+					}
+					if nome and all(isinstance(valor, int) for valor in valores.values()):
+						novos_sinais[nome] = valores
+				if not conteudo.get("hasMore"):
+					break
+			if novos_sinais:
+				sinais_grupo_fp.clear()
+				sinais_grupo_fp.update(novos_sinais)
+			ultima_sincronizacao_fp = time.time()
+		except (OSError, ValueError, requests.RequestException):
+			return
+
+
 FAIXAS_PERCENTUAIS_POR_VOLATILIDADE = {
 	"baixa": {"minima": (28, 68), "padrao": (32, 62), "maxima": (42, 74), "distribuicao": (90, 99)},
 	"media": {"minima": (20, 80), "padrao": (24, 76), "maxima": (34, 88), "distribuicao": (86, 98)},
@@ -489,6 +556,16 @@ FAIXAS_PERCENTUAIS_POR_VOLATILIDADE = {
 
 
 def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
+	sincronizar_sinais_grupo_fp()
+	sinal_fp = sinais_grupo_fp.get(str(jogo.get("nome", "")).strip().casefold())
+	if sinal_fp:
+		ciclo = int((time.time() if agora is None else agora) // INTERVALO_SINAIS_SEGUNDOS)
+		return {
+			"ciclo": ciclo,
+			"valido_ate": (ciclo + 1) * INTERVALO_SINAIS_SEGUNDOS,
+			**sinal_fp,
+			"apostas": {},
+		}
 	instante = time.time() if agora is None else agora
 	ciclo = int(instante // INTERVALO_SINAIS_SEGUNDOS)
 	gerador = random.Random(f"gjfortunesinais:{ciclo}:{jogo_id}")
@@ -546,6 +623,7 @@ def preparar_faixas_indicativas(catalogo):
 	jogos = catalogo if isinstance(catalogo, list) else catalogo.get("pg", [])
 	for indice, jogo in enumerate(jogos):
 		normalizar_faixas_jogo(jogo, indice)
+		jogo["volatilidade"] = classificar_volatilidade(jogo)
 		jogo["sinal"] = gerar_sinal_do_ciclo(jogo.get("id"), jogo)
 		jogo["faixas_aposta"] = gerar_faixas_aposta(jogo)
 
