@@ -499,6 +499,21 @@ def extrair_resposta_server_action(resposta):
 	return None
 
 
+def faixas_aposta_grupo_fp(bets):
+	valores = [str(valor).strip() for valor in bets or [] if str(valor).strip()]
+	if len(valores) < 2:
+		return None
+	quantidade_minima = 6 if len(valores) > 11 else max(1, len(valores) // 3)
+	quantidade_padrao = 5 if len(valores) > 11 else quantidade_minima
+	indice_padrao = quantidade_minima
+	indice_maxima = min(indice_padrao + quantidade_padrao, len(valores) - 1)
+	return {
+		"minima": f"R$ {valores[0]} a R$ {valores[quantidade_minima - 1]}",
+		"padrao": f"R$ {valores[indice_padrao]} a R$ {valores[indice_maxima - 1]}",
+		"maxima": f"Acima de R$ {valores[indice_maxima]}",
+	}
+
+
 def sincronizar_sinais_grupo_fp():
 	global ultima_sincronizacao_fp
 	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
@@ -534,8 +549,9 @@ def sincronizar_sinais_grupo_fp():
 						"padrao": jogo.get("padrao"),
 						"maxima": jogo.get("maxima"),
 						"distribuicao": jogo.get("porcentagem"),
+						"faixas_aposta": faixas_aposta_grupo_fp(jogo.get("bets")),
 					}
-					if nome and all(isinstance(valor, int) for valor in valores.values()):
+					if nome and all(isinstance(valores[chave], int) for chave in ("minima", "padrao", "maxima", "distribuicao")):
 						novos_sinais[nome] = valores
 				if not conteudo.get("hasMore"):
 					break
@@ -565,6 +581,7 @@ def gerar_sinal_do_ciclo(jogo_id, jogo, agora=None):
 			"valido_ate": (ciclo + 1) * INTERVALO_SINAIS_SEGUNDOS,
 			**sinal_fp,
 			"apostas": {},
+			"faixas_aposta": sinal_fp.get("faixas_aposta"),
 		}
 	instante = time.time() if agora is None else agora
 	ciclo = int(instante // INTERVALO_SINAIS_SEGUNDOS)
