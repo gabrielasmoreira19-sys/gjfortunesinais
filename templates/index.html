@@ -300,7 +300,8 @@
         function atualizarDestaques() { cards.forEach(card => { const distribuicao = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '')) || 0; card.dataset.distribution = distribuicao; const selo = card.querySelector('.hot'); if (distribuicao >= 90) { card.classList.add('featured'); if (!selo) card.querySelector('.cover')?.insertAdjacentHTML('beforeend', '<span class="hot">+90%</span>'); const jogar = card.querySelector('.play'); if (jogar) jogar.textContent = 'Jogue agora'; } else { card.classList.remove('featured'); selo?.remove(); } }); }
         document.querySelectorAll('.quick-filter').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('.quick-filter').forEach(item => item.classList.remove('active')); button.classList.add('active'); quickFilter = button.dataset.filter; filterCards(); }));
         const INTERVALO_SINAIS = 5 * 60 * 1000;
-        let cicloProcessado = Math.floor(Date.now() / INTERVALO_SINAIS);
+        let baseContagem = Date.now();
+        let assinaturaSinais = '';
         let atualizandoSinais = false;
         function atualizarFundoTranslucidoCards() {
             cards.forEach(card => {
@@ -341,6 +342,7 @@
             atualizandoSinais = true;
             try {
                 const pontuacoes = new Map();
+                const partesAssinatura = [];
                 await Promise.all(cards.map(async card => {
                     const id = card.id.replace('jogo-', '');
                     try {
@@ -362,6 +364,7 @@
                             card.querySelector('.bets').innerHTML = `<div class="bet">MÍNIMA<strong>${data.faixas_aposta.minima}</strong></div><div class="bet">PADRÃO<strong>${data.faixas_aposta.padrao}</strong></div><div class="bet">MÁXIMA<strong>${data.faixas_aposta.maxima}</strong></div>`;
                         }
                         pontuacoes.set(card.id, maxima);
+                        partesAssinatura.push(`${id}:${data.minima}-${data.padrao}-${data.maxima}-${distribuicao}`);
                     } catch {
                         const atual = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '').replace(',', '.')) || 0;
                         pontuacoes.set(card.id, atual);
@@ -370,6 +373,9 @@
                 ordenarCardsPorDistribuicao(pontuacoes);
                 atualizarDestaques();
                 filterCards();
+                const novaAssinatura = partesAssinatura.sort().join('|');
+                if (assinaturaSinais && novaAssinatura !== assinaturaSinais) baseContagem = Date.now();
+                assinaturaSinais = novaAssinatura;
             } finally {
                 atualizandoSinais = false;
             }
@@ -388,7 +394,8 @@
             const catalogTimer = document.getElementById('countdownCatalog');
             if (!top && !mobile && !catalogTimer) return;
             const agora = Date.now();
-            const resto = INTERVALO_SINAIS - (agora % INTERVALO_SINAIS);
+            const decorrido = agora - baseContagem;
+            const resto = Math.max(0, INTERVALO_SINAIS - (decorrido % INTERVALO_SINAIS));
             const totalSegundos = Math.max(0, Math.floor(resto / 1000));
             const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
             const segundos = String(totalSegundos % 60).padStart(2, '0');
@@ -396,12 +403,6 @@
             if (top) top.textContent = texto;
             if (mobile) mobile.textContent = texto;
             if (catalogTimer) catalogTimer.textContent = texto;
-
-            const cicloAtual = Math.floor(agora / INTERVALO_SINAIS);
-            if (cicloAtual !== cicloProcessado) {
-                cicloProcessado = cicloAtual;
-                atualizarSinais();
-            }
         }
         clock();
         atualizarContagemTopo();
@@ -410,7 +411,7 @@
         atualizarFundoTranslucidoCards();
         aplicarCoresIniciais();
         atualizarSinais();
-        setInterval(() => atualizarSinais(), 30000);
+        setInterval(() => atualizarSinais(), 15000);
         filterCards();
         const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
         const gerarCodigoOption = document.createElement('button'); gerarCodigoOption.className = 'play-option'; gerarCodigoOption.type = 'button'; gerarCodigoOption.textContent = 'Gerar código demonstrativo'; document.querySelector('.play-options')?.appendChild(gerarCodigoOption);
