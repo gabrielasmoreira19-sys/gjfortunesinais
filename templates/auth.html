@@ -28,6 +28,7 @@
         <p>{{ 'Cadastre-se para liberar as apostas sugeridas e a área de sinais.' if modo == 'cadastro' else 'Entre para acessar as apostas sugeridas dos cards.' }}</p>
         {% if erro %}<div class="error">{{ erro }}</div>{% endif %}
         <form method="post">
+            {% if modo == 'cadastro' %}<label>Nome completo<input name="nome" type="text" autocomplete="name" required></label>{% endif %}
             <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
             <label>Senha<input name="senha" type="password" minlength="6" autocomplete="{{ 'new-password' if modo == 'cadastro' else 'current-password' }}" required></label>
             <button type="submit">{{ 'Criar cadastro' if modo == 'cadastro' else 'Entrar' }}</button>

@@ -345,16 +345,17 @@ def usuario_logado():
 def cadastro():
 	erro = ""
 	if request.method == "POST":
+		nome = request.form.get("nome", "").strip()
 		email = request.form.get("email", "").strip().lower()
 		senha = request.form.get("senha", "")
-		if "@" not in email or len(senha) < 6:
-			erro = "Informe um e-mail válido e uma senha com pelo menos 6 caracteres."
+		if len(nome.split()) < 2 or "@" not in email or len(senha) < 6:
+			erro = "Informe seu nome completo, um e-mail válido e uma senha com pelo menos 6 caracteres."
 		else:
 			usuarios = carregar_usuarios()
 			if email in usuarios:
 				erro = "Este e-mail já está cadastrado."
 			else:
-				usuarios[email] = {"senha": generate_password_hash(senha), "criado_em": time.time()}
+				usuarios[email] = {"nome": nome, "senha": generate_password_hash(senha), "criado_em": time.time()}
 				salvar_usuarios(usuarios)
 				session["usuario_email"] = email
 				return redirect(url_for("index"))
