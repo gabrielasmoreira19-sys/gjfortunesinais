@@ -88,6 +88,7 @@ lock_sincronizacao_pg = threading.Lock()
 ultima_sincronizacao_fp = 0.0
 lock_sincronizacao_fp = threading.Lock()
 sinais_grupo_fp = {}
+ordem_jogos_grupo_fp = []
 FAIXAS_INDICATIVAS = (
 	("0,20", "1,00", "20,00"),
 	("0,20", "1,00", "30,00"),
@@ -515,7 +516,7 @@ def faixas_aposta_grupo_fp(bets):
 
 
 def sincronizar_sinais_grupo_fp():
-	global ultima_sincronizacao_fp
+	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp
 	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
 		return
 
@@ -524,6 +525,7 @@ def sincronizar_sinais_grupo_fp():
 			return
 		try:
 			novos_sinais = {}
+			nova_ordem = []
 			headers = {
 				"Accept": "text/x-component",
 				"Content-Type": "text/plain;charset=UTF-8",
@@ -544,6 +546,8 @@ def sincronizar_sinais_grupo_fp():
 					break
 				for jogo in conteudo.get("games", []):
 					nome = str(jogo.get("nomeJogo", "")).strip().casefold()
+					if nome and nome not in nova_ordem:
+						nova_ordem.append(nome)
 					valores = {
 						"minima": jogo.get("minima"),
 						"padrao": jogo.get("padrao"),
@@ -558,6 +562,7 @@ def sincronizar_sinais_grupo_fp():
 			if novos_sinais:
 				sinais_grupo_fp.clear()
 				sinais_grupo_fp.update(novos_sinais)
+				ordem_jogos_grupo_fp = nova_ordem
 			ultima_sincronizacao_fp = time.time()
 		except (OSError, ValueError, requests.RequestException):
 			return
@@ -688,6 +693,12 @@ def gerar_faixas_aposta(jogo):
 
 
 def ordenar_jogos_pg(jogos):
+	if ordem_jogos_grupo_fp:
+		posicoes_fp = {nome: indice for indice, nome in enumerate(ordem_jogos_grupo_fp)}
+		return sorted(
+			jogos,
+			key=lambda jogo: (posicoes_fp.get(str(jogo.get("nome", "")).strip().casefold(), 10000), jogo.get("nome", "").lower()),
+		)
 	posicoes = {nome: indice for indice, nome in enumerate(ORDEM_DESTAQUES_PG)}
 	return sorted(jogos, key=lambda jogo: (posicoes.get(jogo.get("nome"), 1000), jogo.get("nome", "").lower()))
 
