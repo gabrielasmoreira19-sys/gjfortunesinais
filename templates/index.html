@@ -325,9 +325,10 @@
         function atualizarDestaques() { cards.forEach(card => { const distribuicao = Number((card.querySelector('.distribution strong')?.textContent || '0').replace('%', '')) || 0; card.dataset.distribution = distribuicao; const selo = card.querySelector('.hot'); if (distribuicao >= 90) { card.classList.add('featured'); if (!selo) card.querySelector('.cover')?.insertAdjacentHTML('beforeend', '<span class="hot">+90%</span>'); const jogar = card.querySelector('.play'); if (jogar) jogar.textContent = 'Jogue agora'; } else { card.classList.remove('featured'); selo?.remove(); } }); }
         document.querySelectorAll('.quick-filter').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('.quick-filter').forEach(item => item.classList.remove('active')); button.classList.add('active'); quickFilter = button.dataset.filter; filterCards(); }));
         const INTERVALO_SINAIS = 5 * 60 * 1000;
-        let baseContagem = Date.now();
+        const ultimoFpSalvo = Number(localStorage.getItem('gj-ultimo-fp-atualizado')) || 0;
+        let baseContagem = ultimoFpSalvo || Date.now();
         let assinaturaSinais = '';
-        let contadorPronto = false;
+        let contadorPronto = Boolean(ultimoFpSalvo);
         let atualizandoSinais = false;
         function atualizarFundoTranslucidoCards() {
             cards.forEach(card => {
@@ -403,7 +404,7 @@
                 atualizarDestaques();
                 filterCards();
                 const novaAssinatura = partesAssinatura.sort().join('|');
-                if (horarioFp > 0) baseContagem = horarioFp * 1000;
+                if (horarioFp > 0) { baseContagem = horarioFp * 1000; localStorage.setItem('gj-ultimo-fp-atualizado', String(horarioFp)); }
                 else if (assinaturaSinais && novaAssinatura !== assinaturaSinais) baseContagem = Date.now();
                 assinaturaSinais = novaAssinatura;
                 contadorPronto = true;

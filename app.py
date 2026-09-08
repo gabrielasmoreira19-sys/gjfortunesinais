@@ -342,7 +342,7 @@ def salvar_usuarios(usuarios):
 		temporario = USERS_PATH.with_suffix(".tmp")
 		with temporario.open("w", encoding="utf-8") as arquivo:
 			json.dump(usuarios, arquivo, ensure_ascii=False, indent=2)
-			temporario.flush()
+			arquivo.flush()
 			os.fsync(arquivo.fileno())
 		temporario.replace(USERS_PATH)
 
