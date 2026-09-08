@@ -1,4 +1,7 @@
 import os
+import sys
+import tempfile
+import msvcrt
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, InputMediaAnimation, ReactionTypeEmoji, BotCommand, BotCommandScopeAllPrivateChats
 import google.genai as genai
@@ -77,6 +80,23 @@ if not TELEGRAM_TOKEN or not GEMINI_KEY:
         "Defina TELEGRAM_TOKEN e GEMINI_KEY como variáveis de ambiente (veja .env.example) antes de rodar o bot."
     )
 
+
+def garantir_instancia_unica():
+    caminho_lock = os.path.join(tempfile.gettempdir(), "vulgo_santos_bot.lock")
+    arquivo_lock = open(caminho_lock, "a+", encoding="utf-8")
+    arquivo_lock.seek(0)
+    arquivo_lock.write("1")
+    arquivo_lock.flush()
+    arquivo_lock.seek(0)
+    try:
+        msvcrt.locking(arquivo_lock.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        print("Outra instancia da Santos ja esta ligada.", flush=True)
+        sys.exit(17)
+    return arquivo_lock
+
+
+LOCK_INSTANCIA_SANTOS = garantir_instancia_unica()
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 def atualizar_menu_comandos():
@@ -86,9 +106,9 @@ def atualizar_menu_comandos():
             BotCommand("start", "Abrir a central privada da Santos"),
             BotCommand("ajuda", "Abrir a central privada da Santos"),
             BotCommand("painel", "Ligar/desligar interações nos seus grupos"),
-            BotCommand("addlink", "Cadastrar um link de plataforma"),
             BotCommand("links", "Ver links de plataforma cadastrados"),
             BotCommand("removerlink", "Remover um link de plataforma"),
+            BotCommand("alertas", "Receber alertas privados de novos membros"),
             BotCommand("addbicho", "Ligar/desligar cadastro de stickers de bicho"),
             BotCommand("bichos", "Ver quantos stickers de bicho estão salvos"),
         ],
@@ -102,16 +122,40 @@ genai_client = genai.Client(api_key=GEMINI_KEY)
 
 
 def gerar_texto_ia(prompt, retorno_padrao):
-    try:
-        resp = genai_client.models.generate_content(
-            model=GEMINI_MODELO,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(temperature=0.7, max_output_tokens=300),
-        )
-        return (resp.text or "").strip() or retorno_padrao
-    except Exception as erro:
-        print(f"Erro ao chamar o Gemini: {type(erro).__name__}: {erro}")
-        return retorno_padrao
+    fallback = retorno_padrao or "A Santos tá aqui, meu bem! 👋 Eu vi a mensagem e vou responder com a energia certa em seguida."
+    ultima_erro = None
+
+    for tentativa in range(3):
+        try:
+            resp = genai_client.models.generate_content(
+                model=GEMINI_MODELO,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(temperature=0.7, max_output_tokens=300),
+            )
+            texto = getattr(resp, "text", None) or ""
+            texto = str(texto).strip()
+            if texto:
+                return texto
+            return fallback
+        except Exception as erro:
+            ultima_erro = erro
+            detalhe = str(erro).upper()
+            eh_quota = any(token in detalhe for token in ["RESOURCE_EXHAUSTED", "429", "QUOTA", "RATE_LIMIT", "RATE LIMIT", "RATE"])
+            if eh_quota and tentativa < 2:
+                tempo = 2 ** tentativa
+                print(f"Gemini sem quota; tentando novamente em {tempo}s ({tentativa + 1}/3): {type(erro).__name__}: {erro}", flush=True)
+                time.sleep(tempo)
+                continue
+
+            if eh_quota:
+                print(f"Gemini sem quota/disponibilidade apos retries: {type(erro).__name__}: {erro}", flush=True)
+            else:
+                print(f"Erro ao chamar o Gemini: {type(erro).__name__}: {erro}", flush=True)
+            break
+
+    if ultima_erro is not None:
+        print(f"Usando fallback da Santos por falha no Gemini: {type(ultima_erro).__name__}: {ultima_erro}", flush=True)
+    return fallback
 
 
 def buscar_gif(termo):
@@ -140,11 +184,20 @@ def buscar_gif(termo):
 
 # Memória e Estruturas
 ULTIMA_FOTO_PV = {}
-AGUARDANDO_EDICAO_LINK = {}  # user_id -> {"gatilho": ..., "campo": "url"|"foto"}
+AGUARDANDO_EDICAO_LINK = {}  # user_id -> {"gatilho": ..., "campo": "gatilho"|"url"|"foto"}
+NOVA_PLATAFORMA = {}  # user_id -> {"gatilho": "", "url": "", "file_id": ""}
+CONFIRMACOES_DICA = {}  # (chat_id, message_id, user_id) -> tipo de jogo
 
 
 def config_grupo_padrao():
-    return {"nome": "", "auto_reacoes": True, "auto_ia": True, "auto_jogos": True}
+    return {
+        "nome": "",
+        "auto_reacoes": True,
+        "auto_ia": True,
+        "auto_jogos": True,
+        "alerta_entradas": False,
+        "alerta_destino_id": None,
+    }
 
 
 def carregar_config_grupos():
@@ -258,6 +311,7 @@ def enviar_sticker_interacao(chat_id):
             pass
 
 JOGOS_CACA = {}
+CACA_TEMA_PENDENTE = {}
 JOGOS_VELHA = {}
 JOGOS_MEMORIA = {}
 JOGOS_CRUZADA = {}
@@ -268,6 +322,8 @@ JOGOS_QUIZ = {}
 JOGOS_PARIMPAR = {}
 JOGOS_MOEDA = {}
 JOGOS_EMOJI = {}
+JOGOS_DICAS = {}
+JOGOS_EMBARALHADA = {}
 JOGOS_QUEM = {}
 JOGOS_MISTERIO = {}
 JOGOS_RAPIDO = {}
@@ -335,7 +391,52 @@ BANCO_QUIZ = [
     {"pergunta": "Quem foi o primeiro presidente do Brasil?", "opcoes": ["Getúlio Vargas", "Deodoro da Fonseca", "Floriano Peixoto", "Prudente de Morais"], "certa": 1},
 ]
 
+BANCO_QUIZ_ESCOLAR = [
+    {"materia": "Matemática", "pergunta": "Quanto é {a} + {b}?", "gerar": lambda: (random.randint(2, 40), random.randint(2, 40), "soma")},
+    {"materia": "Matemática", "pergunta": "Quanto é {a} x {b}?", "gerar": lambda: (random.randint(2, 12), random.randint(2, 12), "multiplicacao")},
+    {"materia": "Matemática", "pergunta": "Quanto é {a} - {b}?", "gerar": lambda: (random.randint(10, 80), random.randint(1, 9), "subtracao")},
+    {"materia": "Ciências", "pergunta": "Qual órgão bombeia o sangue pelo corpo?", "opcoes": ["Coração", "Pulmão", "Fígado", "Estômago"], "certa": 0},
+    {"materia": "Ciências", "pergunta": "Qual processo as plantas usam para produzir alimento com luz?", "opcoes": ["Fotossíntese", "Digestão", "Evaporação", "Combustão"], "certa": 0},
+    {"materia": "Ciências", "pergunta": "Em qual estado físico a água vira gelo?", "opcoes": ["Gasoso", "Líquido", "Sólido", "Plasma"], "certa": 2},
+    {"materia": "Geografia", "pergunta": "Qual é o maior oceano do planeta?", "opcoes": ["Atlântico", "Pacífico", "Índico", "Ártico"], "certa": 1},
+    {"materia": "Geografia", "pergunta": "Qual é a capital do Brasil?", "opcoes": ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"], "certa": 2},
+    {"materia": "Geografia", "pergunta": "Em qual continente fica o Egito?", "opcoes": ["África", "Europa", "Ásia", "Oceania"], "certa": 0},
+    {"materia": "História", "pergunta": "Em que ano foi proclamada a Independência do Brasil?", "opcoes": ["1500", "1822", "1889", "1964"], "certa": 1},
+    {"materia": "História", "pergunta": "Quem assinou a Lei Áurea?", "opcoes": ["Princesa Isabel", "Dom Pedro I", "Getúlio Vargas", "Tiradentes"], "certa": 0},
+    {"materia": "História", "pergunta": "Qual civilização construiu as pirâmides de Gizé?", "opcoes": ["Romana", "Egípcia", "Grega", "Inca"], "certa": 1},
+    {"materia": "Português", "pergunta": "Qual é o plural de 'pão'?", "opcoes": ["Pãos", "Pães", "Pões", "Pãeses"], "certa": 1},
+    {"materia": "Português", "pergunta": "Qual palavra é um verbo?", "opcoes": ["Correr", "Bonito", "Mesa", "Rapidamente"], "certa": 0},
+    {"materia": "Português", "pergunta": "Qual sinal usamos no fim de uma pergunta?", "opcoes": ["!", ".", "?", ","], "certa": 2},
+    {"materia": "Inglês", "pergunta": "O que significa 'book' em português?", "opcoes": ["Casa", "Livro", "Caneta", "Escola"], "certa": 1},
+    {"materia": "Inglês", "pergunta": "O que significa 'blue' em português?", "opcoes": ["Azul", "Verde", "Branco", "Preto"], "certa": 0},
+    {"materia": "Inglês", "pergunta": "Como se diz 'gato' em inglês?", "opcoes": ["Dog", "Bird", "Cat", "Fish"], "certa": 2},
+]
+QUIZ_MATERIAS_USADAS = {}
+
+
+def gerar_questao_escolar(chat_id=None):
+    materias = sorted({item["materia"] for item in BANCO_QUIZ_ESCOLAR})
+    usadas = QUIZ_MATERIAS_USADAS.setdefault(chat_id, deque(maxlen=max(1, len(materias) - 1))) if chat_id is not None else deque()
+    disponiveis = [materia for materia in materias if materia not in usadas] or materias
+    materia = random.choice(disponiveis)
+    if chat_id is not None:
+        usadas.append(materia)
+    modelos = [item for item in BANCO_QUIZ_ESCOLAR if item["materia"] == materia]
+    modelo = random.choice(modelos)
+    if "gerar" not in modelo:
+        return {chave: valor for chave, valor in modelo.items()}
+    a, b, operacao = modelo["gerar"]()
+    resultados = {"soma": a + b, "subtracao": a - b, "multiplicacao": a * b}
+    certa = resultados[operacao]
+    opcoes = {certa}
+    while len(opcoes) < 4:
+        opcoes.add(certa + random.choice([-10, -5, -2, 2, 5, 10]))
+    opcoes = list(opcoes)
+    random.shuffle(opcoes)
+    return {"materia": modelo["materia"], "pergunta": modelo["pergunta"].format(a=a, b=b), "opcoes": [str(opcao) for opcao in opcoes], "certa": opcoes.index(certa)}
+
 ULTIMOS_SORTEIOS = {}
+CACA_PALAVRAS_USADAS = {}
 
 
 def sortear_sem_repetir(chat_id, nome, opcoes):
@@ -347,14 +448,23 @@ def sortear_sem_repetir(chat_id, nome, opcoes):
     return escolhido
 
 
-def sortear_palavras_caca(chat_id):
-    pool = POOL_PALAVRAS_CACA
-    anterior = ULTIMOS_SORTEIOS.get((chat_id, "caca_ultimo"))
-    escolhido = tuple(sorted(random.sample(pool, QTD_PALAVRAS_CACA)))
-    tentativas = 0
-    while escolhido == anterior and tentativas < 10:
-        escolhido = tuple(sorted(random.sample(pool, QTD_PALAVRAS_CACA)))
-        tentativas += 1
+def sortear_palavras_caca(chat_id, tema=None):
+    if tema and tema in TEMAS_CACA:
+        pool = [normalizar_resposta(palavra).upper() for palavra in TEMAS_CACA[tema] if len(normalizar_resposta(palavra)) >= 4]
+    else:
+        pool = [normalizar_resposta(palavra).upper() for palavra in POOL_PALAVRAS_CACA if len(normalizar_resposta(palavra)) >= 4]
+    pool = sorted(set(pool))
+    if len(pool) < QTD_PALAVRAS_CACA:
+        raise ValueError(f"Tema de caça-palavras sem palavras suficientes: {tema or 'aleatorio'}")
+    chave_tema = tema or "aleatorio"
+    chave_uso = (chat_id, chave_tema)
+    usadas = CACA_PALAVRAS_USADAS.setdefault(chave_uso, set())
+    disponiveis = [palavra for palavra in pool if palavra not in usadas]
+    if len(disponiveis) < QTD_PALAVRAS_CACA:
+        usadas.clear()
+        disponiveis = list(pool)
+    escolhido = tuple(sorted(random.sample(disponiveis, QTD_PALAVRAS_CACA)))
+    usadas.update(escolhido)
     ULTIMOS_SORTEIOS[(chat_id, "caca_ultimo")] = escolhido
     return list(escolhido)
 
@@ -375,6 +485,16 @@ CONSELHOS_DIA = [
     "Cuida da sua energia: nem todo convite merece um sim.",
     "Dá uma chance para uma ideia antiga, mas começa pequeno.",
     "Seu descanso também faz parte do plano. Se acolhe um pouquinho hoje.",
+    "Antes de responder rápido demais, toma um copo d'água e conta até cinco.",
+    "A paz que você protege hoje é o sono tranquilo que você colhe à noite.",
+    "Guarda um pouquinho do que ganha hoje; o futuro agradece.",
+    "Não leva pro coração o que foi dito no calor do grupo. Amanhã todo mundo já esqueceu.",
+    "Se algo deu errado, anota o aprendizado e segue. Tropeçar não é o fim do caminho.",
+    "O melhor investimento do dia é o jeito que você trata quem está perto de você.",
+    "Faz a coisa certa mesmo quando ninguém está olhando. É disso que caráter é feito.",
+    "Hoje é um bom dia para limpar uma gaveta, uma pendência ou uma conversa parada.",
+    "Você não precisa provar nada para ninguém. Faz o seu, no seu ritmo, que já está ótimo.",
+    "Quando a ansiedade apertar, volta pro presente: o que precisa ser feito só agora?",
 ]
 
 BANCOS_QUEM_SOU = [
@@ -589,20 +709,56 @@ def normalizar_resposta(texto):
     return "".join(letra for letra in texto if unicodedata.category(letra) != "Mn").strip()
 
 
+HOROSCOPO_JOAO_BIDU = {
+    "ARIES": "aries", "TOURO": "touro", "GEMEOS": "gemeos", "CANCER": "cancer",
+    "LEAO": "leao", "VIRGEM": "virgem", "LIBRA": "libra", "ESCORPIAO": "escorpiao",
+    "SAGITARIO": "sagitario", "CAPRICORNIO": "capricornio", "AQUARIO": "aquario", "PEIXES": "peixes",
+}
+HOROSCOPOS_CACHE = {}
+
+
+def buscar_horoscopo_joao_bidu(signo):
+    slug = HOROSCOPO_JOAO_BIDU[signo]
+    hoje = datetime.date.today().isoformat()
+    chave = (hoje, signo)
+    if chave in HOROSCOPOS_CACHE:
+        return HOROSCOPOS_CACHE[chave]
+    url = f"https://joaobidu.com.br/horoscopo-do-dia/horoscopo-do-dia-para-{slug}/"
+    try:
+        resposta = requests.get(url, timeout=8, headers={"User-Agent": "Mozilla/5.0"})
+        resposta.raise_for_status()
+        texto = re.sub(r"<script.*?</script>|<style.*?</style>|<nav.*?</nav>|<footer.*?</footer>", " ", resposta.text, flags=re.IGNORECASE | re.DOTALL)
+        texto = re.sub(r"<[^>]+>", " ", html.unescape(texto))
+        texto = re.sub(r"\s+", " ", texto).strip()
+        secoes = re.findall(
+            r"((?:Amor|Dinheiro e Trabalho|Saúde|Viagem e estudos|Família|Bem-estar)):\s*(.*?)(?=(?:Amor|Dinheiro e Trabalho|Saúde|Viagem e estudos|Família|Bem-estar):|Sorte do dia|Cor para o dia|PUBLICIDADE|$)",
+            texto,
+            flags=re.IGNORECASE,
+        )
+        limpas = []
+        for titulo, secao in secoes:
+            secao = re.split(r"Compartilhe este trecho|Sugestões do João Bidu|Assuntos Relacionados", secao, maxsplit=1, flags=re.IGNORECASE)[0]
+            secao = re.sub(r"https?://\S+|Leia também.*|Veja também.*", "", secao, flags=re.IGNORECASE).strip(" -:")
+            if len(secao) >= 40:
+                limpas.append(f"<b>{html.escape(titulo.title())}:</b> {html.escape(secao[:500])}")
+        trecho = "\n\n".join(limpas[:4])
+        if len(trecho) < 80:
+            return None
+        HOROSCOPOS_CACHE[chave] = trecho
+        return trecho
+    except Exception as erro:
+        print(f"Não consegui buscar horóscopo de {signo} no João Bidu: {type(erro).__name__}: {erro}", flush=True)
+        return None
+
+
 def montar_horoscopo(signo, previsao):
-    fechamentos = [
-        "Vai com calma, confia no seu caminho e aproveita o dia! 💗",
-        "A Santos avisou: fica de olho nas oportunidades e não perde a leveza! ✨",
-        "Salva essa mensagem e marcha, porque o universo está conversando com você! 🌙",
-        "Agora é com você: atitude, coração tranquilo e uma pitada de ousadia! 💅",
-    ]
     return (
         "🔮 <b>HORÓSCOPO DO DIA</b> 🔮\n"
         "━━━━━━━━━━━━━━\n"
         f"✨ <b>Signo:</b> {signo.title()}\n\n"
         "🌟 <b>Previsão de hoje</b>\n"
         f"{previsao}\n\n"
-        f"💌 <b>Mensagem da Santos</b>\n{escolher_sem_repetir('horoscopo_fechamento', fechamentos)}\n"
+        "📰 <i>Fonte: João Bidu</i>\n"
         "━━━━━━━━━━━━━━"
     )
 
@@ -633,6 +789,20 @@ BANCOS_EMOJI = [
     ("🏖️ + 🌞", "praia de dia"),
     ("🦷 + 😬", "dor de dente"),
     ("📦 + 🚚", "entrega"),
+]
+
+BANCOS_DICAS = [
+    ("Tem teclas, mas não abre portas. Fica numa sala e faz música.", "piano", "É um instrumento musical.", "Tem teclas pretas e brancas."),
+    ("Vive no mar, tem oito braços e é muito inteligente.", "polvo", "É um animal marinho.", "Pode soltar tinta."),
+    ("É doce, gelado e costuma vir em casquinha.", "sorvete", "É uma sobremesa.", "Derrete fora da geladeira."),
+    ("Tem ponteiros, mas não aponta caminhos.", "relogio", "Marca o tempo.", "Pode ficar no pulso ou na parede."),
+    ("Tem folhas, mas não é árvore; conta histórias sem falar.", "livro", "É usado para ler.", "Pode ter capa e capítulos."),
+]
+
+BANCOS_EMBARALHADA = [
+    ("TARAGIURA", "guitarra"), ("ROMACA", "macaco"), ("TELBAT", "tablet"),
+    ("HOCACLOATE", "chocolate"), ("AARIP", "praia"), ("TROFLESA", "floresta"),
+    ("NAAJEL", "janela"), ("RALO", "ralo"), ("FETENLOE", "telefone"),
 ]
 
 BANCO_CHARADAS = [
@@ -706,13 +876,13 @@ def aviso_jogo_ocupado(mensagem, chat_id):
 
 def iniciar_quiz(chat_id):
     travar_jogo(chat_id, "quiz")
-    pergunta = sortear_sem_repetir(chat_id, "quiz", BANCO_QUIZ)
+    pergunta = gerar_questao_escolar(chat_id)
     JOGOS_QUIZ[chat_id] = {"pergunta": pergunta}
     emojis_num = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
     markup = InlineKeyboardMarkup(row_width=1)
     for i, opc in enumerate(pergunta["opcoes"]):
         markup.add(InlineKeyboardButton(f"{emojis_num[i]} {opc}", callback_data=f"quiz_{i}"))
-    msg = bot.send_message(chat_id, f"🧠 <b>QUIZ DA SANTOS</b> 🧠\n\n❓ {pergunta['pergunta']}\n\n<i>Quem acertar primeiro leva os pontos!</i>", reply_markup=markup, parse_mode="HTML")
+    msg = bot.send_message(chat_id, f"🧠 <b>QUIZ ESCOLAR - {pergunta['materia'].upper()}</b> 🧠\n\n❓ {pergunta['pergunta']}\n\n<i>Quem acertar primeiro leva os pontos!</i>", reply_markup=markup, parse_mode="HTML")
     JOGOS_QUIZ[chat_id]["msg_id"] = msg.message_id
 
 
@@ -746,16 +916,76 @@ def iniciar_oculto(chat_id):
 
 def iniciar_charada(chat_id):
     charada, respostas = escolher_sem_repetir("charada", BANCO_CHARADAS)
-    JOGOS_CHARADA[chat_id] = {"charada": charada, "respostas": {normalizar_resposta(r) for r in respostas}}
+    resposta_principal = sorted(respostas, key=len)[0]
+    JOGOS_CHARADA[chat_id] = {
+        "charada": charada,
+        "respostas": {normalizar_resposta(r) for r in respostas},
+        "resposta_dica": resposta_principal,
+        "dica": False,
+    }
     travar_jogo(chat_id, "charada")
-    bot.send_message(chat_id, f"🧩 <b>CHARADA DA SANTOS</b> 🧩\n\n{charada}\n\nDigite sua resposta! (+20 pts)", parse_mode="HTML")
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(InlineKeyboardButton("💡 Dica", callback_data="charada_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="charada_pular"))
+    markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="charada_encerrar"))
+    bot.send_message(chat_id, f"🧩 <b>CHARADA DA SANTOS</b> 🧩\n\n{charada}\n\n<i>Digite sua resposta ou peça uma dica.</i> (+20 pts)", reply_markup=markup, parse_mode="HTML")
 
 
 def iniciar_emoji(chat_id):
     desafio, resposta = escolher_sem_repetir("desafio_emoji", BANCOS_EMOJI)
-    JOGOS_EMOJI[chat_id] = {"resposta": resposta, "desafio": desafio}
+    JOGOS_EMOJI[chat_id] = {"resposta": resposta, "desafio": desafio, "dica": 0}
     travar_jogo(chat_id, "emoji")
-    bot.send_message(chat_id, f"🧩 <b>ADIVINHE O EMOJI</b> 🧩\n\nQue palavra ou expressão estes emojis representam?\n\n<b>{desafio}</b>\n\n<i>Dica: responda de forma simples, como “arco iris” ou “dragao de fogo”.</i>\n\nDigite sua resposta! (+15 pts)", parse_mode="HTML")
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(InlineKeyboardButton("💡 Dica", callback_data="emoji_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="emoji_pular"))
+    markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="emoji_encerrar"))
+    bot.send_message(chat_id, f"🧩 <b>ADIVINHE O EMOJI</b> 🧩\n\nQue palavra ou expressão estes emojis representam?\n\n<b>{desafio}</b>\n\n<i>Digite seu palpite ou peça uma dica.</i> (+15 pts)", reply_markup=markup, parse_mode="HTML")
+
+
+def teclado_confirmacao_dica(tipo):
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        InlineKeyboardButton("✅ Aceitar (-3 pts)", callback_data=f"dica_aceitar_{tipo}"),
+        InlineKeyboardButton("❌ Cancelar", callback_data=f"dica_cancelar_{tipo}"),
+    )
+    return markup
+
+
+def teclado_rodada_com_dica(tipo, jogo):
+    markup = InlineKeyboardMarkup(row_width=2)
+    if tipo == "emoji":
+        texto = "💡 Dica" if jogo["dica"] == 0 else "💡 Dica usada"
+        markup.add(InlineKeyboardButton(texto, callback_data="emoji_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="emoji_pular"))
+        markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="emoji_encerrar"))
+    elif tipo == "dicas":
+        texto = f"💡 Dica {jogo['dica'] + 1}"
+        markup.add(InlineKeyboardButton(texto, callback_data="dicas_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="dicas_pular"))
+        markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="dicas_encerrar"))
+    elif tipo == "charada":
+        markup.add(InlineKeyboardButton("💡 Dica" if not jogo["dica"] else "💡 Dica usada", callback_data="charada_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="charada_pular"))
+        markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="charada_encerrar"))
+    else:
+        markup.add(InlineKeyboardButton("💡 Dica", callback_data="embaralhada_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="embaralhada_pular"))
+        markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="embaralhada_encerrar"))
+    return markup
+
+
+def iniciar_dicas(chat_id):
+    pista, resposta, dica1, dica2 = escolher_sem_repetir("desafio_dicas", BANCOS_DICAS)
+    JOGOS_DICAS[chat_id] = {"resposta": normalizar_resposta(resposta), "pista": pista, "dica1": dica1, "dica2": dica2, "dica": 0}
+    travar_jogo(chat_id, "dicas")
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(InlineKeyboardButton("💡 Dica 1", callback_data="dicas_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="dicas_pular"))
+    markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="dicas_encerrar"))
+    bot.send_message(chat_id, f"🧠 <b>3 DICAS</b> 🧠\n\n💬 {pista}\n\n<i>Peça dicas progressivas ou tente responder.</i> (+20 pts)", reply_markup=markup, parse_mode="HTML")
+
+
+def iniciar_embaralhada(chat_id):
+    embaralhada, resposta = escolher_sem_repetir("desafio_embaralhada", BANCOS_EMBARALHADA)
+    JOGOS_EMBARALHADA[chat_id] = {"resposta": normalizar_resposta(resposta), "embaralhada": embaralhada}
+    travar_jogo(chat_id, "embaralhada")
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(InlineKeyboardButton("💡 Dica", callback_data="embaralhada_dica"), InlineKeyboardButton("⏭️ Pular", callback_data="embaralhada_pular"))
+    markup.add(InlineKeyboardButton("🛑 Encerrar", callback_data="embaralhada_encerrar"))
+    bot.send_message(chat_id, f"🔤 <b>PALAVRA EMBARALHADA</b> 🔤\n\nOrganize as letras:\n<b>{embaralhada}</b>\n\n(+15 pts)", reply_markup=markup, parse_mode="HTML")
 
 
 def iniciar_quem(chat_id):
@@ -780,7 +1010,8 @@ JOGOS_AUTOMATICOS = [
     ("vf", iniciar_vf),
     ("oculto", iniciar_oculto),
     ("charada", iniciar_charada),
-    ("emoji", iniciar_emoji),
+    ("dicas", iniciar_dicas),
+    ("embaralhada", iniciar_embaralhada),
     ("quem", iniciar_quem),
     ("stop", iniciar_stop),
 ]
@@ -852,7 +1083,6 @@ def aliases_do_gatilho(gatilho):
     aliases.add(gatilho.upper())
     if base:
         partes = re.findall(r"[A-Z]+|\d+", base)
-        aliases.update(partes)
         # Caso de gatilhos compostos tipo "RIACHO777" -> aceita "RIACHO" ou "777"
         for parte in partes:
             if len(parte) >= 2:
@@ -865,9 +1095,44 @@ def detectar_gatilho_plataforma(texto_upper):
         if not dados.get("ativo", True):
             continue
         aliases = aliases_do_gatilho(gatilho)
-        if any(alias and alias in texto_upper for alias in aliases):
+        if any(
+            alias and re.search(rf"(?<![A-Z0-9]){re.escape(alias)}(?![A-Z0-9])", texto_upper)
+            for alias in aliases
+        ):
             return gatilho, dados
     return None, None
+
+
+def enviar_plataforma(mensagem, gatilho, dados):
+    chat_id = mensagem.chat.id
+    frase = escolher_sem_repetir("plataforma_" + gatilho, [frase.format(g=gatilho) for frase in FRASES_PLATAFORMA])
+    postagem = f"{frase}\n\n{dados['url']}"
+    try:
+        if dados.get("file_id"):
+            bot.send_photo(chat_id, dados["file_id"], caption=postagem, parse_mode="HTML")
+        else:
+            bot.reply_to(mensagem, postagem, parse_mode="HTML")
+        print(f"Link enviado | chat={chat_id} | gatilho={gatilho}", flush=True)
+    except Exception as erro:
+        print(f"Falha ao enviar banner | chat={chat_id} | gatilho={gatilho} | {type(erro).__name__}: {erro}", flush=True)
+        try:
+            bot.reply_to(mensagem, postagem, parse_mode="HTML")
+            print(f"Link enviado sem banner | chat={chat_id} | gatilho={gatilho}", flush=True)
+        except Exception as erro_texto:
+            print(f"Falha ao enviar link | chat={chat_id} | gatilho={gatilho} | {type(erro_texto).__name__}: {erro_texto}", flush=True)
+
+
+def responder_gatilho_plataforma(mensagem, texto_upper):
+    gatilho, dados = detectar_gatilho_plataforma(texto_upper)
+    if not gatilho or not dados:
+        return False
+    print(f"Gatilho detectado | chat={mensagem.chat.id} | gatilho={gatilho}", flush=True)
+    enviar_plataforma(mensagem, gatilho, dados)
+    return True
+
+
+def mensagem_contem_link(texto):
+    return bool(re.search(r"(?:https?://|www\.|t\.me/|telegram\.me/)[^\s]+", texto, re.IGNORECASE))
 
 
 RESPOSTAS_SAUDACAO = {
@@ -881,6 +1146,13 @@ RESPOSTAS_SAUDACAO = {
         "A Santos chegou cedinho, viu? 🌸 Bom dia pra quem tá on e pra quem ainda tá carregando!",
         "Bom diaaa! ☕ Já tomou café ou ainda está funcionando no modo economia de bateria?",
         "Salve, tropa! ☀️ Que o dia venha manso, mas com umas surpresas boas no caminho!",
+        "Bom dia! 🌞 Que o café esteja quentinho e a energia esteja no lugar certo hoje!",
+        "Bom dia, galera! ✨ Hoje é aquele dia que começa com um sorriso e termina com uma vitória!",
+        "Bom dia, amada! 💗 Que o dia seja leve, os trabalhos andem e a paciência não falte!",
+        "Bom dia, meu amor! ☀️ A Santos tá aqui lembrando que um dia bom começa com uma atitude boa!",
+        "Acordou com o pé direito? Bom diaaaa! Que seja um dia de paz, resenha e resultado!",
+        "Bom dia! ☀️ A Santos tá de olho: hoje é dia de fazer acontecer e não ficar parado!",
+        "Salve, salve! ☀️ Bom dia pra quem sonha grande e não tem medo de levantar e fazer!",
     ],
     "BOA TARDE": [
         "Boa tarde, meu povo! 🌺 A resenha tá só começando, bora manter o astral lá em cima!",
@@ -889,6 +1161,12 @@ RESPOSTAS_SAUDACAO = {
         "Boa tarde, família! ✨ Quem tá na atividade manda um coração pra Santos!",
         "Boa tarde, meu povo! 😎 O dia já andou, mas a resenha ainda tem muita estrada!",
         "Boa tarde! 🌺 Vim conferir se essa tropa está trabalhando ou só fingindo bonito no grupo!",
+        "Boa tarde! 🌞 Espero que a sua tarde esteja leve e que a noite chegue com tudo resolvido!",
+        "Boa tarde, criaturas! 😌 Que o meio do dia traga clareza e o final traga alegria!",
+        "Boa tarde, tropa! 🌺 A Santos passou pra deixar um abraço e uma pitada de bom ânimo!",
+        "Boa tarde, galera! 💫 Que a segunda metade do dia seja tão produtiva quanto a primeira!",
+        "Boa tarde! ☀️ Se o começo foi corrido, respira fundo e reorganiza. Ainda dá tempo de brilhar!",
+        "Boa tarde, minhas lindas! 🌸 Lembrete: hidrata a alma com coisas boas e o corpo com água!",
     ],
     "BOA NOITE": [
         "Boa noite, gente linda! 🌙 Descansem porque amanhã tem mais resenha e mais visão!",
@@ -897,6 +1175,12 @@ RESPOSTAS_SAUDACAO = {
         "A Santos deseja uma noite braba de paz! 🌙 Amanhã a gente volta no pique!",
         "Boa noite, tropa! 🌙 Recarreguem a bateria social porque amanhã tem mais conversa!",
         "Boa noite, meus amores! 💗 Quem for dormir, dorme. Quem ficar, segura a resenha baixinho!",
+        "Boa noite! 🌙 Que o descanso seja profundo e o amanhã traga novidades boas!",
+        "Boa noite, galera! ✨ Fecha o dia com gratidão pelo que deu certo e paciência com o que ainda está a caminho!",
+        "Boa noite, família! 💫 Que a madrugada traga paz e a manhã traga energia pra mais um dia de glória!",
+        "Boa noite! 😌 Hoje foi dia de aprendizado e amanhã é dia de continuar caminhando!",
+        "Boa noite, meu povo! 🌙 A Santos está de olho: quem dorme bem, acorda bem. Vai nessa!",
+        "Boa noite! 💗 Que o sono chegue fácil e o coração descanse das correrias do dia!",
     ],
     "OI SANTOS": [
         "Oii, meu bem! 💗 Cheguei na área, conta a fofoca e não economiza na resenha!",
@@ -904,6 +1188,9 @@ RESPOSTAS_SAUDACAO = {
         "Oii! 🌸 Chamou, eu vim. Qual vai ser a missão de hoje?",
         "Opa, chamou a dona da resenha? 😌 Tô aqui, fala comigo!",
         "Oii, criatura! 💗 Cheguei mais rápido que notícia boa no grupo!",
+        "Oi, linda! ✨ A Santos tá aqui e já preparada pra qualquer coisa. Fala logo!",
+        "Oi, oi, oi! 👋 Chamou a Santos? Já cheguei com energia e curiosidade!",
+        "Oi, meu povo! 🌸 O que tá rolando? A Santos entrou e quer saber de tudo!",
     ],
 }
 
@@ -911,6 +1198,24 @@ LISTA_SIGNOS_VALIDOS = [
     "ARIES", "TOURO", "GEMEOS", "CANCER", "LEAO", "VIRGEM",
     "LIBRA", "ESCORPIAO", "SAGITARIO", "CAPRICORNIO", "AQUARIO", "PEIXES",
 ]
+ALIAS_SIGNOS = {
+    "SARGITARIO": "SAGITARIO",
+    "SARGITARIO": "SAGITARIO",
+    "SAGITARIO": "SAGITARIO",
+    "SAGITARIO": "SAGITARIO",
+    "ESCORPIAO": "ESCORPIAO",
+    "ESCORPION": "ESCORPIAO",
+    "ARIES": "ARIES",
+    "TOUROO": "TOURO",
+    "GEMEOSS": "GEMEOS",
+    "CANCERR": "CANCER",
+    "LEAOO": "LEAO",
+    "VIRGEMM": "VIRGEM",
+    "LIBRAA": "LIBRA",
+    "CAPRICORNIO": "CAPRICORNIO",
+    "AQUARIOO": "AQUARIO",
+    "PEIXESS": "PEIXES",
+}
 
 BANCO_CRUZADAS = [
     ["LIMITE", "INTEGRIDADE", "VIOLETA", "RITUAIS", "INTERCAMBIAR", "AUMENTAR", "JUDICIAL", "CONVERSAR", "AMARFANHAR", "REPARAR"],
@@ -925,6 +1230,39 @@ BANCO_TEMAS_CACA = [
     ["MENTE", "FOCO", "VITORIA", "CHEF"],
     ["DRAGAO", "BONUS", "FESTA", "SALDO"],
 ]
+
+TEMAS_CACA = {
+    "musica": ["GUITARRA", "MELODIA", "CANTORA", "RITMO", "VIOLINO", "SAMBA", "FORRO", "PIANO", "CAVAQUINHO", "MICROFONE", "FESTIVAL", "HARMONIA", "SERENATA", "DISCOTECA", "VOCAL"],
+    "filmes": ["CINEMA", "FILME", "ATRIZ", "ATOR", "CENA", "TRAILER", "PIPOCA", "ESTREIA", "DIRETOR", "SUSPENSE", "COMEDIA", "DRAMA", "ANIMACAO", "ROTEIRO", "OSCAR"],
+    "mercado": ["CARNE", "ARROZ", "FEIJAO", "LEITE", "QUEIJO", "TOMATE", "BANANA", "MACARRAO", "BOLACHA", "REFRIGERANTE", "DETERGENTE", "CAFE", "ACUCAR", "AZEITE", "MANTEIGA"],
+    "acougue": ["PICANHA", "COSTELA", "LINGUICA", "FRANGO", "CARNE", "OSSOBUCO", "BISTECA", "MIUDOS", "ACEM", "PATINHO", "COXA", "SOBRECOXA", "CONTRA", "ALCATRA", "SALSICHA"],
+    "cozinha": ["FRIGIDEIRA", "PANELA", "TALHER", "PRATO", "COPO", "FORNO", "FOGÃO", "ESPATULA", "TEMPERO", "SAL", "PIMENTA", "LIQUIDIFICADOR", "AÇUCAREIRO", "TAÇA", "CJ"],
+    "animais": ["CACHORRO", "GATO", "PASSARO", "CAVALO", "ELEFANTE", "LEAO", "MACACO", "TIGRE", "COELHO", "COBRA", "JACARE", "TARTARUGA", "GIRAFA", "URSO", "OVELHA"],
+    "praias": ["AREIA", "ONDA", "MAR", "GUARDASOL", "CHURRASCO", "AGUA", "SOL", "COCO", "PIER", "NAVIO", "VELA", "PESCADOR", "CONCHA", "BOTE", "BALEIA"],
+    "cidades": ["SAOPAULO", "RIO", "RECIFE", "FORTALEZA", "MANAUS", "BELEM", "CURITIBA", "FLORIPA", "SALVADOR", "PORTO", "BRASILIA", "GOIANIA", "MACEIO", "NATAL", "JOAOPESSOA"],
+    "esporte": ["FUTEBOL", "GOL", "BASQUETE", "VOLEI", "NATACAO", "CORRIDA", "LUTA", "JUDO", "BOXE", "SURF", "SKATE", "TENIS", "HANDEBOL", "CICLISMO", "REMO"],
+    "natureza": ["FLORESTA", "MONTANHA", "RIO", "LAGO", "CACHOEIRA", "ILHA", "VALE", "DESERTO", "CHUVA", "VENTO", "NEVE", "FOGO", "PEDRA", "NUVEM", "ESTRELA"],
+    "frutas": ["BANANA", "MACA", "LARANJA", "MELANCIA", "MORANGO", "UVA", "ABACAXI", "MANGA", "PERA", "MELAO", "KIWI", "PESSEGO", "ACEROLA", "GOIABA", "MAMAO"],
+    "bebidas": ["CAFE", "CHA", "SUCO", "REFRIGERANTE", "CERVEJA", "VINHO", "WHISKY", "VODKA", "CHAMPAGNE", "CAPPUCCINO", "LIMONADA", "MILKSHAKE", "AGUA", "LEITE", "ENERGETICO"],
+    "cores": ["VERMELHO", "AZUL", "VERDE", "AMARELO", "ROXO", "LARANJA", "ROSA", "BRANCO", "PRETO", "CINZA", "MARROM", "BEGE", "DOURADO", "PRATA", "TURQUESA"],
+    "profissoes": ["MEDICO", "ENFERMEIRO", "PROFESSOR", "ADVOGADO", "ENGENHEIRO", "CONTADOR", "JORNALISTA", "DESIGNER", "PROGRAMADOR", "ARQUITETO", "DENTISTA", "VETERINARIO", "PSICOLOGO", "FARMACEUTICO", "CHEF"],
+    "tecnologia": ["COMPUTADOR", "CELULAR", "TABLET", "MONITOR", "TECLADO", "MOUSE", "FONE", "IMPRESSORA", "WIFI", "INTERNET", "SOFTWARE", "HARDWARE", "NUVEM", "ROBOT", "INTELIGENCIA"],
+    "transporte": ["CARRO", "ONIBUS", "METRO", "TREM", "AVIAO", "NAVIO", "BICICLETA", "MOTO", "CAMINHAO", "TAXI", "UBER", "BARCO", "HELICOPTERO", "SUBMARINO", "FOGUETE"],
+    "festas": ["BALAO", "CONFETE", "MUSICA", "DANCA", "BOLO", "PRESENTE", "VELA", "FESTA", "ANIVERSARIO", "CASAMENTO", "FORMATURA", "REVEILLON", "CARNAVAL", "JUNINA", "NATAL"],
+    "escola": ["LIVRO", "CADERNO", "LAPIS", "CANETA", "PROVA", "AULA", "PROFESSOR", "ALUNO", "QUADRO", "MOCHILA", "RECREIO", "BIBLIOTECA", "HISTORIA", "CIENCIA", "GEOGRAFIA"],
+    "casa": ["SALA", "QUARTO", "COZINHA", "JANELA", "PORTA", "MESA", "CADEIRA", "SOFA", "CAMA", "ARMARIO", "TAPETE", "ESPELHO", "VARANDA", "LAMPADA", "TELEVISAO"],
+    "viagem": ["MALA", "PASSAPORTE", "HOTEL", "AEROPORTO", "PRAIA", "MAPA", "TREM", "AVIAO", "NAVIO", "TURISMO", "CAMERA", "BAGAGEM", "FERIAS", "ESTRADA", "DESTINO"],
+    "brasil": ["SAMBA", "CARNAVAL", "FEIJOADA", "AMAZONIA", "CAIPIRINHA", "FUTEBOL", "PRAIA", "CAPOEIRA", "PANTANAL", "BAHIA", "BRASILIA", "ARARA", "TUCANO", "CHURRASCO", "FLORESTA"],
+    "corpo": ["CABECA", "CEREBRO", "CORAÇÃO", "BRACO", "PERNA", "MAO", "DEDOS", "OLHO", "BOCA", "NARIZ", "ORELHA", "DENTE", "PULMAO", "SANGUE", "OSSOS"],
+    "jogos": ["CARTAS", "DADO", "TABULEIRO", "MEMORIA", "QUIZ", "FORCA", "DOMINO", "XADREZ", "BINGO", "ROULETA", "PONTOS", "EQUIPE", "DESAFIO", "PARTIDA", "VITORIA"],
+    "profissoes_criativas": ["ARTISTA", "DESIGNER", "MUSICO", "ESCRITOR", "FOTOGRAFO", "ATOR", "ATRIZ", "PINTOR", "DANCARINO", "CANTOR", "EDITOR", "ILUSTRADOR", "ARQUITETO", "CRIADOR", "JORNALISTA"],
+    "internet": ["SITE", "LINK", "EMAIL", "SENHA", "LOGIN", "VIDEO", "FOTO", "POST", "CHAT", "REDE", "BLOG", "STREAM", "DOWNLOAD", "NAVEGADOR", "CELULAR"],
+    "beleza": ["BATOM", "ESMALTE", "PERFUME", "MAQUIAGEM", "ESPELHO", "PENTE", "SHAMPOO", "SABONETE", "CREME", "CABELO", "UNHA", "BRINCO", "COLAR", "TOALHA", "PINCEL"],
+    "verao": ["PISCINA", "SORVETE", "PROTETOR", "CHINELO", "BIQUINI", "FRESCO", "CALOR", "FERIAS", "CANGA", "COQUEIRO", "SUNGA", "BRISA", "GELO", "BARRACA", "CAMINHADA"],
+    "espaco": ["PLANETA", "ESTRELA", "LUA", "FOGUETE", "ASTRONAUTA", "GALAXIA", "COMETA", "ORBITA", "SATURNO", "MARTE", "COSMOS", "METEORO", "UNIVERSO", "TELESCOPIO", "NEBULOSA"],
+    "musica_brasileira": ["SAMBA", "FORRO", "PAGODE", "FREVO", "BOSSA", "SERTANEJO", "FUNK", "AXE", "MPB", "ROCK", "RAP", "VIOLAO", "Pandeiro", "TAMBOR", "CANTIGA"],
+    "sentimentos": ["AMOR", "ALEGRIA", "MEDO", "CORAGEM", "SAUDADE", "ESPERANCA", "RAIVA", "CALMA", "CARINHO", "AMIZADE", "ORGULHO", "SURPRESA", "CONFIANCA", "PACIENCIA", "SONHO"],
+}
 
 PALAVRAS_EXTRAS = [
     "ABACATE", "ABAJUR", "ABRIGO", "ACEROLA", "ACORDO", "ADEGA", "AEROPORTO", "AGENDA",
@@ -1322,8 +1660,11 @@ def gerar_legenda_caca(chat_id):
     jogo = JOGOS_CACA[chat_id]
     info = jogo["palavras_info"]
     encontradas = sum(1 for item in info.values() if item["encontrada"])
+    tema = jogo.get("tema", "aleatório")
+    linha_tema = f"🎯 Tema: {tema.upper()}\n" if tema != "aleatório" else ""
     return (
         "🧩 <b>CAÇA-PALAVRAS</b> 🧩\n"
+        f"{linha_tema}"
         f"🔍 Encontre as {len(info)} palavras escondidas\n"
         "📏 Mínimo de 4 letras\n"
         "🔄 Existem palavras invertidas\n"
@@ -1622,10 +1963,8 @@ def texto_ataque_naval(game):
     return f"🚢 <b>BATALHA NAVAL</b> 🚢\n\n🎯 Vez de: <b>{atacante['nome']}</b>\n🛡️ Atacando a frota de: <b>{defensor['nome']}</b>\n\nClique numa casa pra atacar!"
 
 
-@bot.message_handler(content_types=['photo'])
+@bot.message_handler(content_types=['photo'], func=lambda mensagem: mensagem.chat.type == "private")
 def capturar_foto_pv(mensagem):
-    if mensagem.chat.type != "private":
-        return
     ULTIMA_FOTO_PV[mensagem.chat.id] = mensagem.photo[-1].file_id
 
     edicao = AGUARDANDO_EDICAO_LINK.get(mensagem.from_user.id)
@@ -1642,13 +1981,19 @@ def capturar_foto_pv(mensagem):
             bot.reply_to(mensagem, "🤔 Esse link não existe mais.")
         return
 
+    nova = NOVA_PLATAFORMA.get(mensagem.from_user.id)
+    if nova and nova.get("campo") == "foto":
+        nova["file_id"] = mensagem.photo[-1].file_id
+        nova.pop("campo", None)
+        bot.reply_to(mensagem, "✅ Foto adicionada à nova plataforma!", parse_mode="HTML")
+        bot.send_message(mensagem.chat.id, texto_nova_plataforma(mensagem.from_user.id), reply_markup=teclado_nova_plataforma(mensagem.from_user.id), parse_mode="HTML")
+        return
+
     bot.reply_to(mensagem, "🖼️ Foto guardadinha! Agora me manda: <code>/addlink [gatilho] [url]</code>\n\n<i>O gatilho é a palavra que, quando alguém falar no grupo, eu solto esse link automaticamente 😉</i>", parse_mode="HTML")
 
 
-@bot.message_handler(content_types=['sticker'])
+@bot.message_handler(content_types=['sticker'], func=lambda mensagem: mensagem.chat.type == "private")
 def capturar_sticker_pv(mensagem):
-    if mensagem.chat.type != "private":
-        return
     sticker_id = mensagem.sticker.file_id
     if mensagem.from_user.id in MODO_STICKER_BICHO:
         if sticker_id not in STICKER_BICHOS:
@@ -1700,19 +2045,15 @@ def teclado_menu_pv():
 
 def texto_menu_links():
     return (
-        "🔗 <b>LINKS DE PLATAFORMA</b>\n\n"
-        "Quando alguém fala a palavra-gatilho no grupo, eu solto o link automaticamente.\n\n"
-        "🖼️ <b>1.</b> Me manda a foto/banner (opcional)\n"
-        "➕ <b>2.</b> <code>/addlink [gatilho] [url]</code> — salva o link\n"
-        "<i>Ex: /addlink URBEPG https://exemplo.com\n"
-        "Palavra com espaço: /addlink \"GRUPO DA GABI\" https://exemplo.com</i>\n"
-        "📋 <b>3.</b> Toque em \"Ver links\" pra gerenciar (ativar/desativar/remover)"
+        "🔗 <b>PLATAFORMAS</b>\n\n"
+        "Cadastre, edite e acompanhe as plataformas que a Santos divulga nos grupos."
     )
 
 
 def teclado_menu_links_intro():
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("📋 Ver links", callback_data="linkcfg_lista"))
+    markup.add(InlineKeyboardButton("➕ Adicionar plataforma", callback_data="linkcfg_add"))
+    markup.add(InlineKeyboardButton("📋 Ver plataformas", callback_data="linkcfg_lista"))
     markup.add(InlineKeyboardButton("⬅️ Voltar", callback_data="menu_inicio"))
     return markup
 
@@ -1720,11 +2061,11 @@ def teclado_menu_links_intro():
 def texto_lista_links():
     if not GATILHOS_PLATAFORMAS:
         return "🔗 <b>LINKS DE PLATAFORMA</b>\n\nAinda não tem nenhum link cadastrado."
-    linhas = ["🔗 <b>LINKS DE PLATAFORMA</b>\n"]
+    linhas = ["🔗 <b>PLATAFORMAS CADASTRADAS</b>\n"]
     for indice, (gatilho, dados) in enumerate(GATILHOS_PLATAFORMAS.items(), start=1):
         marcador = "✅" if dados.get("ativo", True) else "❌"
         linhas.append(f"{indice}. {marcador} <b>{gatilho}</b>")
-    linhas.append("\n👀 Toque no número pra ver detalhes, no status pra ligar/desligar, ou na lixeira pra apagar.")
+    linhas.append("\nToque no número para abrir a edição completa.")
     return "\n".join(linhas)
 
 
@@ -1746,25 +2087,65 @@ def texto_detalhe_link(gatilho):
     dados = GATILHOS_PLATAFORMAS.get(gatilho)
     if not dados:
         return "🤔 Esse link não existe mais."
-    marcador = "✅ Ativado" if dados.get("ativo", True) else "❌ Desativado"
-    foto = "🖼️ Com foto" if dados.get("file_id") else "📝 Sem foto (só texto)"
+    marcador = "✅" if dados.get("ativo", True) else "❌"
+    foto = "✅" if dados.get("file_id") else "❌"
     return (
-        f"🔗 <b>{gatilho}</b>\n\n"
-        f"Status: {marcador}\n"
-        f"{foto}\n"
-        f"Link: {dados['url']}"
+        f"🔗 <b>PLATAFORMA: {gatilho}</b>\n\n"
+        f"Status: {marcador} {'Ativada' if dados.get('ativo', True) else 'Desativada'}\n\n"
+        f"🏷️ <b>Gatilho</b>: {gatilho}\n"
+        f"🔗 <b>Link</b>: {dados['url']}\n"
+        f"🖼️ <b>Foto/Banner</b>: {foto}\n\n"
+        "Escolha abaixo o que deseja editar:"
     )
 
 
 def teclado_detalhe_link(gatilho):
     dados = GATILHOS_PLATAFORMAS.get(gatilho, {})
     marcador = "❌ Desativar" if dados.get("ativo", True) else "✅ Ativar"
-    markup = InlineKeyboardMarkup(row_width=1)
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.row(
+        InlineKeyboardButton("🏷️ Gatilho", callback_data=f"linkcfg_editgatilho_{gatilho}"),
+        InlineKeyboardButton("👀 Ver", callback_data=f"linkcfg_preview_{gatilho}"),
+    )
+    markup.row(
+        InlineKeyboardButton("🔗 Link", callback_data=f"linkcfg_editurl_{gatilho}"),
+        InlineKeyboardButton("👀 Ver", callback_data=f"linkcfg_preview_{gatilho}"),
+    )
+    markup.row(
+        InlineKeyboardButton("🖼️ Foto", callback_data=f"linkcfg_editfoto_{gatilho}"),
+        InlineKeyboardButton("👀 Ver", callback_data=f"linkcfg_preview_{gatilho}"),
+    )
     markup.add(InlineKeyboardButton(marcador, callback_data=f"linkcfg_toggle_{gatilho}"))
-    markup.add(InlineKeyboardButton("✏️ Editar link (URL)", callback_data=f"linkcfg_editurl_{gatilho}"))
-    markup.add(InlineKeyboardButton("🖼️ Editar foto", callback_data=f"linkcfg_editfoto_{gatilho}"))
     markup.add(InlineKeyboardButton("🗑️ Remover", callback_data=f"linkcfg_del_{gatilho}"))
     markup.add(InlineKeyboardButton("⬅️ Voltar pra lista", callback_data="linkcfg_lista"))
+    return markup
+
+
+def texto_nova_plataforma(user_id):
+    dados = NOVA_PLATAFORMA.get(user_id, {})
+    gatilho = dados.get("gatilho") or "<i>não definido</i>"
+    url = dados.get("url") or "<i>não definido</i>"
+    foto = "✅" if dados.get("file_id") else "❌"
+    return (
+        "➕ <b>NOVA PLATAFORMA</b>\n\n"
+        f"🏷️ Gatilho: {gatilho}\n"
+        f"🔗 Link: {url}\n"
+        f"🖼️ Foto/Banner: {foto}\n\n"
+        "Preencha os campos abaixo e salve quando estiver pronto."
+    )
+
+
+def teclado_nova_plataforma(user_id):
+    dados = NOVA_PLATAFORMA.get(user_id, {})
+    pode_salvar = bool(dados.get("gatilho") and dados.get("url"))
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(InlineKeyboardButton("🏷️ Definir gatilho", callback_data="linknew_gatilho"))
+    markup.add(InlineKeyboardButton("🔗 Definir link", callback_data="linknew_url"))
+    markup.add(InlineKeyboardButton("🖼️ Enviar foto", callback_data="linknew_foto"))
+    if pode_salvar:
+        markup.add(InlineKeyboardButton("💾 Salvar plataforma", callback_data="linknew_salvar"))
+        markup.add(InlineKeyboardButton("👀 Ver prévia", callback_data="linknew_preview"))
+    markup.add(InlineKeyboardButton("❌ Cancelar", callback_data="linkcfg_lista"))
     return markup
 
 
@@ -1829,7 +2210,34 @@ def comando_painel(mensagem):
     bot.reply_to(mensagem, "⚙️ <b>PAINEL DOS GRUPOS</b>\n\nEscolha o grupo que quer configurar:", reply_markup=markup, parse_mode="HTML")
 
 
-@bot.message_handler(commands=['addlink', 'removerlink', 'links', 'start', 'help', 'ajuda'])
+@bot.message_handler(commands=['alertas'])
+def comando_alertas_entradas(mensagem):
+    if mensagem.chat.type != "private":
+        return
+    grupos = [
+        (chat_id, config) for chat_id, config in CONFIG_GRUPOS.items()
+        if eh_admin_no_grupo(chat_id, mensagem.from_user.id)
+    ]
+    if not grupos:
+        bot.reply_to(mensagem, "🔒 Não encontrei grupo em que você seja admin e a Santos esteja presente.")
+        return
+    markup = InlineKeyboardMarkup(row_width=1)
+    for chat_id, config in grupos:
+        ligado = config.get("alerta_entradas") and config.get("alerta_destino_id") == mensagem.from_user.id
+        texto = f"{'✅' if ligado else '🔔'} {config.get('nome') or chat_id}"
+        markup.add(InlineKeyboardButton(texto, callback_data=f"alerta_entrada_{chat_id}"))
+    markup.add(InlineKeyboardButton("⬅️ Voltar", callback_data="menu_inicio"))
+    bot.reply_to(
+        mensagem,
+        "🔔 <b>ALERTAS DE NOVOS MEMBROS</b>\n\n"
+        "Toque em um grupo para ligar ou desligar alertas só no seu PV. "
+        "A Santos envia sinais objetivos e marca como <b>revisar</b> quando detectar indícios de spam.",
+        reply_markup=markup,
+        parse_mode="HTML",
+    )
+
+
+@bot.message_handler(commands=['removerlink', 'links', 'start', 'help', 'ajuda'])
 def comandos_pv_geral(mensagem):
     if mensagem.chat.type != "private":
         return
@@ -1893,21 +2301,59 @@ def comandos_pv_geral(mensagem):
 @bot.message_handler(func=lambda mensagem: mensagem.chat.type == "private")
 def processar_acao_privada(mensagem):
     edicao = AGUARDANDO_EDICAO_LINK.get(mensagem.from_user.id)
-    if edicao and edicao["campo"] == "url":
+    if edicao and edicao["campo"] in ("gatilho", "url"):
         gatilho = edicao["gatilho"]
-        nova_url = (mensagem.text or "").strip()
-        if not nova_url.lower().startswith(("http://", "https://")):
-            bot.reply_to(mensagem, "⚠️ Manda um link começando com <code>http://</code> ou <code>https://</code>.", parse_mode="HTML")
-            return
+        novo_valor = (mensagem.text or "").strip()
+        if edicao["campo"] == "url":
+            if not novo_valor.lower().startswith(("http://", "https://")):
+                bot.reply_to(mensagem, "⚠️ Manda um link começando com <code>http://</code> ou <code>https://</code>.", parse_mode="HTML")
+                return
+        else:
+            novo_valor = novo_valor.upper()
+            if len(novo_valor) < 2:
+                bot.reply_to(mensagem, "⚠️ O gatilho precisa ter pelo menos 2 caracteres.")
+                return
+            if novo_valor != gatilho and novo_valor in GATILHOS_PLATAFORMAS:
+                bot.reply_to(mensagem, "⚠️ Já existe uma plataforma com esse gatilho. Escolha outro nome.")
+                return
         if gatilho in GATILHOS_PLATAFORMAS:
-            GATILHOS_PLATAFORMAS[gatilho]["url"] = nova_url
+            if edicao["campo"] == "url":
+                GATILHOS_PLATAFORMAS[gatilho]["url"] = novo_valor
+                gatilho_atualizado = gatilho
+                confirmacao = f"✅ Link da <b>{gatilho}</b> atualizado!"
+            else:
+                GATILHOS_PLATAFORMAS[novo_valor] = GATILHOS_PLATAFORMAS.pop(gatilho)
+                gatilho_atualizado = novo_valor
+                confirmacao = f"✅ Gatilho atualizado: <b>{gatilho}</b> virou <b>{novo_valor}</b>."
             salvar_gatilhos(GATILHOS_PLATAFORMAS)
             AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
-            bot.reply_to(mensagem, f"✅ Link da <b>{gatilho}</b> atualizado!", parse_mode="HTML")
-            bot.send_message(mensagem.chat.id, texto_detalhe_link(gatilho), reply_markup=teclado_detalhe_link(gatilho), parse_mode="HTML")
+            bot.reply_to(mensagem, confirmacao, parse_mode="HTML")
+            bot.send_message(mensagem.chat.id, texto_detalhe_link(gatilho_atualizado), reply_markup=teclado_detalhe_link(gatilho_atualizado), parse_mode="HTML")
         else:
             AGUARDANDO_EDICAO_LINK.pop(mensagem.from_user.id, None)
             bot.reply_to(mensagem, "🤔 Esse link não existe mais.")
+        return
+
+    nova = NOVA_PLATAFORMA.get(mensagem.from_user.id)
+    if nova and nova.get("campo") in ("gatilho", "url"):
+        valor = (mensagem.text or "").strip()
+        if nova["campo"] == "gatilho":
+            valor = valor.upper()
+            if len(valor) < 2:
+                bot.reply_to(mensagem, "⚠️ O gatilho precisa ter pelo menos 2 caracteres.")
+                return
+            if valor in GATILHOS_PLATAFORMAS:
+                bot.reply_to(mensagem, "⚠️ Já existe uma plataforma com esse gatilho.")
+                return
+            nova["gatilho"] = valor
+        elif not valor.lower().startswith(("http://", "https://")):
+            bot.reply_to(mensagem, "⚠️ Manda um link começando com <code>http://</code> ou <code>https://</code>.", parse_mode="HTML")
+            return
+        else:
+            nova["url"] = valor
+        nova.pop("campo", None)
+        bot.reply_to(mensagem, "✅ Campo atualizado!", parse_mode="HTML")
+        bot.send_message(mensagem.chat.id, texto_nova_plataforma(mensagem.from_user.id), reply_markup=teclado_nova_plataforma(mensagem.from_user.id), parse_mode="HTML")
         return
 
     acao = DETETIVE_ACOES.get(mensagem.from_user.id)
@@ -1965,6 +2411,37 @@ def processar_callback(call):
     user_name = call.from_user.first_name or "Membro"
     user_id = call.from_user.id
 
+    if data.startswith("dica_aceitar_") or data.startswith("dica_cancelar_"):
+        tipo = data.split("_", 2)[2]
+        chave = (chat_id, call.message.message_id, user_id)
+        if CONFIRMACOES_DICA.pop(chave, None) != tipo:
+            bot.answer_callback_query(call.id, "Essa confirmação não foi solicitada por você.", show_alert=True)
+            return
+        jogos = {"emoji": JOGOS_EMOJI, "dicas": JOGOS_DICAS, "embaralhada": JOGOS_EMBARALHADA, "charada": JOGOS_CHARADA}
+        jogo = jogos.get(tipo, {}).get(chat_id)
+        if not jogo:
+            bot.answer_callback_query(call.id, "Essa rodada já terminou.")
+            return
+        if data.startswith("dica_cancelar_"):
+            bot.answer_callback_query(call.id, "Dica cancelada.")
+            bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_rodada_com_dica(tipo, jogo))
+            return
+        adicionar_pontos(chat_id, user_id, user_name, -3)
+        if tipo == "emoji":
+            jogo["dica"] = 1
+            texto = f"Dica: começa com {jogo['resposta'][0].upper()} e tem {len(jogo['resposta'].split())} palavra(s)."
+        elif tipo == "dicas":
+            jogo["dica"] += 1
+            texto = jogo["dica1"] if jogo["dica"] == 1 else jogo["dica2"]
+        elif tipo == "charada":
+            jogo["dica"] = True
+            texto = f"A resposta começa com {jogo['resposta_dica'][0].upper()} e tem {len(jogo['resposta_dica'])} letras."
+        else:
+            texto = f"Dica: começa com {jogo['resposta'][0].upper()} e termina com {jogo['resposta'][-1].upper()}."
+        bot.answer_callback_query(call.id, f"-3 pontos. {texto}", show_alert=True)
+        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_rodada_com_dica(tipo, jogo))
+        return
+
     if data == "menu_inicio":
         bot.edit_message_text(texto_menu_pv(), chat_id, call.message.message_id, reply_markup=teclado_menu_pv(), parse_mode="HTML")
         return
@@ -1973,12 +2450,83 @@ def processar_callback(call):
         bot.edit_message_text(texto_menu_links(), chat_id, call.message.message_id, reply_markup=teclado_menu_links_intro(), parse_mode="HTML")
         return
 
+    if data.startswith("alerta_entrada_"):
+        grupo_id = int(data.replace("alerta_entrada_", "", 1))
+        if not eh_admin_no_grupo(grupo_id, user_id):
+            bot.answer_callback_query(call.id, "Você não é admin desse grupo.", show_alert=True)
+            return
+        config = CONFIG_GRUPOS.get(grupo_id, config_grupo_padrao())
+        ligado = config.get("alerta_entradas") and config.get("alerta_destino_id") == user_id
+        config["alerta_entradas"] = not ligado
+        config["alerta_destino_id"] = user_id if not ligado else None
+        CONFIG_GRUPOS[grupo_id] = config
+        salvar_config_grupos(CONFIG_GRUPOS)
+        estado = "ativados" if not ligado else "desativados"
+        bot.answer_callback_query(call.id, f"Alertas {estado}.")
+        bot.edit_message_text(
+            f"🔔 <b>ALERTAS DE NOVOS MEMBROS</b>\n\nAlertas {estado} para <b>{config.get('nome') or grupo_id}</b>.\n"
+            "Você receberá o aviso somente neste PV.",
+            chat_id,
+            call.message.message_id,
+            reply_markup=teclado_voltar_menu(),
+            parse_mode="HTML",
+        )
+        return
+
     if data == "linkcfg_lista":
         bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
         return
 
     if data == "linkcfg_add":
-        bot.edit_message_text(texto_menu_links(), chat_id, call.message.message_id, reply_markup=teclado_menu_links_intro(), parse_mode="HTML")
+        NOVA_PLATAFORMA[user_id] = {"gatilho": "", "url": "", "file_id": ""}
+        bot.edit_message_text(texto_nova_plataforma(user_id), chat_id, call.message.message_id, reply_markup=teclado_nova_plataforma(user_id), parse_mode="HTML")
+        return
+
+    if data in ("linknew_gatilho", "linknew_url", "linknew_foto"):
+        nova = NOVA_PLATAFORMA.setdefault(user_id, {"gatilho": "", "url": "", "file_id": ""})
+        campo = {"linknew_gatilho": "gatilho", "linknew_url": "url", "linknew_foto": "foto"}[data]
+        nova["campo"] = campo
+        instrucoes = {
+            "gatilho": "🏷️ Manda a palavra-gatilho que vai chamar esta plataforma no grupo.",
+            "url": "🔗 Manda o link da plataforma começando com <code>http://</code> ou <code>https://</code>.",
+            "foto": "🖼️ Manda a foto ou banner da plataforma.",
+        }
+        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("⬅️ Voltar", callback_data="linknew_voltar"))
+        bot.edit_message_text(instrucoes[campo], chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML")
+        return
+
+    if data == "linknew_voltar":
+        nova = NOVA_PLATAFORMA.get(user_id)
+        if not nova:
+            bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+            return
+        nova.pop("campo", None)
+        bot.edit_message_text(texto_nova_plataforma(user_id), chat_id, call.message.message_id, reply_markup=teclado_nova_plataforma(user_id), parse_mode="HTML")
+        return
+
+    if data == "linknew_preview":
+        nova = NOVA_PLATAFORMA.get(user_id, {})
+        frase = escolher_sem_repetir("preview_nova", [frase.format(g=nova.get("gatilho", "PLATAFORMA")) for frase in FRASES_PLATAFORMA])
+        if nova.get("file_id"):
+            bot.send_photo(chat_id, nova["file_id"], caption=f"{frase}\n\n{nova['url']}", parse_mode="HTML")
+        else:
+            bot.send_message(chat_id, f"{frase}\n\n{nova['url']}", parse_mode="HTML")
+        bot.answer_callback_query(call.id, "Prévia enviada abaixo.")
+        return
+
+    if data == "linknew_salvar":
+        nova = NOVA_PLATAFORMA.get(user_id, {})
+        if not nova.get("gatilho") or not nova.get("url"):
+            bot.answer_callback_query(call.id, "Preencha gatilho e link antes de salvar.", show_alert=True)
+            return
+        GATILHOS_PLATAFORMAS[nova["gatilho"]] = {
+            "url": nova["url"], "file_id": nova.get("file_id", ""), "ativo": True,
+        }
+        salvar_gatilhos(GATILHOS_PLATAFORMAS)
+        gatilho = nova["gatilho"]
+        NOVA_PLATAFORMA.pop(user_id, None)
+        bot.edit_message_text(texto_detalhe_link(gatilho), chat_id, call.message.message_id, reply_markup=teclado_detalhe_link(gatilho), parse_mode="HTML")
+        bot.answer_callback_query(call.id, "✅ Plataforma salva!")
         return
 
     if data.startswith("linkcfg_ver_"):
@@ -2010,6 +2558,38 @@ def processar_callback(call):
         else:
             bot.answer_callback_query(call.id, "Já tinha sido removida.")
         bot.edit_message_text(texto_lista_links(), chat_id, call.message.message_id, reply_markup=teclado_lista_links(), parse_mode="HTML")
+        return
+
+    if data.startswith("linkcfg_preview_"):
+        gatilho = data.replace("linkcfg_preview_", "", 1)
+        dados = GATILHOS_PLATAFORMAS.get(gatilho)
+        if not dados:
+            bot.answer_callback_query(call.id, "Essa plataforma já foi removida.")
+            return
+        frase = escolher_sem_repetir("preview_" + gatilho, [frase.format(g=gatilho) for frase in FRASES_PLATAFORMA])
+        try:
+            if dados.get("file_id"):
+                bot.send_photo(chat_id, dados["file_id"], caption=f"{frase}\n\n{dados['url']}", parse_mode="HTML")
+            else:
+                bot.send_message(chat_id, f"{frase}\n\n{dados['url']}", parse_mode="HTML")
+            bot.answer_callback_query(call.id, "Prévia enviada abaixo.")
+        except Exception as erro:
+            bot.answer_callback_query(call.id, "Não consegui abrir a prévia.", show_alert=True)
+            print(f"Erro na prévia de {gatilho}: {type(erro).__name__}: {erro}", flush=True)
+        return
+
+    if data.startswith("linkcfg_editgatilho_"):
+        gatilho = data.replace("linkcfg_editgatilho_", "", 1)
+        if gatilho not in GATILHOS_PLATAFORMAS:
+            bot.answer_callback_query(call.id, "Essa plataforma já foi removida.")
+            return
+        AGUARDANDO_EDICAO_LINK[user_id] = {"gatilho": gatilho, "campo": "gatilho"}
+        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("❌ Cancelar", callback_data=f"linkcfg_ver_{gatilho}"))
+        bot.edit_message_text(
+            f"🏷️ Manda a nova palavra-gatilho da <b>{gatilho}</b>.\n\n"
+            "Quando essa palavra aparecer no grupo, a Santos enviará a plataforma.",
+            chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML",
+        )
         return
 
     if data.startswith("linkcfg_editurl_"):
@@ -2408,6 +2988,77 @@ def processar_callback(call):
         JOGOS_MOEDA.pop((chat_id, call.message.message_id), None)
         return
 
+    if data in ("emoji_dica", "emoji_pular", "emoji_encerrar"):
+        game = JOGOS_EMOJI.get(chat_id)
+        if not game:
+            bot.answer_callback_query(call.id, "Essa rodada já terminou.")
+            return
+        if data == "emoji_dica":
+            CONFIRMACOES_DICA[(chat_id, call.message.message_id, user_id)] = "emoji"
+            bot.answer_callback_query(call.id, "Essa dica custa 3 pontos. Escolha Aceitar ou Cancelar.", show_alert=True)
+            bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_confirmacao_dica("emoji"))
+            return
+        resposta = game["resposta"]
+        JOGOS_EMOJI.pop(chat_id, None)
+        liberar_jogo(chat_id, "emoji")
+        bot.answer_callback_query(call.id, "Rodada encerrada." if data == "emoji_encerrar" else "Próximo desafio depois!")
+        bot.edit_message_text(f"🧩 <b>ADIVINHE O EMOJI</b>\n\n{game['desafio']}\n\n✅ Resposta: <b>{resposta}</b>", chat_id, call.message.message_id, parse_mode="HTML")
+        return
+
+    if data in ("dicas_dica", "dicas_pular", "dicas_encerrar"):
+        game = JOGOS_DICAS.get(chat_id)
+        if not game:
+            bot.answer_callback_query(call.id, "Essa rodada já terminou.")
+            return
+        if data == "dicas_dica":
+            CONFIRMACOES_DICA[(chat_id, call.message.message_id, user_id)] = "dicas"
+            bot.answer_callback_query(call.id, "Essa dica custa 3 pontos. Escolha Aceitar ou Cancelar.", show_alert=True)
+            bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_confirmacao_dica("dicas"))
+            return
+        resposta = game["resposta"]
+        JOGOS_DICAS.pop(chat_id, None)
+        liberar_jogo(chat_id, "dicas")
+        bot.answer_callback_query(call.id, "Rodada encerrada.")
+        bot.edit_message_text(f"🧠 <b>3 DICAS</b>\n\n✅ Resposta: <b>{resposta}</b>", chat_id, call.message.message_id, parse_mode="HTML")
+        return
+
+    if data in ("charada_dica", "charada_pular", "charada_encerrar"):
+        game = JOGOS_CHARADA.get(chat_id)
+        if not game:
+            bot.answer_callback_query(call.id, "Essa rodada já terminou.")
+            return
+        if data == "charada_dica":
+            if game["dica"]:
+                bot.answer_callback_query(call.id, "A dica desta Charada já foi usada.", show_alert=True)
+                return
+            CONFIRMACOES_DICA[(chat_id, call.message.message_id, user_id)] = "charada"
+            bot.answer_callback_query(call.id, "Essa dica custa 3 pontos. Escolha Aceitar ou Cancelar.", show_alert=True)
+            bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_confirmacao_dica("charada"))
+            return
+        resposta = sorted(game["respostas"], key=len)[0]
+        JOGOS_CHARADA.pop(chat_id, None)
+        liberar_jogo(chat_id, "charada")
+        bot.answer_callback_query(call.id, "Rodada encerrada.")
+        bot.edit_message_text(f"🧩 <b>CHARADA DA SANTOS</b>\n\n✅ Resposta: <b>{resposta}</b>", chat_id, call.message.message_id, parse_mode="HTML")
+        return
+
+    if data in ("embaralhada_dica", "embaralhada_pular", "embaralhada_encerrar"):
+        game = JOGOS_EMBARALHADA.get(chat_id)
+        if not game:
+            bot.answer_callback_query(call.id, "Essa rodada já terminou.")
+            return
+        if data == "embaralhada_dica":
+            CONFIRMACOES_DICA[(chat_id, call.message.message_id, user_id)] = "embaralhada"
+            bot.answer_callback_query(call.id, "Essa dica custa 3 pontos. Escolha Aceitar ou Cancelar.", show_alert=True)
+            bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=teclado_confirmacao_dica("embaralhada"))
+            return
+        resposta = game["resposta"]
+        JOGOS_EMBARALHADA.pop(chat_id, None)
+        liberar_jogo(chat_id, "embaralhada")
+        bot.answer_callback_query(call.id, "Rodada encerrada.")
+        bot.edit_message_text(f"🔤 <b>PALAVRA EMBARALHADA</b>\n\n✅ Resposta: <b>{resposta}</b>", chat_id, call.message.message_id, parse_mode="HTML")
+        return
+
     if data.startswith("quiz_"):
         game = JOGOS_QUIZ.get(chat_id)
         if not game:
@@ -2514,13 +3165,48 @@ def processar_callback(call):
             pass
         return
 
+    if data.startswith("caca_tema_"):
+        if JOGO_ATIVO.get(chat_id) != "caca" or chat_id in JOGOS_CACA:
+            return
+        tema = data.replace("caca_tema_", "", 1)
+        if tema != "aleatorio" and tema not in TEMAS_CACA:
+            bot.answer_callback_query(call.id, "Tema não encontrado.")
+            return
+        CACA_TEMA_PENDENTE[chat_id] = tema
+        nome_tema = {
+            "aleatorio": "Aleatório", "musica": "Música", "filmes": "Filmes",
+            "mercado": "Mercado", "acougue": "Açougue", "cozinha": "Cozinha",
+            "animais": "Animais", "praias": "Praias", "cidades": "Cidades",
+            "esporte": "Esporte", "natureza": "Natureza", "frutas": "Frutas",
+            "bebidas": "Bebidas", "cores": "Cores", "profissoes": "Profissões",
+            "tecnologia": "Tecnologia", "transporte": "Transporte",
+            "festas": "Festas",
+            "escola": "Escola", "casa": "Casa", "viagem": "Viagem",
+            "brasil": "Brasil", "corpo": "Corpo", "jogos": "Jogos",
+            "profissoes_criativas": "Profissões criativas",
+            "internet": "Internet", "beleza": "Beleza", "verao": "Verão",
+            "espaco": "Espaço", "musica_brasileira": "Música brasileira",
+            "sentimentos": "Sentimentos",
+        }.get(tema, tema.title())
+        markup = InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            InlineKeyboardButton("📝 TEXTO", callback_data="caca_modo_texto"),
+            InlineKeyboardButton("🖼️ IMAGEM", callback_data="caca_modo_imagem"),
+        )
+        bot.edit_message_text(
+            f"🧩 <b>CAÇA-PALAVRAS</b> 🧩\n\n🎯 Tema: <b>{nome_tema}</b>\n\n🎛️ Agora escolha o modo:",
+            chat_id, call.message.message_id, reply_markup=markup, parse_mode="HTML",
+        )
+        return
+
     if data in ("caca_modo_texto", "caca_modo_imagem"):
         if JOGO_ATIVO.get(chat_id) != "caca" or chat_id in JOGOS_CACA:
             return
         modo = "texto" if data == "caca_modo_texto" else "imagem"
-        palavras = sortear_palavras_caca(chat_id)
+        tema = CACA_TEMA_PENDENTE.pop(chat_id, "aleatorio")
+        palavras = sortear_palavras_caca(chat_id, tema if tema != "aleatorio" else None)
         grid, p_info = criar_grid_caca(palavras)
-        JOGOS_CACA[chat_id] = {"grid": grid, "palavras_info": p_info, "status": "ativo", "modo": modo}
+        JOGOS_CACA[chat_id] = {"grid": grid, "palavras_info": p_info, "status": "ativo", "modo": modo, "tema": tema}
         try:
             bot.delete_message(chat_id, call.message.message_id)
         except Exception:
@@ -2833,7 +3519,6 @@ COMANDOS_RESET = {
     ".LOADQUIZ": ("quiz", JOGOS_QUIZ),
     ".LOADPARIMPAR": ("parimpar", JOGOS_PARIMPAR),
     ".LOADMEMO": ("memoria", JOGOS_MEMORIA),
-    ".LOADEMOJI": ("emoji", JOGOS_EMOJI),
     ".LOADQUEM": ("quem", JOGOS_QUEM),
     ".LOADMISTERIO": ("misterio", JOGOS_MISTERIO),
     ".LOADRAPIDO": ("rapido", JOGOS_RAPIDO),
@@ -2841,6 +3526,8 @@ COMANDOS_RESET = {
     ".LOADOCULTO": ("oculto", JOGOS_OCULTO),
     ".LOADCHARADA": ("charada", JOGOS_CHARADA),
     ".LOADSTOP": ("stop", JOGOS_STOP),
+    ".LOADDICAS": ("dicas", JOGOS_DICAS),
+    ".LOADEMBARALHADA": ("embaralhada", JOGOS_EMBARALHADA),
     ".LOADBATATA": ("batata", JOGOS_BATATA),
     ".LOADDETETIVE": ("detetive", JOGOS_DETETIVE),
     ".LOADNAVAL": ("naval", JOGOS_NAVAL),
@@ -2867,6 +3554,53 @@ def registrar_grupo_ao_mudar_status(atualizacao):
     salvar_config_grupos(CONFIG_GRUPOS)
 
 
+def avisar_entrada_de_membros(mensagem):
+    config = CONFIG_GRUPOS.get(mensagem.chat.id, {})
+    destino_id = config.get("alerta_destino_id")
+    if not config.get("alerta_entradas") or not destino_id:
+        return
+    for membro in mensagem.new_chat_members:
+        sinais = []
+        if getattr(membro, "is_bot", False):
+            sinais.append("conta marcada pelo Telegram como bot")
+        if not membro.username:
+            sinais.append("sem @username público")
+        if not (membro.first_name or "").strip():
+            sinais.append("sem nome de perfil")
+        nivel = "⚠️ REVISAR" if sinais else "✅ Sem alerta automático"
+        identificador = f"@{membro.username}" if membro.username else "sem username"
+        texto = (
+            f"🔔 <b>NOVO MEMBRO - {nivel}</b>\n\n"
+            f"Grupo: <b>{html.escape(config.get('nome') or str(mensagem.chat.id))}</b>\n"
+            f"Nome: <b>{html.escape(membro.first_name or 'Não informado')}</b>\n"
+            f"Usuário: {html.escape(identificador)}\n"
+            f"ID: <code>{membro.id}</code>\n\n"
+            f"Sinais: {html.escape('; '.join(sinais) if sinais else 'nenhum sinal objetivo disponível')}\n\n"
+            "<i>Isso não confirma que a conta seja falsa ou spam. Revise o perfil e o comportamento antes de remover ou bloquear.</i>"
+        )
+        try:
+            bot.send_message(destino_id, texto, parse_mode="HTML")
+        except Exception as erro:
+            print(f"Não consegui enviar alerta privado de entrada: {type(erro).__name__}: {erro}", flush=True)
+
+
+def registrar_admin_para_alertas(mensagem):
+    if mensagem.chat.type == "private":
+        return
+    try:
+        if not eh_admin_no_grupo(mensagem.chat.id, mensagem.from_user.id):
+            return
+    except Exception:
+        return
+    config = CONFIG_GRUPOS.get(mensagem.chat.id, config_grupo_padrao())
+    if config.get("alerta_destino_id"):
+        return
+    config["alerta_entradas"] = True
+    config["alerta_destino_id"] = mensagem.from_user.id
+    CONFIG_GRUPOS[mensagem.chat.id] = config
+    salvar_config_grupos(CONFIG_GRUPOS)
+
+
 def processar_mensagem_grupo(mensagem):
     if mensagem.chat.type == "private":
         return
@@ -2879,6 +3613,12 @@ def processar_mensagem_grupo(mensagem):
         CONFIG_GRUPOS[chat_id]["nome"] = nome_atual
         salvar_config_grupos(CONFIG_GRUPOS)
 
+    if mensagem.new_chat_members:
+        avisar_entrada_de_membros(mensagem)
+        return
+
+    registrar_admin_para_alertas(mensagem)
+
     texto = (mensagem.text or mensagem.caption or "").strip()
     texto_upper = texto.upper()
     user_id = mensagem.from_user.id
@@ -2886,6 +3626,30 @@ def processar_mensagem_grupo(mensagem):
     print(f"Mensagem recebida | chat={chat_id} | usuario={user_name} | texto={texto!r}", flush=True)
 
     registrar_interacao(chat_id, user_id, user_name)
+
+    if mensagem_contem_link(texto):
+        print(f"Mensagem com link ignorada | chat={chat_id}", flush=True)
+        return
+
+    if not texto:
+        print(f"Mensagem sem texto ignorada | chat={chat_id}", flush=True)
+        return
+
+    if texto_upper.startswith(".TESTLINK "):
+        if not administrador_do_grupo(mensagem):
+            bot.reply_to(mensagem, "🔒 Esse teste é só para administradores do grupo.")
+            return
+        gatilho_teste = texto_upper.replace(".TESTLINK ", "", 1).strip()
+        dados_teste = GATILHOS_PLATAFORMAS.get(gatilho_teste)
+        if not dados_teste:
+            bot.reply_to(mensagem, f"🤔 Não existe plataforma cadastrada com o gatilho <b>{html.escape(gatilho_teste)}</b>.", parse_mode="HTML")
+            return
+        print(f"Teste de plataforma solicitado | chat={chat_id} | gatilho={gatilho_teste}", flush=True)
+        enviar_plataforma(mensagem, gatilho_teste, dados_teste)
+        return
+
+    if responder_gatilho_plataforma(mensagem, texto_upper):
+        return
 
     marcador_todos = "/todos"
     texto_sem_marcador = texto
@@ -2919,7 +3683,7 @@ def processar_mensagem_grupo(mensagem):
     if texto_upper in COMANDOS_RESET:
         nome_jogo, dicionario = COMANDOS_RESET[texto_upper]
         if nome_jogo == "todos":
-            for jogos in (JOGOS_CACA, JOGOS_VELHA, JOGOS_MEMORIA, JOGOS_CRUZADA, JOGOS_PPT, JOGOS_PENALTI, JOGOS_FORCA, JOGOS_QUIZ, JOGOS_PARIMPAR, JOGOS_EMOJI, JOGOS_QUEM, JOGOS_MISTERIO, JOGOS_RAPIDO, JOGOS_VF, JOGOS_OCULTO, JOGOS_CHARADA, JOGOS_STOP, JOGOS_BATATA, JOGOS_DETETIVE, JOGOS_NAVAL):
+            for jogos in (JOGOS_CACA, JOGOS_VELHA, JOGOS_MEMORIA, JOGOS_CRUZADA, JOGOS_PPT, JOGOS_PENALTI, JOGOS_FORCA, JOGOS_QUIZ, JOGOS_PARIMPAR, JOGOS_DICAS, JOGOS_EMBARALHADA, JOGOS_QUEM, JOGOS_MISTERIO, JOGOS_RAPIDO, JOGOS_VF, JOGOS_OCULTO, JOGOS_CHARADA, JOGOS_STOP, JOGOS_BATATA, JOGOS_DETETIVE, JOGOS_NAVAL):
                 jogos.pop(chat_id, None)
             JOGO_ATIVO.pop(chat_id, None)
             bot.reply_to(mensagem, "🔄 Todas as partidas deste grupo foram resetadas. Agora dá para começar uma nova.")
@@ -2987,9 +3751,11 @@ def processar_mensagem_grupo(mensagem):
             "🕵️ <code>.oculto</code> - Palavra Oculta (+20 pts)\n"
             "   ↳ Resolva a pista e descubra a palavra secreta.\n"
             "🧩 <code>.charada</code> - Charada da Santos (+20 pts)\n"
-            "   ↳ Clássico «o que é, o que é» pra decifrar.\n"
-            "🧩 <code>.emoji</code> - Adivinhe o Emoji (+15 pts)\n"
-            "   ↳ Interprete a combinação de emojis e digite a resposta simples.\n"
+            "   ↳ Clássico «o que é, o que é» com botão de dica por -3 pts.\n"
+            "🧠 <code>.dicas</code> - 3 Dicas (+20 pts)\n"
+            "   ↳ Descubra a resposta usando dicas progressivas.\n"
+            "🔤 <code>.embaralhada</code> - Palavra Embaralhada (+15 pts)\n"
+            "   ↳ Organize as letras e peça uma dica quando precisar.\n"
             "🛑 <code>.stop</code> - Stop relâmpago (+25 pts)\n"
             "   ↳ Use a letra sorteada e envie nome, animal, comida e objeto.\n"
             "🥔 <code>.batata</code> - Batata Quente\n"
@@ -3091,7 +3857,7 @@ def processar_mensagem_grupo(mensagem):
         bot.send_message(chat_id, "⚽ <b>PÊNALTI EM DUPLA</b>\nPreciso de 2 jogadores (Batedor e Goleiro)!", reply_markup=markup, parse_mode="HTML")
         return
 
-    # CAÇA-PALAVRAS - igual ao Bil: escolhe o modo (texto ou imagem) antes de começar
+    # CAÇA-PALAVRAS - escolhe tema, depois o modo (texto ou imagem)
     if texto_upper in [".CAÇA", ".CACA"]:
         if jogo_ocupado(chat_id, "caca"):
             aviso_jogo_ocupado(mensagem, chat_id)
@@ -3099,21 +3865,81 @@ def processar_mensagem_grupo(mensagem):
         travar_jogo(chat_id, "caca")
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
-            InlineKeyboardButton("📝 TEXTO", callback_data="caca_modo_texto"),
-            InlineKeyboardButton("🖼️ IMAGEM", callback_data="caca_modo_imagem"),
+            InlineKeyboardButton("🎲 ALEATÓRIO", callback_data="caca_tema_aleatorio"),
+            InlineKeyboardButton("🎵 MÚSICA", callback_data="caca_tema_musica"),
         )
-        bot.send_message(chat_id, "🧩 <b>CAÇA-PALAVRAS</b>\n\n🎛️ Escolha o modo do caça-palavras:", reply_markup=markup, parse_mode="HTML")
+        markup.add(
+            InlineKeyboardButton("🎬 FILMES", callback_data="caca_tema_filmes"),
+            InlineKeyboardButton("🛒 MERCADO", callback_data="caca_tema_mercado"),
+        )
+        markup.add(
+            InlineKeyboardButton("🥩 AÇOUGUE", callback_data="caca_tema_acougue"),
+            InlineKeyboardButton("🍳 COZINHA", callback_data="caca_tema_cozinha"),
+        )
+        markup.add(
+            InlineKeyboardButton("🐾 ANIMAIS", callback_data="caca_tema_animais"),
+            InlineKeyboardButton("🏖️ PRAIAS", callback_data="caca_tema_praias"),
+        )
+        markup.add(
+            InlineKeyboardButton("🏙️ CIDADES", callback_data="caca_tema_cidades"),
+            InlineKeyboardButton("⚽ ESPORTE", callback_data="caca_tema_esporte"),
+        )
+        markup.add(
+            InlineKeyboardButton("🌿 NATUREZA", callback_data="caca_tema_natureza"),
+            InlineKeyboardButton("🍎 FRUTAS", callback_data="caca_tema_frutas"),
+        )
+        markup.add(
+            InlineKeyboardButton("🥤 BEBIDAS", callback_data="caca_tema_bebidas"),
+            InlineKeyboardButton("🎨 CORES", callback_data="caca_tema_cores"),
+        )
+        markup.add(
+            InlineKeyboardButton("👩‍⚕️ PROFISSÕES", callback_data="caca_tema_profissoes"),
+            InlineKeyboardButton("💻 TECNOLOGIA", callback_data="caca_tema_tecnologia"),
+        )
+        markup.add(
+            InlineKeyboardButton("🚗 TRANSPORTE", callback_data="caca_tema_transporte"),
+            InlineKeyboardButton("🎉 FESTAS", callback_data="caca_tema_festas"),
+        )
+        markup.add(
+            InlineKeyboardButton("🏫 ESCOLA", callback_data="caca_tema_escola"),
+            InlineKeyboardButton("🏠 CASA", callback_data="caca_tema_casa"),
+        )
+        markup.add(
+            InlineKeyboardButton("✈️ VIAGEM", callback_data="caca_tema_viagem"),
+            InlineKeyboardButton("🇧🇷 BRASIL", callback_data="caca_tema_brasil"),
+        )
+        markup.add(
+            InlineKeyboardButton("🫀 CORPO", callback_data="caca_tema_corpo"),
+            InlineKeyboardButton("🎲 JOGOS", callback_data="caca_tema_jogos"),
+        )
+        markup.add(
+            InlineKeyboardButton("🎨 CRIATIVAS", callback_data="caca_tema_profissoes_criativas"),
+            InlineKeyboardButton("🌐 INTERNET", callback_data="caca_tema_internet"),
+        )
+        markup.add(
+            InlineKeyboardButton("💄 BELEZA", callback_data="caca_tema_beleza"),
+            InlineKeyboardButton("☀️ VERÃO", callback_data="caca_tema_verao"),
+        )
+        markup.add(
+            InlineKeyboardButton("🚀 ESPAÇO", callback_data="caca_tema_espaco"),
+            InlineKeyboardButton("🎶 MÚSICA BRASILEIRA", callback_data="caca_tema_musica_brasileira"),
+        )
+        markup.add(
+            InlineKeyboardButton("💗 SENTIMENTOS", callback_data="caca_tema_sentimentos"),
+        )
+        bot.send_message(chat_id, "🧩 <b>CAÇA-PALAVRAS</b> 🧩\n\n🎯 Escolha um tema primeiro:", reply_markup=markup, parse_mode="HTML")
         return
 
     if chat_id in JOGOS_CACA and JOGOS_CACA[chat_id].get("status") == "ativo":
         jogo = JOGOS_CACA[chat_id]
-        if texto_upper in jogo["palavras_info"] and not jogo["palavras_info"][texto_upper]["encontrada"]:
-            jogo["palavras_info"][texto_upper]["encontrada"] = True
+        palavra_tentada = normalizar_resposta(texto).upper()
+        if palavra_tentada in jogo["palavras_info"] and not jogo["palavras_info"][palavra_tentada]["encontrada"]:
+            jogo["palavras_info"][palavra_tentada]["encontrada"] = True
             adicionar_pontos(chat_id, user_id, user_name, 15)
 
             bot.reply_to(
                 mensagem,
-                f"✅ <b>{user_name}</b> encontrou uma palavra! 🏆\n\n➥ <b>{texto_upper}</b> (+15 pts)",
+                f"✅ <b>{user_name}</b> encontrou uma palavra! 🏆\n\n➥ <b>{palavra_tentada}</b> (+15 pts)",
                 parse_mode="HTML",
             )
 
@@ -3285,11 +4111,18 @@ def processar_mensagem_grupo(mensagem):
         bot.send_message(chat_id, texto_lobby_naval(JOGOS_NAVAL[chat_id]), reply_markup=teclado_lobby_naval(), parse_mode="HTML")
         return
 
-    if texto_upper in [".EMOJI", ".ADIVINHEEMOJI"]:
-        if jogo_ocupado(chat_id, "emoji"):
+    if texto_upper in [".DICAS", ".3DICAS"]:
+        if jogo_ocupado(chat_id, "dicas"):
             aviso_jogo_ocupado(mensagem, chat_id)
             return
-        iniciar_emoji(chat_id)
+        iniciar_dicas(chat_id)
+        return
+
+    if texto_upper in [".EMBARALHADA", ".PALAVRA"]:
+        if jogo_ocupado(chat_id, "embaralhada"):
+            aviso_jogo_ocupado(mensagem, chat_id)
+            return
+        iniciar_embaralhada(chat_id)
         return
 
     if texto_upper == ".QUEM":
@@ -3333,18 +4166,57 @@ def processar_mensagem_grupo(mensagem):
 
     if texto_upper == ".AMOR":
         percentual = random.randint(35, 100)
-        frases = ["O coração deu uma piscadinha!", "Tem química no ar hoje!", "Vai com calma, mas vai sorrindo!", "O cupido está trabalhando!"]
+        frases = [
+            "O coração deu uma piscadinha!",
+            "Tem química no ar hoje!",
+            "Vai com calma, mas vai sorrindo!",
+            "O cupido está trabalhando!",
+            "Os olhares estão dizendo muito sem precisar de palavra!",
+            "Tem sentimento crescendo devagar, do jeito que dura!",
+            "A conexão tá afinada e a sintonia é real!",
+            "O coração bateu mais forte e a lógica ficou pra depois!",
+            "Tem algo especial acontecendo, mesmo que você ainda não tenha nome pra isso!",
+        ]
         bot.reply_to(mensagem, f"💘 <b>TERMÔMETRO DO AMOR</b> 💘\n\n{percentual}% de sintonia!\n<i>{escolher_sem_repetir('amor', frases)}</i>", parse_mode="HTML")
         return
 
     if texto_upper == ".SORTE":
         percentual = random.randint(35, 100)
-        frases = ["Hoje é dia de confiar na sua intuição.", "Pequenas oportunidades podem render boas histórias.", "Olhos abertos: uma surpresa pode aparecer.", "Seu astral está brilhando hoje!"]
+        frases = [
+            "Hoje é dia de confiar na sua intuição.",
+            "Pequenas oportunidades podem render boas histórias.",
+            "Olhos abertos: uma surpresa pode aparecer.",
+            "Seu astral está brilhando hoje!",
+            "O universo tá mandando sinais, só precisa prestar atenção.",
+            "Uma porta que parecia fechada pode se abrir no momento certo.",
+            "Sorte é o encontro de preparação com oportunidade. Você tá preparada!",
+            "Hoje o imprevisto pode ser do seu lado. Fica de olho!",
+            "Coisas boas não avisam quando chegam, mas chegam. Aguenta!",
+            "A vida é generosa com quem não desiste. Hoje é um daqueles dias!",
+        ]
         bot.reply_to(mensagem, f"🍀 <b>TERMÔMETRO DA SORTE</b> 🍀\n\nSua sorte está em <b>{percentual}%</b>!\n<i>{escolher_sem_repetir('sorte', frases)}</i>", parse_mode="HTML")
         return
 
     if texto_upper == ".CONSELHO":
         bot.reply_to(mensagem, f"💡 <b>CONSELHO DO DIA DA SANTOS</b> 💡\n\n<i>{escolher_sem_repetir('conselho', CONSELHOS_DIA)}</i>\n\n💗 Guarda isso com carinho.", parse_mode="HTML")
+        return
+
+    if chat_id in JOGOS_DICAS:
+        jogo = JOGOS_DICAS[chat_id]
+        if normalizar_resposta(texto) == jogo["resposta"]:
+            adicionar_pontos(chat_id, user_id, user_name, 20)
+            bot.reply_to(mensagem, f"🎉 <b>{user_name}</b> acertou as 3 Dicas! (+20 pts)", parse_mode="HTML")
+            JOGOS_DICAS.pop(chat_id, None)
+            liberar_jogo(chat_id, "dicas")
+        return
+
+    if chat_id in JOGOS_EMBARALHADA:
+        jogo = JOGOS_EMBARALHADA[chat_id]
+        if normalizar_resposta(texto) == jogo["resposta"]:
+            adicionar_pontos(chat_id, user_id, user_name, 15)
+            bot.reply_to(mensagem, f"🔤 <b>{user_name}</b> desembaralhou! (+15 pts)", parse_mode="HTML")
+            JOGOS_EMBARALHADA.pop(chat_id, None)
+            liberar_jogo(chat_id, "embaralhada")
         return
 
     if chat_id in JOGOS_EMOJI:
@@ -3427,31 +4299,15 @@ def processar_mensagem_grupo(mensagem):
 
     if texto_upper in [".SIGNO", ".MEUSIGNO", ".HOROSCOPO"]:
         signo = escolher_sem_repetir("signo", LISTA_SIGNOS_VALIDOS)
-        txt = gerar_texto_ia(
-            f"Gere uma previsão curta e positiva para o signo {signo}, em português do Brasil, falando de energia, trabalho, relações e conselho prático. Use no máximo 3 frases, sem mencionar inteligência artificial, apostas ou promessas de dinheiro.",
-            "O dia favorece conversas sinceras, foco nas tarefas e escolhas feitas com calma.",
-        )
+        txt = buscar_horoscopo_joao_bidu(signo) or "O dia favorece conversas sinceras, foco nas tarefas e escolhas feitas com calma."
         bot.reply_to(mensagem, montar_horoscopo(signo, txt), parse_mode="HTML")
         return
 
     limpo = texto_upper.replace(".", "")
+    limpo = ALIAS_SIGNOS.get(limpo, limpo)
     if limpo in LISTA_SIGNOS_VALIDOS:
-        txt = gerar_texto_ia(
-            f"Gere uma previsão curta e positiva para o signo {limpo}, em português do Brasil, falando de energia, trabalho, relações e conselho prático. Use no máximo 3 frases, sem mencionar inteligência artificial, apostas ou promessas de dinheiro.",
-            "Sua intuição está afiada hoje; organize as prioridades e escolha com tranquilidade.",
-        )
+        txt = buscar_horoscopo_joao_bidu(limpo) or "Sua intuição está afiada hoje; organize as prioridades e escolha com tranquilidade."
         bot.reply_to(mensagem, montar_horoscopo(limpo, txt), parse_mode="HTML")
-        return
-
-    # Handlers de jogo acima já retornam quando consomem a mensagem; se chegou aqui, nenhum jogo travou o texto.
-    gatilho, dados = detectar_gatilho_plataforma(texto_upper)
-    if gatilho and dados:
-        print(f"Gatilho detectado | chat={chat_id} | gatilho={gatilho}", flush=True)
-        frase = escolher_sem_repetir("plataforma_" + gatilho, [frase.format(g=gatilho) for frase in FRASES_PLATAFORMA])
-        if dados.get('file_id'):
-            bot.send_photo(chat_id, dados['file_id'], caption=f"{frase}\n\n{dados['url']}", parse_mode="HTML")
-        else:
-            bot.reply_to(mensagem, f"{frase}\n\n{dados['url']}", parse_mode="HTML")
         return
 
     saudacao = next((saudacao for saudacao in RESPOSTAS_SAUDACAO if saudacao in texto_upper), None)
@@ -3470,8 +4326,8 @@ def processar_mensagem_grupo(mensagem):
 
     if CONFIG_GRUPOS.get(chat_id, {}).get("auto_ia", True) and (random.random() < 0.45 or "SANTOS" in texto_upper):
         resposta_ia = gerar_texto_ia(
-            f"Você é a Santos, assistente de resenha de um grupo de Telegram. Seja bem extrovertida, brincalhona e use gírias como 'visão', 'marcha', 'tropa'. Responda curto ao que {user_name} disse: '{texto}'",
-            "",
+            f"Você é a Santos, assistente carinhosa de resenha de um grupo de Telegram. Seja leve, acolhedora e brincalhona, usando gírias como 'visão', 'marcha' e 'tropa'. Responda curto ao que {user_name} disse: '{texto}'. Nunca seja agressiva, não cobre explicações, não diga 'qual foi', 'o que você quer' ou frases que pareçam briga. Se a mensagem não pedir resposta, responda com uma reação simpática ou não responda.",
+            "A Santos tá aqui, meu bem! 👋 Eu vi sua mensagem e vou responder com a energia certa em seguida.",
         )
         if resposta_ia:
             bot.reply_to(mensagem, resposta_ia)

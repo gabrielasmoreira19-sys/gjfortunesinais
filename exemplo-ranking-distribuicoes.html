@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exemplo - Ranking de distribuições</title>
+  <style>
+    :root {
+      --bg:#090a08;
+      --panel:#151712;
+      --panel-2:#20241d;
+      --line:#5f5938;
+      --gold:#d4af37;
+      --gold-light:#f4e4a6;
+      --text:#f7f3e7;
+      --muted:#b3af9e;
+      --green:#54d589;
+      --yellow:#eabc38;
+      --red:#e87575;
+    }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; background:repeating-linear-gradient(135deg,#080908 0,#080908 14px,#0e100e 14px,#0e100e 15px); color:var(--text); font-family:Georgia,"Times New Roman",serif; }
+    .container { width:min(1120px,calc(100% - 32px)); margin:0 auto; }
+    header { border-bottom:1px solid var(--line); }
+    .top { min-height:72px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    .brand { color:var(--gold); font:24px Impact,Haettenschweiler,sans-serif; letter-spacing:1px; }
+    .clock { color:var(--gold-light); font:700 12px Arial,sans-serif; text-align:right; }
+    .clock strong { display:block; margin-top:3px; color:var(--green); font-size:17px; }
+    main { padding:32px 0 55px; }
+    h1 { margin:0; font:400 37px Impact,Haettenschweiler,sans-serif; letter-spacing:1px; text-transform:uppercase; }
+    .intro { max-width:760px; margin:9px 0 22px; color:var(--muted); font:14px/1.5 Arial,sans-serif; }
+    .rank { border:1px solid var(--line); background:linear-gradient(140deg,var(--panel-2),var(--panel)); }
+    .rank-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid var(--line); }
+    .rank-header h2 { margin:0; color:var(--gold-light); font:400 22px Impact,Haettenschweiler,sans-serif; letter-spacing:.7px; text-transform:uppercase; }
+    .rank-header span { color:var(--muted); font:11px Arial,sans-serif; }
+    .rank-list { display:grid; grid-template-columns:repeat(5,1fr); }
+    .rank-item { min-width:0; padding:14px; border-right:1px solid var(--line); }
+    .rank-item:last-child { border-right:0; }
+    .position { display:inline-grid; width:23px; height:23px; place-items:center; background:var(--gold); color:#171307; font:800 12px Arial,sans-serif; }
+    .percent { display:block; margin-top:11px; color:var(--green); font:800 25px Arial,sans-serif; }
+    .rank-item p { overflow:hidden; margin:5px 0 0; color:var(--text); font:700 12px/1.25 Arial,sans-serif; text-overflow:ellipsis; white-space:nowrap; }
+    .rank-item small { display:block; margin-top:4px; color:var(--muted); font:10px Arial,sans-serif; text-transform:uppercase; }
+    .filter-row { display:flex; flex-wrap:wrap; gap:8px; margin:25px 0 15px; }
+    .filter-row button { border:1px solid #69603b; background:transparent; color:var(--muted); padding:9px 12px; cursor:pointer; font:700 11px Arial,sans-serif; text-transform:uppercase; }
+    .filter-row button.active,.filter-row button:hover { border-color:var(--gold); color:#171307; background:var(--gold); }
+    .caption { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:0 0 11px; }
+    .caption h2 { margin:0; color:var(--gold-light); font:400 25px Impact,Haettenschweiler,sans-serif; letter-spacing:.8px; text-transform:uppercase; }
+    .caption span { color:var(--muted); font:12px Arial,sans-serif; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:13px; }
+    .card { border:1px solid var(--line); background:var(--panel); }
+    .cover { position:relative; min-height:102px; padding:12px; display:flex; align-items:end; background:linear-gradient(145deg,#51421a,#171a13); isolation:isolate; }
+    .cover::before { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,#0000,#080908d9); }
+    .cover h3 { margin:0; font:400 20px Impact,Haettenschweiler,sans-serif; letter-spacing:.5px; }
+    .tag { position:absolute; top:10px; right:10px; padding:5px 7px; background:#090a09d9; color:var(--gold-light); font:700 10px Arial,sans-serif; text-transform:uppercase; }
+    .body { padding:13px; }
+    .dist { display:flex; align-items:baseline; justify-content:space-between; padding-bottom:11px; border-bottom:1px solid #403d29; color:var(--muted); font:11px Arial,sans-serif; }
+    .dist strong { color:var(--green); font-size:18px; }
+    .metric { margin-top:10px; }
+    .metric-head { display:flex; justify-content:space-between; color:var(--muted); font:11px Arial,sans-serif; }
+    .metric-head strong { color:var(--text); }
+    .bar { height:6px; margin-top:5px; background:#080908; overflow:hidden; }
+    .bar span { display:block; width:var(--value); height:100%; background:var(--color); }
+    .soon { display:none; min-height:170px; place-items:center; border:1px dashed var(--line); color:var(--muted); text-align:center; font:13px/1.5 Arial,sans-serif; }
+    .soon strong { display:block; margin-bottom:5px; color:var(--gold-light); font:400 26px Impact,Haettenschweiler,sans-serif; text-transform:uppercase; }
+    .note { margin-top:23px; padding:14px; border-left:3px solid var(--gold); background:#ffffff08; color:var(--muted); font:12px/1.55 Arial,sans-serif; }
+    .note strong { color:var(--text); }
+    @media (max-width:700px) { .container { width:min(100% - 24px,1120px); } h1 { font-size:31px; } .rank-list { overflow:auto; grid-template-columns:repeat(5,145px); } .rank-item { border-bottom:0; } }
+  </style>
+</head>
+<body>
+  <header><div class="container top"><div class="brand">GJFORTUNESINAIS</div><div class="clock">PRÓXIMA ATUALIZAÇÃO<strong id="timer">05:00</strong></div></div></header>
+  <main class="container">
+    <h1>Distribuições em alta</h1>
+    <p class="intro">Uma área curta no topo para destacar os jogos com maior índice na atualização atual. O ranking é separado dos cards completos e troca automaticamente junto com o ciclo do site.</p>
+    <section class="rank" aria-label="Maiores distribuições hoje"><div class="rank-header"><h2>Maiores distribuições hoje</h2><span>Atualizado no ciclo atual</span></div><div class="rank-list" id="ranking"></div></section>
+    <nav class="filter-row" aria-label="Filtrar provedor"><button class="active" data-provider="pg">PG Soft</button><button data-provider="pragmatic">Pragmatic</button><button data-provider="tada">TaDa Gaming</button><button data-provider="wg">WG</button></nav>
+    <div class="caption"><h2 id="caption">Jogos PG Soft</h2><span id="count"></span></div>
+    <section class="grid" id="grid"></section>
+    <section class="soon" id="soon"><div><strong id="soonTitle">Pragmatic em breve</strong>Os cards deste provedor serão liberados após a verificação das faixas reais de aposta.</div></section>
+    <aside class="note"><strong>Exemplo isolado:</strong> o ranking cria interesse e melhora a descoberta de jogos, mas os percentuais devem continuar identificados como indicadores do seu catálogo. O site real não foi alterado.</aside>
+  </main>
+  <script>
+    const games = [
+      { name:'Fortune Tiger', provider:'pg', dist:96, min:42, standard:74, max:86 },
+      { name:'Fortune Ox', provider:'pg', dist:94, min:38, standard:79, max:82 },
+      { name:'Fortune Rabbit', provider:'pg', dist:92, min:51, standard:68, max:88 },
+      { name:'Fortune Dragon', provider:'pg', dist:91, min:47, standard:72, max:81 },
+      { name:'Ganesha Fortune', provider:'pg', dist:89, min:35, standard:64, max:77 },
+      { name:'Mahjong Ways 2', provider:'pg', dist:87, min:44, standard:75, max:83 },
+      { name:'Tree Of Fortune', provider:'pg', dist:84, min:29, standard:66, max:74 }
+    ];
+    const labels = { pg:'PG Soft', pragmatic:'Pragmatic', tada:'TaDa Gaming', wg:'WG' };
+    const grid = document.getElementById('grid');
+    const ranking = document.getElementById('ranking');
+    const soon = document.getElementById('soon');
+    let provider = 'pg';
+    const color = value => value < 40 ? 'var(--red)' : value < 70 ? 'var(--yellow)' : 'var(--green)';
+    const metric = (label, value) => `<div class="metric"><div class="metric-head"><span>${label}</span><strong>${value}%</strong></div><div class="bar"><span style="--value:${value}%;--color:${color(value)}"></span></div></div>`;
+    function render() {
+      const visible = games.filter(game => game.provider === provider);
+      const noCatalog = !visible.length;
+      grid.style.display = noCatalog ? 'none' : 'grid';
+      soon.style.display = noCatalog ? 'grid' : 'none';
+      document.getElementById('caption').textContent = noCatalog ? `${labels[provider]} em breve` : `Jogos ${labels[provider]}`;
+      document.getElementById('count').textContent = noCatalog ? '' : `${visible.length} jogos neste exemplo`;
+      document.getElementById('soonTitle').textContent = `${labels[provider]} em breve`;
+      grid.innerHTML = visible.map(game => `<article class="card"><div class="cover"><span class="tag">${labels[game.provider]}</span><h3>${game.name}</h3></div><div class="body"><div class="dist"><span>Distribuição no ciclo</span><strong>${game.dist}%</strong></div>${metric('Mínima',game.min)}${metric('Padrão',game.standard)}${metric('Máxima',game.max)}</div></article>`).join('');
+    }
+    function renderRanking() {
+      ranking.innerHTML = [...games].sort((a,b) => b.dist-a.dist).slice(0,5).map((game,index) => `<div class="rank-item"><span class="position">${index+1}</span><strong class="percent">${game.dist}%</strong><p>${game.name}</p><small>${labels[game.provider]}</small></div>`).join('');
+    }
+    document.querySelectorAll('[data-provider]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-provider]').forEach(item => item.classList.remove('active')); button.classList.add('active'); provider = button.dataset.provider; render(); }));
+    function updateTimer() { const seconds = 300 - Math.floor(Date.now() / 1000) % 300; document.getElementById('timer').textContent = `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`; }
+    renderRanking(); render(); updateTimer(); setInterval(updateTimer,1000);
+  </script>
+</body>
+</html>

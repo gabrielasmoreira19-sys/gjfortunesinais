@@ -9,15 +9,19 @@ if "%ERRORLEVEL%" NEQ "0" (
     exit /b 1
 )
 
-echo Fechando instancias antigas do bot, se houver...
-powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'bot\.py' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
+powershell -NoProfile -Command "$bot = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match '(^|\s)bot\.py($|\s)' }; if ($bot) { Write-Host 'A Santos ja esta ligada. Nao abri uma segunda copia.'; exit 1 }"
+if errorlevel 1 exit /b 0
 
-echo Iniciando o bot Santos...
-py bot.py
-
-if errorlevel 1 (
-    echo.
-    echo O bot nao iniciou corretamente.
-    echo Verifique o arquivo .env e as chaves do bot.
-    pause
+:iniciar
+echo.
+echo [%date% %time%] Iniciando a Santos...
+py -u bot.py
+set CODIGO_SAIDA=%ERRORLEVEL%
+if "%CODIGO_SAIDA%"=="17" (
+    echo Outra janela da Santos ja esta aberta. Este iniciador sera fechado.
+    exit /b 0
 )
+echo.
+echo [%date% %time%] A Santos encerrou. Reiniciando em 5 segundos...
+timeout /t 5 /nobreak >nul
+goto iniciar

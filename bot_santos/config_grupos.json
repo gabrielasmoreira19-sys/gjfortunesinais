@@ -3,18 +3,32 @@
     "nome": "ADMS GABI",
     "auto_reacoes": true,
     "auto_ia": true,
-    "auto_jogos": false
+    "auto_jogos": false,
+    "alerta_entradas": false,
+    "alerta_destino_id": null
   },
   "-1001819646494": {
     "nome": "TURMA DA GABI&JU🍀❤️",
     "auto_reacoes": true,
     "auto_ia": true,
-    "auto_jogos": true
+    "auto_jogos": true,
+    "alerta_entradas": true,
+    "alerta_destino_id": 6168127910
   },
   "-1002268972792": {
     "nome": "BET SISTERS",
     "auto_reacoes": true,
     "auto_ia": true,
-    "auto_jogos": true
+    "auto_jogos": true,
+    "alerta_entradas": true,
+    "alerta_destino_id": 6168127910
+  },
+  "-1002514968140": {
+    "nome": "TURMA DA GABI&JU 01❤️🍀",
+    "auto_reacoes": true,
+    "auto_ia": true,
+    "auto_jogos": true,
+    "alerta_entradas": true,
+    "alerta_destino_id": 6168127910
   }
 }
