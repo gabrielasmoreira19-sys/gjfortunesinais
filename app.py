@@ -859,6 +859,8 @@ def capa(jogo_id):
 
 	imagem = jogo.get("imagem")
 	if imagem:
+		if str(imagem).startswith("/"):
+			imagem = f"{FP_SINAIS_URL.rstrip('/')}{imagem}"
 		return redirect(imagem)
 	return jsonify({"erro": "Capa não encontrada"}), 404
 
