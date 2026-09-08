@@ -607,6 +607,42 @@ def faixas_aposta_grupo_fp(bets):
 	}
 
 
+def apostas_sugeridas_grupo_fp(bets, minima, padrao, maxima, categoria="PG"):
+	valores = [str(valor).strip() for valor in bets or [] if str(valor).strip()]
+	if not valores:
+		return {}
+	if categoria == "PG" and len(valores) > 11:
+		blocos = {"minimum": 6, "standard": 5, "maximum": len(valores) - 11}
+	else:
+		bloco = max(1, len(valores) // 3)
+		blocos = {"minimum": bloco, "standard": bloco, "maximum": bloco}
+	inicios = {"minimum": 0, "standard": blocos["minimum"], "maximum": blocos["minimum"] + blocos["standard"]}
+
+	def nivel(valor):
+		return 1 if valor >= 90 else 2 if valor >= 80 else 3 if valor >= 70 else 4 if valor >= 60 else 5 if valor >= 50 else None
+
+	def conexao(valor):
+		return min(int(valor // 10) + 1, 10)
+
+	def escolher(bloco, indice):
+		inicio = inicios[bloco]
+		quantidade = blocos[bloco]
+		deslocamento = min(quantidade, max(1, int((indice / 10) * quantidade + 0.999)))
+		posicao = inicio + deslocamento - 1
+		return valores[posicao] if posicao < len(valores) else ""
+
+	bonus_extra = min(max(round((0.3 * padrao + 0.2 * minima + 0.5 * maxima) / 10), 1), 10)
+	resultado = {"minima": {}, "padrao": {}, "maxima": {}}
+	for chave, valor in (("minima", minima), ("padrao", padrao), ("maxima", maxima)):
+		faixa = nivel(valor)
+		if faixa:
+			resultado[chave]["bonus"] = escolher("minimum" if chave == "minima" else "standard" if chave == "padrao" else "maximum", faixa)
+		resultado[chave]["conexao"] = escolher("minimum" if chave == "minima" else "standard" if chave == "padrao" else "maximum", conexao(valor))
+	if nivel(minima):
+		resultado["minima"]["extra"] = escolher("minimum", bonus_extra)
+	return resultado
+
+
 def sincronizar_sinais_grupo_fp():
 	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp, jogos_grupo_fp
 	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
@@ -657,6 +693,7 @@ def sincronizar_sinais_grupo_fp():
 						"maxima": jogo.get("maxima"),
 						"distribuicao": jogo.get("porcentagem"),
 						"faixas_aposta": faixas_aposta_grupo_fp(jogo.get("bets")),
+						"apostas_sugeridas": apostas_sugeridas_grupo_fp(jogo.get("bets"), jogo.get("minima", 0), jogo.get("padrao", 0), jogo.get("maxima", 0), jogo.get("categoriaJogo", "PG")),
 					}
 					if nome and all(isinstance(valores[chave], int) for chave in ("minima", "padrao", "maxima", "distribuicao")):
 						novos_sinais[nome] = valores
