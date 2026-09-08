@@ -327,6 +327,7 @@
         const INTERVALO_SINAIS = 5 * 60 * 1000;
         let baseContagem = Date.now();
         let assinaturaSinais = '';
+        let contadorPronto = false;
         let atualizandoSinais = false;
         function atualizarFundoTranslucidoCards() {
             cards.forEach(card => {
@@ -405,6 +406,7 @@
                 if (horarioFp > 0) baseContagem = horarioFp * 1000;
                 else if (assinaturaSinais && novaAssinatura !== assinaturaSinais) baseContagem = Date.now();
                 assinaturaSinais = novaAssinatura;
+                contadorPronto = true;
             } finally {
                 atualizandoSinais = false;
             }
@@ -422,6 +424,12 @@
             const mobile = document.getElementById('countdownTopMobile');
             const catalogTimer = document.getElementById('countdownCatalog');
             if (!top && !mobile && !catalogTimer) return;
+            if (!contadorPronto) {
+                if (top) top.textContent = 'Atualizando...';
+                if (mobile) mobile.textContent = 'Atualizando...';
+                if (catalogTimer) catalogTimer.textContent = 'Atualizando...';
+                return;
+            }
             const agora = Date.now();
             const decorrido = agora - baseContagem;
             const resto = Math.max(0, INTERVALO_SINAIS - (decorrido % INTERVALO_SINAIS));
