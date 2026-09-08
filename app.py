@@ -19,7 +19,7 @@ try:
 	import requests
 except ImportError:
 	requests = None
-from flask import Flask, jsonify, redirect, render_template, request, session, send_from_directory, url_for
+from flask import Flask, Response, jsonify, redirect, render_template, request, session, send_from_directory, url_for
 from werkzeug.utils import secure_filename
 
 
@@ -861,6 +861,12 @@ def capa(jogo_id):
 	if imagem:
 		if str(imagem).startswith("/"):
 			imagem = f"{FP_SINAIS_URL.rstrip('/')}{imagem}"
+		try:
+			resposta = requests.get(imagem, headers={"User-Agent": "Mozilla/5.0"}, timeout=12) if requests else None
+			if resposta is not None and resposta.ok and resposta.content:
+				return Response(resposta.content, mimetype=resposta.headers.get("Content-Type", "image/jpeg"))
+		except Exception:
+			pass
 		return redirect(imagem)
 	return jsonify({"erro": "Capa não encontrada"}), 404
 
