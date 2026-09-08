@@ -89,6 +89,7 @@ ultima_sincronizacao_fp = 0.0
 lock_sincronizacao_fp = threading.Lock()
 sinais_grupo_fp = {}
 ordem_jogos_grupo_fp = []
+jogos_grupo_fp = {}
 FAIXAS_INDICATIVAS = (
 	("0,20", "1,00", "20,00"),
 	("0,20", "1,00", "30,00"),
@@ -473,7 +474,30 @@ def encontrar_jogo(jogo_id):
 		)
 		if jogo is not None:
 			return normalizar_faixas_jogo(jogo)
+	for jogo in jogos_grupo_fp.values():
+		if str(jogo.get("id")) == str(jogo_id):
+			return normalizar_faixas_jogo(jogo)
 	return None
+
+
+def mesclar_jogos_grupo_fp(jogos):
+	existentes = {str(jogo.get("nome", "")).strip().casefold() for jogo in jogos}
+	for nome in ordem_jogos_grupo_fp:
+		jogo_fp = jogos_grupo_fp.get(nome)
+		if not jogo_fp or nome in existentes:
+			continue
+		bets = jogo_fp.get("bets", [])
+		jogos.append(
+			{
+				"id": jogo_fp["id"],
+				"nome": jogo_fp["nome"],
+				"min": bets[0] if bets else "0,40",
+				"pad": bets[6] if len(bets) > 6 else (bets[0] if bets else "0,40"),
+				"max": bets[-1] if bets else "100,00",
+				"imagem": jogo_fp.get("imagem", ""),
+			}
+		)
+	return jogos
 
 
 def classificar_volatilidade(jogo):
@@ -516,7 +540,7 @@ def faixas_aposta_grupo_fp(bets):
 
 
 def sincronizar_sinais_grupo_fp():
-	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp
+	global ultima_sincronizacao_fp, ordem_jogos_grupo_fp, jogos_grupo_fp
 	if requests is None or time.time() - ultima_sincronizacao_fp < FP_SYNC_INTERVAL:
 		return
 
@@ -526,6 +550,7 @@ def sincronizar_sinais_grupo_fp():
 		try:
 			novos_sinais = {}
 			nova_ordem = []
+			novos_jogos = {}
 			headers = {
 				"Accept": "text/x-component",
 				"Content-Type": "text/plain;charset=UTF-8",
@@ -548,6 +573,13 @@ def sincronizar_sinais_grupo_fp():
 					nome = str(jogo.get("nomeJogo", "")).strip().casefold()
 					if nome and nome not in nova_ordem:
 						nova_ordem.append(nome)
+					if nome:
+						novos_jogos[nome] = {
+						"id": f"fp-{jogo.get('id')}",
+						"nome": str(jogo.get("nomeJogo", "")).strip(),
+						"imagem": str(jogo.get("imageUrl", "")).strip(),
+						"bets": [str(valor).strip() for valor in jogo.get("bets", [])],
+					}
 					valores = {
 						"minima": jogo.get("minima"),
 						"padrao": jogo.get("padrao"),
@@ -563,6 +595,7 @@ def sincronizar_sinais_grupo_fp():
 				sinais_grupo_fp.clear()
 				sinais_grupo_fp.update(novos_sinais)
 				ordem_jogos_grupo_fp = nova_ordem
+				jogos_grupo_fp = novos_jogos
 			ultima_sincronizacao_fp = time.time()
 		except (OSError, ValueError, requests.RequestException):
 			return
@@ -766,9 +799,10 @@ def sincronizar_lancamentos_pg():
 @app.route("/")
 def index():
 	sincronizar_lancamentos_pg()
+	sincronizar_sinais_grupo_fp()
 	
 	# Exibe apenas jogos PG enquanto as apostas dos demais provedores não são verificadas.
-	catalogo = {"pg": carregar_catalogo_provedor("pg")}
+	catalogo = {"pg": mesclar_jogos_grupo_fp(carregar_catalogo_provedor("pg"))}
 	
 	# Preparar faixas para todos os jogos
 	for jogos_provedor in catalogo.values():
