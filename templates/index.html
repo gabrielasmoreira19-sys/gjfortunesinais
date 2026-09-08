@@ -472,17 +472,8 @@
             const agora = Date.now();
             const cicloAtual = Math.floor(agora / INTERVALO_SINAIS);
             const cicloBase = Math.floor(baseContagem / INTERVALO_SINAIS);
-            if (cicloAtual !== cicloBase) {
-                if (top) top.textContent = '00:00';
-                if (mobile) mobile.textContent = '00:00';
-                if (catalogTimer) catalogTimer.textContent = '00:00';
-                if (!atualizandoSinais) {
-                    atualizarSinais();
-                }
-                return;
-            }
-            const decorrido = agora - baseContagem;
-            const resto = Math.max(0, INTERVALO_SINAIS - (decorrido % INTERVALO_SINAIS));
+            if (cicloAtual !== cicloBase && !atualizandoSinais) atualizarSinais();
+            const resto = Math.max(0, Math.ceil((agora + 1) / INTERVALO_SINAIS) * INTERVALO_SINAIS - agora);
             const totalSegundos = Math.max(0, Math.floor(resto / 1000));
             const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
             const segundos = String(totalSegundos % 60).padStart(2, '0');
