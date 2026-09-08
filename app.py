@@ -325,18 +325,58 @@ def administrador_logado():
 	return session.get("admin_logado") is True
 
 
-def carregar_usuarios():
-	if not USERS_PATH.is_file():
-		return {}
+def carregar_usuarios_supabase():
+	if not supabase_configurado():
+		return None
 	try:
-		with USERS_PATH.open(encoding="utf-8") as arquivo:
-			usuarios = json.load(arquivo)
-		return usuarios if isinstance(usuarios, dict) else {}
-	except (OSError, json.JSONDecodeError):
-		return {}
+		resposta = requests.get(
+			f"{SUPABASE_URL}/rest/v1/{SUPABASE_CONFIG_TABLE}",
+			params={"key": "eq.users", "select": "config", "limit": 1},
+			headers=cabecalhos_supabase(),
+			timeout=8,
+		)
+		resposta.raise_for_status()
+		registros = resposta.json()
+		return registros[0].get("config") if registros else {}
+	except Exception:
+		return None
+
+
+def salvar_usuarios_supabase(usuarios):
+	if not supabase_configurado():
+		return False
+	try:
+		resposta = requests.post(
+			f"{SUPABASE_URL}/rest/v1/{SUPABASE_CONFIG_TABLE}",
+			params={"on_conflict": "key"},
+			headers={**cabecalhos_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+			json={"key": "users", "config": usuarios},
+			timeout=8,
+		)
+		resposta.raise_for_status()
+		return True
+	except Exception:
+		return False
+
+
+def carregar_usuarios():
+	usuarios_remotos = carregar_usuarios_supabase()
+	if usuarios_remotos is not None:
+		return usuarios_remotos
+	with lock_usuarios:
+		if not USERS_PATH.is_file():
+			return {}
+		try:
+			with USERS_PATH.open(encoding="utf-8") as arquivo:
+				usuarios = json.load(arquivo)
+			return usuarios if isinstance(usuarios, dict) else {}
+		except (OSError, json.JSONDecodeError):
+			return {}
 
 
 def salvar_usuarios(usuarios):
+	if supabase_configurado():
+		salvar_usuarios_supabase(usuarios)
 	with lock_usuarios:
 		USERS_PATH.parent.mkdir(parents=True, exist_ok=True)
 		temporario = USERS_PATH.with_suffix(".tmp")
@@ -378,7 +418,7 @@ def cadastro():
 	if request.method == "POST":
 		nome = request.form.get("nome", "").strip()
 		email = request.form.get("email", "").strip().casefold()
-		senha = request.form.get("senha", "")
+		senha = request.form.get("senha", "").strip()
 		if len(nome.split()) < 2 or "@" not in email or len(senha) < 6:
 			erro = "Informe seu nome completo, um e-mail válido e uma senha com pelo menos 6 caracteres."
 		else:
@@ -398,7 +438,7 @@ def login():
 	erro = ""
 	if request.method == "POST":
 		email = request.form.get("email", "").strip().casefold()
-		senha = request.form.get("senha", "")
+		senha = request.form.get("senha", "").strip()
 		usuario = carregar_usuarios().get(email, {})
 		if usuario and check_password_hash(usuario.get("senha", ""), senha):
 			session["usuario_email"] = email

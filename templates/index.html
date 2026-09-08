@@ -328,9 +328,10 @@
         const fpAtualizadoEm = Number(pageData.fpAtualizadoEm) || 0;
         const ultimoFpSalvo = Number(localStorage.getItem('gj-ultimo-fp-atualizado')) || 0;
         const timestampFp = Math.max(ultimoFpSalvo, fpAtualizadoEm);
-        let baseContagem = timestampFp > 0 ? timestampFp * 1000 : Date.now();
+        const inicioCicloGeral = Math.floor(Date.now() / INTERVALO_SINAIS) * INTERVALO_SINAIS;
+        let baseContagem = timestampFp > 0 ? timestampFp * 1000 : inicioCicloGeral;
         let assinaturaSinais = '';
-        let contadorPronto = Boolean(timestampFp > 0);
+        let contadorPronto = true;
         let atualizandoSinais = false;
         function atualizarFundoTranslucidoCards() {
             cards.forEach(card => {
