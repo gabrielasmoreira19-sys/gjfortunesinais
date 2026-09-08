@@ -410,6 +410,7 @@
         atualizarFundoTranslucidoCards();
         aplicarCoresIniciais();
         atualizarSinais();
+        setInterval(() => atualizarSinais(), 30000);
         filterCards();
         const playChoice = document.getElementById('playChoice'), playTitle = document.getElementById('playTitle'), playResult = document.getElementById('playResult'); const plataformasValidas = plataformasCadastradas.filter(item => item && typeof item.link === 'string' && item.link.trim()); let jogoSelecionado = '';
         const gerarCodigoOption = document.createElement('button'); gerarCodigoOption.className = 'play-option'; gerarCodigoOption.type = 'button'; gerarCodigoOption.textContent = 'Gerar código demonstrativo'; document.querySelector('.play-options')?.appendChild(gerarCodigoOption);
