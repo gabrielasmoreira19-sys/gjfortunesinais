@@ -1025,6 +1025,7 @@ def index():
 		stories_ativas=stories_ativas,
 		popup_entrada=popup_entrada,
 		usuario_email=usuario_logado(),
+		fp_atualizado_em=ultima_atualizacao_fp_remota,
 	)
 
 
